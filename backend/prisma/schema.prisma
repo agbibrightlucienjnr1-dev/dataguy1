@@ -9,12 +9,26 @@ datasource db {
   provider = "postgresql"
 }
 
-// Add your models here
-// Example:
-// model User {
-//   id        Int      @id @default(autoincrement())
-//   email     String   @unique
-//   name      String?
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
+enum UserRole {
+  admin
+  agent
+  sub_agent
+}
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  phone           String
+  passwordHash    String    @map("password_hash")
+  role            UserRole  @default(agent)
+  parentAgentId   String?   @map("parent_agent_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  parentAgent     User?     @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
+  subAgents       User[]    @relation("AgentHierarchy")
+  
+  @@map("users")
+}
+

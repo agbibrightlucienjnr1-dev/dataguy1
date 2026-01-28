@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
+
+// Load environment variables FIRST before any other imports
+dotenv.config();
+
 import app from "./app.js";
 import { initDatabase, closeDatabase } from "./config/database.js";
-
-// Load environment variables
-dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
