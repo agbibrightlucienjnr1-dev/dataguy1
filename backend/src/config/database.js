@@ -1,75 +1,71 @@
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
-const { Pool } = pg;
 
-let pool = null;
+let prisma = null;
 
 /**
- * Initialize PostgreSQL connection pool
+ * Initialize Prisma Client with error handling
+ * Fails fast if database connection is unavailable
  */
-export const initDatabase = () => {
-  if (pool) {
-    return pool;
+export const initDatabase = async () => {
+  if (prisma) {
+    return prisma;
   }
 
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  });
+  try {
+    // Create PostgreSQL connection pool
+    const pool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
 
-  pool.on("connect", () => {
-    console.log("✅ Database connected");
-  });
+    // Create Prisma adapter
+    const adapter = new PrismaPg(pool);
 
-  pool.on("error", (err) => {
-    console.error("❌ Unexpected database error:", err);
-  });
+    // Create Prisma Client with adapter
+    prisma = new PrismaClient({
+      adapter,
+      log:
+        process.env.NODE_ENV === "development"
+          ? ["query", "info", "warn", "error"]
+          : ["error"],
+      errorFormat: "pretty",
+    });
 
-  return pool;
+    // Test database connection - fail fast if unavailable
+    await prisma.$connect();
+    console.log("✅ Database connected successfully");
+
+    return prisma;
+  } catch (error) {
+    console.error("❌ Failed to connect to database:", error.message);
+    console.error(
+      "⚠️ Database connection is required. Application cannot start.",
+    );
+    throw error; // Fail fast - don't start the server without DB
+  }
 };
 
 /**
- * Get database pool instance
+ * Get Prisma Client instance
  */
-export const getPool = () => {
-  if (!pool) {
+export const getPrisma = () => {
+  if (!prisma) {
     throw new Error("Database not initialized. Call initDatabase() first.");
   }
-  return pool;
+  return prisma;
 };
 
 /**
- * Execute a query with error handling
- */
-export const query = async (text, params) => {
-  const start = Date.now();
-  try {
-    const result = await getPool().query(text, params);
-    const duration = Date.now() - start;
-
-    if (process.env.NODE_ENV === "development") {
-      console.log("📊 Query executed:", {
-        text,
-        duration,
-        rows: result.rowCount,
-      });
-    }
-
-    return result;
-  } catch (error) {
-    console.error("❌ Database query error:", error);
-    throw error;
-  }
-};
-
-/**
- * Close database connections
+ * Close database connections gracefully
  */
 export const closeDatabase = async () => {
-  if (pool) {
-    await pool.end();
-    pool = null;
+  if (prisma) {
+    await prisma.$disconnect();
+    prisma = null;
     console.log("✅ Database connections closed");
   }
 };
+
+// Export default prisma instance for convenience
+export default prisma;
