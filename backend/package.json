@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "Production-ready Node.js backend for data reselling",
   "dependencies": {
+    "@paralleldrive/cuid2": "^3.3.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "axios": "^1.13.4",

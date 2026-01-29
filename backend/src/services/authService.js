@@ -2,6 +2,7 @@ import { getPrisma } from "../config/database.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
 import { generateAuthToken } from "../utils/jwt.js";
 import { AppError } from "../middlewares/errorHandler.js";
+import { createId } from "@paralleldrive/cuid2";
 
 /**
  * Register a new user
@@ -62,6 +63,9 @@ export const registerUser = async (userData) => {
   // Hash password
   const passwordHash = await hashPassword(password);
 
+  // Generate unique payment link code
+  const paymentLinkCode = createId();
+
   // Create user
   const user = await prisma.user.create({
     data: {
@@ -71,6 +75,7 @@ export const registerUser = async (userData) => {
       passwordHash,
       role: role || "agent",
       parentAgentId: role === "sub_agent" ? referralCode : null,
+      paymentLinkCode,
     },
     select: {
       id: true,
@@ -79,6 +84,7 @@ export const registerUser = async (userData) => {
       phone: true,
       role: true,
       parentAgentId: true,
+      paymentLinkCode: true,
       createdAt: true,
     },
   });
@@ -146,6 +152,7 @@ export const getUserById = async (userId) => {
       phone: true,
       role: true,
       parentAgentId: true,
+      paymentLinkCode: true,
       createdAt: true,
     },
   });

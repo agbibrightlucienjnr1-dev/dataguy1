@@ -38,10 +38,22 @@ export const register = asyncHandler(async (req, res) => {
     referralCode,
   });
 
+  // Generate payment link for agents and sub-agents
+  let paymentLink = null;
+  if (result.user.role === "agent" || result.user.role === "sub_agent") {
+    const baseUrl =
+      process.env.FRONTEND_URL ||
+      `http://localhost:${process.env.PORT || 3000}`;
+    paymentLink = `${baseUrl}/buy/${result.user.paymentLinkCode}`;
+  }
+
   res.status(201).json({
     success: true,
     message: "Registration successful",
-    data: result,
+    data: {
+      ...result,
+      paymentLink,
+    },
   });
 });
 
@@ -60,10 +72,22 @@ export const login = asyncHandler(async (req, res) => {
   // Login user
   const result = await loginUser(phone, password);
 
+  // Generate payment link for agents and sub-agents
+  let paymentLink = null;
+  if (result.user.role === "agent" || result.user.role === "sub_agent") {
+    const baseUrl =
+      process.env.FRONTEND_URL ||
+      `http://localhost:${process.env.PORT || 3000}`;
+    paymentLink = `${baseUrl}/buy/${result.user.paymentLinkCode}`;
+  }
+
   res.status(200).json({
     success: true,
     message: "Login successful",
-    data: result,
+    data: {
+      ...result,
+      paymentLink,
+    },
   });
 });
 
@@ -75,8 +99,20 @@ export const getMe = asyncHandler(async (req, res) => {
   // req.user is attached by authenticate middleware
   const user = await getUserById(req.user.id);
 
+  // Generate payment link for agents and sub-agents
+  let paymentLink = null;
+  if (user.role === "agent" || user.role === "sub_agent") {
+    const baseUrl =
+      process.env.FRONTEND_URL ||
+      `http://localhost:${process.env.PORT || 3000}`;
+    paymentLink = `${baseUrl}/buy/${user.paymentLinkCode}`;
+  }
+
   res.status(200).json({
     success: true,
-    data: { user },
+    data: {
+      user,
+      paymentLink,
+    },
   });
 });

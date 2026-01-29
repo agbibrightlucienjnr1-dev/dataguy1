@@ -21,6 +21,20 @@ enum Network {
   AIRTELTIGO
 }
 
+enum OrderStatus {
+  pending
+  payment_confirmed
+  processing
+  completed
+  failed
+  cancelled
+}
+
+enum SellerType {
+  agent
+  sub_agent
+}
+
 model User {
   id                String           @id @default(uuid())
   name              String
@@ -29,6 +43,7 @@ model User {
   passwordHash      String           @map("password_hash")
   role              UserRole         @default(agent)
   parentAgentId     String?          @map("parent_agent_id")
+  paymentLinkCode   String?          @unique @map("payment_link_code")
   createdAt         DateTime         @default(now()) @map("created_at")
   
   // Relations
@@ -36,6 +51,7 @@ model User {
   subAgents         User[]           @relation("AgentHierarchy")
   agentPrices       AgentPrice[]
   subAgentPrices    SubAgentPrice[]
+  orders            Order[]          @relation("SellerOrders")
   
   @@map("users")
 }
@@ -53,6 +69,7 @@ model DataBundle {
   // Relations
   agentPrices       AgentPrice[]
   subAgentPrices    SubAgentPrice[]
+  orders            Order[]
   
   @@unique([network, volume])
   @@map("data_bundles")
@@ -89,6 +106,49 @@ model SubAgentPrice {
   
   @@unique([subAgentId, bundleId])
   @@map("sub_agent_prices")
+}
+
+model Order {
+  id                  String      @id @default(uuid())
+  
+  // Customer details (embedded, no customer account)
+  customerPhone       String      @map("customer_phone")
+  customerName        String?     @map("customer_name")
+  
+  // Order details
+  bundleId            String      @map("bundle_id")
+  sellerId            String      @map("seller_id")
+  sellerType          SellerType  @map("seller_type")
+  
+  // Pricing
+  pricePaid           Decimal     @map("price_paid") @db.Decimal(10, 2)
+  
+  // Status
+  status              OrderStatus @default(pending)
+  
+  // Payment tracking
+  paymentReference    String?     @unique @map("payment_reference")
+  paymentConfirmedAt  DateTime?   @map("payment_confirmed_at")
+  
+  // Hubnet tracking
+  hubnetOrderId       String?     @map("hubnet_order_id")
+  hubnetStatus        String?     @map("hubnet_status")
+  hubnetResponse      String?     @map("hubnet_response") @db.Text
+  
+  // Timestamps
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  completedAt         DateTime?   @map("completed_at")
+  
+  // Relations
+  bundle              DataBundle  @relation(fields: [bundleId], references: [id])
+  seller              User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  
+  @@index([customerPhone])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
 }
 
 
