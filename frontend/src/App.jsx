@@ -13,6 +13,15 @@ import { LandingPage, LoginPage, RegisterPage } from "./pages/public";
 // Dashboard Pages
 import { DashboardPage } from "./pages/dashboard";
 
+// Admin Pages
+import {
+  AdminDashboardPage,
+  AdminUsersPage,
+  AdminOrdersPage,
+  AdminBundlesPage,
+  AdminWithdrawalsPage,
+} from "./pages/admin";
+
 function App() {
   return (
     <BrowserRouter>
@@ -62,25 +71,13 @@ function App() {
         {/* Admin Routes */}
         <Route element={<RequireAdmin />}>
           <Route element={<DashboardLayout />}>
-            <Route
-              path="/admin"
-              element={<PlaceholderPage title="Admin Dashboard" />}
-            />
-            <Route
-              path="/admin/users"
-              element={<PlaceholderPage title="Manage Users" />}
-            />
-            <Route
-              path="/admin/orders"
-              element={<PlaceholderPage title="All Orders" />}
-            />
-            <Route
-              path="/admin/bundles"
-              element={<PlaceholderPage title="Manage Bundles" />}
-            />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/orders" element={<AdminOrdersPage />} />
+            <Route path="/admin/bundles" element={<AdminBundlesPage />} />
             <Route
               path="/admin/withdrawals"
-              element={<PlaceholderPage title="Manage Withdrawals" />}
+              element={<AdminWithdrawalsPage />}
             />
           </Route>
         </Route>

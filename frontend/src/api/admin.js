@@ -43,6 +43,25 @@ export const adminApi = {
   // ========== Bundles ==========
 
   /**
+   * Create a new data bundle
+   * @param {Object} data - { network, volume, hubnetCost, adminPrice }
+   */
+  createBundle: (data) => apiClient.post("/bundles", data),
+
+  /**
+   * Update a data bundle
+   * @param {string} id - Bundle ID
+   * @param {Object} data - { hubnetCost?, adminPrice?, isActive? }
+   */
+  updateBundle: (id, data) => apiClient.patch(`/bundles/${id}`, data),
+
+  /**
+   * Delete a data bundle
+   * @param {string} id - Bundle ID
+   */
+  deleteBundle: (id) => apiClient.delete(`/bundles/${id}`),
+
+  /**
    * Toggle bundle active status
    * @param {string} id - Bundle ID
    * @param {boolean} isActive - New status
