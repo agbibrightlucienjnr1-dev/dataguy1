@@ -15,6 +15,12 @@ enum UserRole {
   sub_agent
 }
 
+enum Network {
+  MTN
+  VODAFONE
+  AIRTELTIGO
+}
+
 model User {
   id              String    @id @default(uuid())
   name            String
@@ -31,4 +37,19 @@ model User {
   
   @@map("users")
 }
+
+model DataBundle {
+  id              String    @id @default(uuid())
+  network         Network
+  volume          String    // e.g. "1GB", "2GB", "5GB"
+  hubnetCost      Decimal   @map("hubnet_cost") @db.Decimal(10, 2)
+  adminPrice      Decimal   @map("admin_price") @db.Decimal(10, 2)
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  @@unique([network, volume])
+  @@map("data_bundles")
+}
+
 
