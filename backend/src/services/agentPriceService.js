@@ -155,6 +155,7 @@ export const getBundlesWithAgentPricing = async (agentId) => {
       network: bundle.network,
       volume: bundle.volume,
       adminPrice: bundle.adminPrice,
+      isActive: bundle.isActive,
       hasPricing: !!agentPrice,
       customerPrice: agentPrice?.customerPrice || null,
       subAgentPrice: agentPrice?.subAgentPrice || null,

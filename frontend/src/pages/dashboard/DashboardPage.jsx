@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { useAuthStore } from "../../stores";
-import { useOrders } from "../../hooks";
+import { useOrders, useOrderStats } from "../../hooks";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { ORDER_STATUSES } from "../../utils/constants";
 import toast from "react-hot-toast";
@@ -21,12 +21,14 @@ import toast from "react-hot-toast";
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: ordersData, isLoading } = useOrders({ limit: 5 });
+  const { data: statsData } = useOrderStats();
 
-  const orders = ordersData?.data?.orders || [];
-  const stats = ordersData?.data?.stats || {
+  const orders = ordersData?.orders || [];
+  const stats = statsData?.stats || {
     totalOrders: 0,
-    totalSpent: 0,
+    completedOrders: 0,
     pendingOrders: 0,
+    totalRevenue: 0,
   };
 
   // Generate payment link
@@ -123,7 +125,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Total Revenue</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
-                {formatCurrency(stats.totalSpent || 0)}
+                {formatCurrency(stats.totalRevenue || 0)}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">

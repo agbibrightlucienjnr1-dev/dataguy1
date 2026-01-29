@@ -11,7 +11,7 @@ export const pricingApi = {
   /**
    * Get bundles with agent pricing info
    */
-  getAgentBundles: () => apiClient.get("/agent-prices/bundles"),
+  getAgentBundles: () => apiClient.get("/agent-prices/bundles/all"),
 
   /**
    * Set price for a single bundle (agent)
@@ -46,7 +46,7 @@ export const pricingApi = {
   /**
    * Get bundles with sub-agent pricing info
    */
-  getSubAgentBundles: () => apiClient.get("/sub-agent-prices/bundles"),
+  getSubAgentBundles: () => apiClient.get("/sub-agent-prices/bundles/all"),
 
   /**
    * Set price for a single bundle (sub-agent)

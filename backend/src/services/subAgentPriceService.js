@@ -186,6 +186,8 @@ export const getBundlesWithSubAgentPricing = async (subAgentId) => {
         network: bundle.network,
         volume: bundle.volume,
         adminPrice: bundle.adminPrice,
+        isActive: bundle.isActive,
+        agentPrice: agentPrice.subAgentPrice, // The price the sub-agent pays (set by parent agent)
         parentAgentSubAgentPrice: agentPrice.subAgentPrice, // Minimum price sub-agent must charge
         hasPricing: !!subAgentPrice,
         customerPrice: subAgentPrice?.customerPrice || null,

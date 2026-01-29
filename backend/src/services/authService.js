@@ -154,6 +154,12 @@ export const getUserById = async (userId) => {
       parentAgentId: true,
       paymentLinkCode: true,
       createdAt: true,
+      wallet: {
+        select: {
+          balance: true,
+          pendingBalance: true,
+        },
+      },
     },
   });
 
@@ -161,5 +167,11 @@ export const getUserById = async (userId) => {
     throw new AppError("User not found", 404);
   }
 
-  return user;
+  // Flatten wallet balance onto user object
+  return {
+    ...user,
+    walletBalance: user.wallet?.balance || "0.00",
+    pendingBalance: user.wallet?.pendingBalance || "0.00",
+    wallet: undefined,
+  };
 };

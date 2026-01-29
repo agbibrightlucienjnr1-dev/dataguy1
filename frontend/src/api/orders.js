@@ -25,12 +25,13 @@ export const ordersApi = {
    * Get authenticated seller's orders
    * @param {Object} params - { status?, network?, page?, limit? }
    */
-  getMyOrders: (params) => apiClient.get("/orders", { params }),
+  getMyOrders: (params) =>
+    apiClient.get("/orders/seller/my-orders", { params }),
 
   /**
    * Get seller's order statistics
    */
-  getMyStats: () => apiClient.get("/orders/stats"),
+  getMyStats: () => apiClient.get("/orders/seller/stats"),
 
   /**
    * Get order by ID (authenticated)

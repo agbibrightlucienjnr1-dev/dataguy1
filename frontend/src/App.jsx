@@ -13,6 +13,15 @@ import { LandingPage, LoginPage, RegisterPage } from "./pages/public";
 // Dashboard Pages
 import { DashboardPage } from "./pages/dashboard";
 
+// Agent Pages
+import {
+  AgentOrdersPage,
+  AgentBundlesPage,
+  AgentWalletPage,
+  AgentWithdrawalsPage,
+  AgentPricingPage,
+} from "./pages/agent";
+
 // Admin Pages
 import {
   AdminDashboardPage,
@@ -41,29 +50,14 @@ function App() {
         <Route element={<RequireAuth />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route
-              path="/orders"
-              element={<PlaceholderPage title="My Orders" />}
-            />
-            <Route
-              path="/bundles"
-              element={<PlaceholderPage title="Data Bundles" />}
-            />
-            <Route
-              path="/wallet"
-              element={<PlaceholderPage title="Wallet" />}
-            />
-            <Route
-              path="/withdrawals"
-              element={<PlaceholderPage title="Withdrawals" />}
-            />
+            <Route path="/orders" element={<AgentOrdersPage />} />
+            <Route path="/bundles" element={<AgentBundlesPage />} />
+            <Route path="/wallet" element={<AgentWalletPage />} />
+            <Route path="/withdrawals" element={<AgentWithdrawalsPage />} />
+            <Route path="/pricing" element={<AgentPricingPage />} />
             <Route
               path="/profile"
               element={<PlaceholderPage title="Profile" />}
-            />
-            <Route
-              path="/pricing"
-              element={<PlaceholderPage title="Pricing" />}
             />
           </Route>
         </Route>

@@ -12,8 +12,8 @@ export function useOrders(params = {}) {
     queryKey: queryKeys.orders.list(params),
     queryFn: () => ordersApi.getMyOrders(params),
     select: (response) => ({
-      orders: response.data,
-      pagination: response.pagination,
+      orders: response.data?.orders || [],
+      pagination: response.data?.pagination || { total: 0, pages: 1 },
     }),
   });
 }
