@@ -47,6 +47,20 @@ enum TransactionStatus {
   failed
 }
 
+enum WithdrawalStatus {
+  pending
+  approved
+  processing
+  completed
+  failed
+  rejected
+}
+
+enum BankAccountType {
+  bank_account
+  mobile_money
+}
+
 model User {
   id                String           @id @default(uuid())
   name              String
@@ -65,6 +79,8 @@ model User {
   subAgentPrices    SubAgentPrice[]
   orders            Order[]          @relation("SellerOrders")
   wallet            Wallet?
+  withdrawals       Withdrawal[]     @relation("UserWithdrawals")
+  approvedWithdrawals Withdrawal[]   @relation("ApprovedWithdrawals")
   
   @@map("users")
 }
@@ -206,6 +222,37 @@ model WalletTransaction {
   @@index([type])
   @@index([createdAt])
   @@map("wallet_transactions")
+}
+
+model Withdrawal {
+  id                    String              @id @default(uuid())
+  userId                String              @map("user_id")
+  amount                Decimal             @db.Decimal(10, 2)
+  accountType           BankAccountType     @map("account_type")
+  accountNumber         String              @map("account_number")
+  accountName           String              @map("account_name")
+  bankName              String?             @map("bank_name")
+  mobileNetwork         String?             @map("mobile_network")
+  status                WithdrawalStatus    @default(pending)
+  reference             String              @unique
+  paystackRecipientCode String?             @map("paystack_recipient_code")
+  paystackTransferCode  String?             @map("paystack_transfer_code")
+  paystackResponse      String?             @map("paystack_response") @db.Text
+  adminNote             String?             @map("admin_note")
+  approvedBy            String?             @map("approved_by")
+  approvedAt            DateTime?           @map("approved_at")
+  processedAt           DateTime?           @map("processed_at")
+  completedAt           DateTime?           @map("completed_at")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  
+  // Relations
+  user                  User                @relation("UserWithdrawals", fields: [userId], references: [id], onDelete: Cascade)
+  approver              User?               @relation("ApprovedWithdrawals", fields: [approvedBy], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([status])
+  @@map("withdrawals")
 }
 
 

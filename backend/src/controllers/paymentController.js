@@ -9,6 +9,7 @@ import {
   verifyWebhookSignature,
   parseWebhookEvent,
 } from "../services/paystackService.js";
+import { processTransferWebhook } from "../services/withdrawalService.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
@@ -81,6 +82,20 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Payment processed successfully",
+    });
+  }
+
+  // Handle transfer events (withdrawal)
+  if (
+    event.event === "transfer.success" ||
+    event.event === "transfer.failed" ||
+    event.event === "transfer.reversed"
+  ) {
+    await processTransferWebhook(event);
+
+    return res.status(200).json({
+      success: true,
+      message: "Transfer webhook processed",
     });
   }
 

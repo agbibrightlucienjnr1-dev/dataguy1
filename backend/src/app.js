@@ -11,6 +11,7 @@ import walletRoutes from "./routes/walletRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import hubnetRoutes from "./routes/hubnetRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import withdrawalRoutes from "./routes/withdrawalRoutes.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/hubnet", hubnetRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/withdrawals", withdrawalRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
