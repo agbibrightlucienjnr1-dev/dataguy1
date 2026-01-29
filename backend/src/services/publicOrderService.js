@@ -1,5 +1,6 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
+import { initializeTransaction } from "./paystackService.js";
 
 /**
  * Get seller by payment link code
@@ -191,5 +192,27 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     },
   });
 
-  return order;
+  // Initialize Paystack transaction
+  const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
+
+  const paymentData = await initializeTransaction({
+    email: customerPhone + "@customer.dataguy.com", // Convert phone to email format
+    amount: pricePaid.toString(),
+    reference: order.id,
+    callbackUrl,
+    metadata: {
+      orderId: order.id,
+      customerPhone,
+      customerName,
+      bundleId,
+      sellerId: seller.id,
+      sellerName: seller.name,
+      bundleInfo: `${bundle.network} ${bundle.volume}`,
+    },
+  });
+
+  return {
+    order,
+    payment: paymentData,
+  };
 };

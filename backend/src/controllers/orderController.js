@@ -174,7 +174,7 @@ export const purchaseFromLink = asyncHandler(async (req, res) => {
     throw new AppError("Invalid phone number format", 400);
   }
 
-  const order = await createOrderFromLink(code, {
+  const result = await createOrderFromLink(code, {
     customerPhone,
     customerName,
     bundleId,
@@ -183,6 +183,6 @@ export const purchaseFromLink = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: "Order created successfully. Please proceed with payment.",
-    data: { order },
+    data: result, // Contains both order and payment data
   });
 });
