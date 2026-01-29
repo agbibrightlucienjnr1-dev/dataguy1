@@ -77,15 +77,6 @@ Response:
           "isActive": true
         }
       ],
-      "VODAFONE": [
-        {
-          "id": "bundle-id-3",
-          "network": "VODAFONE",
-          "volume": "1GB",
-          "price": "5.75",
-          "isActive": true
-        }
-      ],
       "AIRTELTIGO": [
         {
           "id": "bundle-id-4",
@@ -96,7 +87,7 @@ Response:
         }
       ]
     },
-    "totalBundles": 4
+    "totalBundles": 3
   }
 }
 ```
@@ -157,7 +148,7 @@ Response:
 
 2. **Customer Opens Link**
    - Customer visits payment link
-   - Sees bundles grouped by network (MTN, VODAFONE, AIRTELTIGO)
+   - Sees bundles grouped by network (MTN, AIRTELTIGO)
    - Prices shown are the specific prices set by that agent/sub-agent
 
 3. **Customer Selects Bundle**

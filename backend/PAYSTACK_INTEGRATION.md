@@ -168,7 +168,7 @@ FRONTEND_URL=http://localhost:3000
 ### Supported Channels
 
 - ✅ Card (Debit/Credit)
-- ✅ Mobile Money (MTN, Vodafone, AirtelTigo)
+- ✅ Mobile Money (MTN, AirtelTigo)
 - ✅ Bank Transfer
 - ✅ USSD
 

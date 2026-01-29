@@ -45,8 +45,6 @@ The payment link system has been successfully implemented! Here's what was done:
    MTN:
      - 1GB @ GH₵ 5.50
      - 2GB @ GH₵ 10.00
-   VODAFONE:
-     - 1GB @ GH₵ 5.75
    AIRTELTIGO:
      - 1GB @ GH₵ 5.00
 
@@ -65,7 +63,7 @@ The payment link system has been successfully implemented! Here's what was done:
 
 ✅ **No Customer Registration** - Customers don't need accounts
 ✅ **Automatic Seller Identification** - Seller extracted from payment link
-✅ **Network Grouping** - Bundles organized by MTN/VODAFONE/AIRTELTIGO
+✅ **Network Grouping** - Bundles organized by MTN/AIRTELTIGO
 ✅ **Seller-Specific Pricing** - Shows exact prices set by that agent/sub-agent
 ✅ **Payment Safety** - Hubnet order only placed after payment confirmation
 ✅ **Order Tracking** - Customers can track orders by order ID or phone number

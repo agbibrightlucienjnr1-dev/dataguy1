@@ -5,6 +5,8 @@ import {
   processPaymentConfirmation,
   markOrderAsProcessing,
 } from "./commissionService.js";
+import { checkBalance, initiateDataTransaction } from "./hubnetService.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Create a new order (public purchase)
@@ -212,17 +214,127 @@ export const confirmPayment = async (orderId, paymentReference) => {
  * Initiate Hubnet order (call this after payment confirmed)
  */
 export const initiateHubnetOrder = async (orderId) => {
-  // Mark order as processing
-  const order = await markOrderAsProcessing(orderId);
+  const prisma = getPrisma();
 
-  // TODO: Call Hubnet API here
-  // For now, we'll just return the order
-  // When Hubnet integration is added:
-  // 1. Call Hubnet API with order details
-  // 2. Update order with hubnetOrderId and hubnetResponse
-  // 3. Handle success/failure responses
+  try {
+    // Get order with bundle details
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        bundle: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    });
 
-  return order;
+    if (!order) {
+      throw new AppError("Order not found", 404);
+    }
+
+    if (order.status !== "pending") {
+      logger.warn("Order is not in pending status", {
+        orderId,
+        status: order.status,
+      });
+      return order;
+    }
+
+    // Step 1: Check Hubnet balance
+    logger.info("Checking Hubnet balance before initiating order", { orderId });
+    const balanceCheck = await checkBalance();
+
+    if (!balanceCheck.success) {
+      throw new AppError("Failed to check Hubnet balance", 500);
+    }
+
+    logger.info("Hubnet balance check successful", {
+      balance: balanceCheck.balance,
+      currency: balanceCheck.currency,
+    });
+
+    // Step 2: Initiate Hubnet data transaction
+    logger.info("Initiating Hubnet data transaction", {
+      orderId,
+      phone: order.customerPhone,
+      network: order.bundle.network,
+      volume: order.bundle.volume,
+    });
+
+    const hubnetTransaction = await initiateDataTransaction({
+      phone: order.customerPhone,
+      network: order.bundle.network,
+      volume: order.bundle.volume,
+      reference: order.id, // Use order ID as reference
+      referrer: order.seller?.phone, // Optional: seller's phone for alerts
+      webhookUrl: process.env.HUBNET_WEBHOOK_URL, // Optional: webhook for status updates
+    });
+
+    if (!hubnetTransaction.success) {
+      throw new AppError("Failed to initiate Hubnet transaction", 500);
+    }
+
+    logger.success("Hubnet transaction initiated successfully", {
+      orderId,
+      hubnetTransactionId: hubnetTransaction.transactionId,
+      hubnetPaymentId: hubnetTransaction.paymentId,
+    });
+
+    // Step 3: Store Hubnet reference and tracking ID (DO NOT mark as completed)
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: "processing", // Keep as processing, not completed
+        hubnetOrderId: hubnetTransaction.transactionId,
+        hubnetResponse: JSON.stringify({
+          transactionId: hubnetTransaction.transactionId,
+          paymentId: hubnetTransaction.paymentId,
+          reference: hubnetTransaction.reference,
+          message: hubnetTransaction.message,
+          code: hubnetTransaction.code,
+          ipAddress: hubnetTransaction.ipAddress,
+          initiatedAt: new Date().toISOString(),
+        }),
+      },
+      include: {
+        bundle: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    return updatedOrder;
+  } catch (error) {
+    logger.error("Error initiating Hubnet order", {
+      orderId,
+      error: error.message,
+    });
+
+    // Update order with error information
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: "failed",
+        hubnetResponse: JSON.stringify({
+          error: error.message,
+          failedAt: new Date().toISOString(),
+        }),
+      },
+    });
+
+    throw error instanceof AppError
+      ? error
+      : new AppError("Failed to initiate Hubnet order", 500);
+  }
 };
 
 /**
