@@ -419,3 +419,101 @@ export const getSellerStats = async (sellerId) => {
     totalRevenue: totalRevenue._sum.pricePaid || 0,
   };
 };
+
+/**
+ * Track order by ID (public endpoint)
+ */
+export const trackOrderById = async (orderId) => {
+  const prisma = getPrisma();
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      bundle: {
+        select: {
+          network: true,
+          volume: true,
+        },
+      },
+      seller: {
+        select: {
+          name: true,
+          phone: true,
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  return {
+    orderId: order.id,
+    status: order.status,
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
+    bundle: {
+      network: order.bundle.network,
+      volume: order.bundle.volume,
+    },
+    pricePaid: order.pricePaid,
+    seller: {
+      name: order.seller.name,
+      phone: order.seller.phone,
+    },
+    createdAt: order.createdAt,
+    completedAt: order.completedAt,
+    paymentReference: order.paymentReference,
+  };
+};
+
+/**
+ * Track orders by phone number (public endpoint)
+ */
+export const trackOrdersByPhone = async (phone) => {
+  const prisma = getPrisma();
+
+  // Sanitize phone number (remove spaces, dashes)
+  const sanitizedPhone = phone.replace(/[\s-]/g, "");
+
+  const orders = await prisma.order.findMany({
+    where: { customerPhone: sanitizedPhone },
+    include: {
+      bundle: {
+        select: {
+          network: true,
+          volume: true,
+        },
+      },
+      seller: {
+        select: {
+          name: true,
+          phone: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20, // Limit to last 20 orders
+  });
+
+  if (!orders || orders.length === 0) {
+    throw new AppError("No orders found for this phone number", 404);
+  }
+
+  return orders.map((order) => ({
+    orderId: order.id,
+    status: order.status,
+    bundle: {
+      network: order.bundle.network,
+      volume: order.bundle.volume,
+    },
+    pricePaid: order.pricePaid,
+    seller: {
+      name: order.seller.name,
+      phone: order.seller.phone,
+    },
+    createdAt: order.createdAt,
+    completedAt: order.completedAt,
+  }));
+};

@@ -8,10 +8,16 @@ import {
   getSellerInfo,
   getLinkBundles,
   purchaseFromLink,
+  trackOrder,
+  trackOrdersByPhoneNumber,
 } from "../controllers/orderController.js";
 import { authenticate, authorize } from "../middlewares/auth.js";
 
 const router = express.Router();
+
+// Public routes - Order Tracking (no authentication required)
+router.get("/track/:orderId", trackOrder);
+router.get("/track/phone/:phone", trackOrdersByPhoneNumber);
 
 // Public routes - Payment Link Flow (no authentication required)
 router.get("/link/:code", getSellerInfo);

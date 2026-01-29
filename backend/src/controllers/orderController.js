@@ -5,6 +5,8 @@ import {
   getOrdersBySeller,
   getOrdersByCustomerPhone,
   getSellerStats,
+  trackOrderById,
+  trackOrdersByPhone,
 } from "../services/orderService.js";
 import {
   getSellerByCode,
@@ -184,5 +186,41 @@ export const purchaseFromLink = asyncHandler(async (req, res) => {
     success: true,
     message: "Order created successfully. Please proceed with payment.",
     data: result, // Contains both order and payment data
+  });
+});
+
+/**
+ * Track order by ID (Public)
+ * GET /api/orders/track/:orderId
+ */
+export const trackOrder = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+
+  const order = await trackOrderById(orderId);
+
+  res.status(200).json({
+    success: true,
+    data: order,
+  });
+});
+
+/**
+ * Track orders by phone number (Public)
+ * GET /api/orders/track/phone/:phone
+ */
+export const trackOrdersByPhoneNumber = asyncHandler(async (req, res) => {
+  const { phone } = req.params;
+
+  // Validate phone number
+  if (!validatePhone(phone)) {
+    throw new AppError("Invalid phone number format", 400);
+  }
+
+  const orders = await trackOrdersByPhone(phone);
+
+  res.status(200).json({
+    success: true,
+    count: orders.length,
+    data: orders,
   });
 });
