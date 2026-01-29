@@ -1,6 +1,10 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { getDataBundleById } from "./dataBundleService.js";
+import {
+  processPaymentConfirmation,
+  markOrderAsProcessing,
+} from "./commissionService.js";
 
 /**
  * Create a new order (public purchase)
@@ -195,29 +199,28 @@ export const getOrdersByCustomerPhone = async (customerPhone) => {
 };
 
 /**
- * Update order payment status
+ * Confirm payment and process commission
  */
 export const confirmPayment = async (orderId, paymentReference) => {
-  const prisma = getPrisma();
+  // Process payment confirmation and credit wallet
+  const result = await processPaymentConfirmation(orderId, paymentReference);
 
-  const order = await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      status: "payment_confirmed",
-      paymentReference,
-      paymentConfirmedAt: new Date(),
-    },
-    include: {
-      bundle: true,
-      seller: {
-        select: {
-          id: true,
-          name: true,
-          phone: true,
-        },
-      },
-    },
-  });
+  return result;
+};
+
+/**
+ * Initiate Hubnet order (call this after payment confirmed)
+ */
+export const initiateHubnetOrder = async (orderId) => {
+  // Mark order as processing
+  const order = await markOrderAsProcessing(orderId);
+
+  // TODO: Call Hubnet API here
+  // For now, we'll just return the order
+  // When Hubnet integration is added:
+  // 1. Call Hubnet API with order details
+  // 2. Update order with hubnetOrderId and hubnetResponse
+  // 3. Handle success/failure responses
 
   return order;
 };

@@ -7,6 +7,8 @@ import dataBundleRoutes from "./routes/dataBundleRoutes.js";
 import agentPriceRoutes from "./routes/agentPriceRoutes.js";
 import subAgentPriceRoutes from "./routes/subAgentPriceRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import walletRoutes from "./routes/walletRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 
@@ -37,6 +39,8 @@ app.use("/api/bundles", dataBundleRoutes);
 app.use("/api/agent-prices", agentPriceRoutes);
 app.use("/api/sub-agent-prices", subAgentPriceRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

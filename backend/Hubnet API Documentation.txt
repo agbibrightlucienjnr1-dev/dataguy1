@@ -1,0 +1,116 @@
+4/11/25, 8:05 PM API Documentation - Hubnet
+Page 1 of 4 https://hubnet-web.onrender.com/api-documentation
+Api Documentation
+Check Balance [ GET REQUEST ]
+Endpoint
+https://console.hubnet.app/live/api/context/business/transaction/check_balance
+Make Transaction [ POST REQUEST ]
+Endpoint
+https://console.hubnet.app/live/api/context/business/transaction/{network}-new-transaction
+Headers
+{ 
+  "token" : "Bearer YOUR_API_KEY",
+  "Content-Type" : "application/json"
+}
+Payload
+Note
+All endpoints on this page are rate-limited, allowing up to 5 requests per minute.
+API Documentation - Hubnet
+4/11/25, 8:05 PM
+{
+}
+"phone": "024012345",
+"volume": "2000",
+"reference": "ABEDC-BBADE-ABBCDD-AABCE"
+"referrer": "0270123456"
+"webhook": "https://your-webhook/url"
+Key
+network
+volume
+phone
+Type
+String
+String
+String
+Required Length
+Yes
+Yes
+Yes
+reference String Yes
+referrer
+String
+Optional
+3 to 10 digits
+maximum
+Between 1 and 100
+Strictly 10 digits
+Description
+Allowed networks mtn, at, big-time
+The number of megabyte(s) to be
+transferred
+A valid telephone number formatted in
+the national format. EG: 0241234567
+Minimus of 6 and
+maximum 25
+characters
+Strictly 10 digits
+webhook String Optional Your personal url to
+receive requests
+Sample Request
+A uniquely generated reference id for
+each transaction
+Buyer's number to receive alert for
+transaction's completion
+URL to receive POST requests to update
+your transaction statuses
+https://hubnet-web.onrender.com/api-documentation
+Page 2 of 4
+API Documentation - Hubnet
+4/11/25, 8:05 PM
+curl https://console.hubnet.app/live/api/context/business/transaction/{network}-new-transaction
+    -H 
+"token: Bearer YOUR_API_KEY"
+    -H 
+    -d 
+    }'
+    -X 
+"Content-Type: application/json"
+'{
+        "phone": "0241234567",
+        "volume": "2000",
+        "reference": "ABEDC-BBADE-ABBCDD-AABCE"
+        "referrer": "0300123456"
+        "webhook": "https://your-webhook/url"
+POST
+Sample Response
+     {
+      } 
+"status": true,
+"reason": "Successful",
+"code": "transaction initiated successfully.",
+"message": "0000",
+"transaction_id": "TXN-TEST",
+"payment_id": "PSH-TEST",
+"ip_address": "192.278.321.001",
+"reference": "TEST",
+"data":  {
+          "status": true,
+          "code": "0000",
+          "message": "Order successfully placed. "
+        }
+Status Codes
+Code
+0000
+1001
+Meaning
+Transaction initialized successfully
+Invalid network
+1002
+Invalid volume
+!
+https://hubnet-web.onrender.com/api-documentation
+Page 3 of 4
+API Documentation - Hubnet
+4/11/25, 8:05 PM
+https://hubnet-web.onrender.com/api-documentation
+Page 4 of 4
