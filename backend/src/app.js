@@ -4,6 +4,7 @@ import morgan from "morgan";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import authRoutes from "./routes/authRoutes.js";
 import dataBundleRoutes from "./routes/dataBundleRoutes.js";
+import agentPriceRoutes from "./routes/agentPriceRoutes.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bundles", dataBundleRoutes);
+app.use("/api/agent-prices", agentPriceRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
