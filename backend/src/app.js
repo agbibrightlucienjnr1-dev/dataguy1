@@ -5,6 +5,7 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import authRoutes from "./routes/authRoutes.js";
 import dataBundleRoutes from "./routes/dataBundleRoutes.js";
 import agentPriceRoutes from "./routes/agentPriceRoutes.js";
+import subAgentPriceRoutes from "./routes/subAgentPriceRoutes.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/bundles", dataBundleRoutes);
 app.use("/api/agent-prices", agentPriceRoutes);
+app.use("/api/sub-agent-prices", subAgentPriceRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
