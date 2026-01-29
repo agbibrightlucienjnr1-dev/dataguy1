@@ -8,8 +8,8 @@ export const authApi = {
   register: (data) => apiClient.post("/auth/register", data),
 
   /**
-   * Login with email and password
-   * @param {Object} data - { email, password }
+   * Login with phone and password
+   * @param {Object} data - { phone, password }
    */
   login: (data) => apiClient.post("/auth/login", data),
 

@@ -3,10 +3,13 @@ import { z } from "zod";
 // ========== Auth Schemas ==========
 
 export const loginSchema = z.object({
-  email: z
+  phone: z
     .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
+    .min(1, "Phone number is required")
+    .regex(
+      /^(\+233|0)[0-9]{9}$/,
+      "Please enter a valid Ghana phone number (e.g., 0241234567)",
+    ),
   password: z
     .string()
     .min(1, "Password is required")
