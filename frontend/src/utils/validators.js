@@ -38,7 +38,6 @@ export const registerSchema = z
       .min(1, "Password is required")
       .min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
-    role: z.enum(["agent", "sub_agent"]).default("agent"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, Lock, User, Phone, Users } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { Button } from "../../components/ui";
 import { registerSchema } from "../../utils/validators";
 import { useRegister } from "../../hooks";
@@ -25,17 +25,13 @@ export default function RegisterPage() {
       phone: "",
       password: "",
       confirmPassword: "",
-      role: "agent",
     },
   });
 
-  // Using state for role selection to avoid React Compiler warning with watch()
-  const [selectedRole, setSelectedRole] = useState("agent");
-
   const onSubmit = (data) => {
-    // Remove confirmPassword before sending (eslint-disable-next-line)
+    // Remove confirmPassword before sending and add role as agent
     const { confirmPassword: _confirmPassword, ...registerData } = data;
-    registerMutation.mutate(registerData);
+    registerMutation.mutate({ ...registerData, role: "agent" });
   };
 
   return (
@@ -109,72 +105,6 @@ export default function RegisterPage() {
           {errors.phone && (
             <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
           )}
-        </div>
-
-        {/* Role Selection */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Account Type
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <label
-              className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                ${
-                  selectedRole === "agent"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-            >
-              <input
-                type="radio"
-                value="agent"
-                className="sr-only"
-                {...register("role", {
-                  onChange: (e) => setSelectedRole(e.target.value),
-                })}
-              />
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center
-                ${selectedRole === "agent" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}
-              >
-                <User className="h-4 w-4" />
-              </div>
-              <div>
-                <div className="font-medium text-sm text-slate-900">Agent</div>
-                <div className="text-xs text-slate-500">Sell directly</div>
-              </div>
-            </label>
-
-            <label
-              className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                ${
-                  selectedRole === "sub_agent"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-            >
-              <input
-                type="radio"
-                value="sub_agent"
-                className="sr-only"
-                {...register("role", {
-                  onChange: (e) => setSelectedRole(e.target.value),
-                })}
-              />
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center
-                ${selectedRole === "sub_agent" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}
-              >
-                <Users className="h-4 w-4" />
-              </div>
-              <div>
-                <div className="font-medium text-sm text-slate-900">
-                  Sub-Agent
-                </div>
-                <div className="text-xs text-slate-500">Work with agent</div>
-              </div>
-            </label>
-          </div>
         </div>
 
         {/* Password */}
