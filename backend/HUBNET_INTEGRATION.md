@@ -226,10 +226,10 @@ if (event === "charge.success") {
 
 1. **pending** - Order created, awaiting payment
 2. **processing** - Payment confirmed, Hubnet transaction initiated
-3. **completed** - Data delivered (updated via webhook or manually)
-4. **failed** - Payment or delivery failed
+3. **completed** - Data delivered (✅ **ONLY updated via Hubnet webhook**)
+4. **failed** - Payment or delivery failed (updated via webhook)
 
-**Important:** Orders are never marked as "completed" immediately after Hubnet transaction initiation. They remain in "processing" status until delivery is confirmed.
+**Critical:** The Hubnet webhook is the **ONLY source of truth** for delivery status. Orders are never marked as "completed" until the webhook confirms delivery.
 
 ## Database Fields
 
@@ -241,74 +241,94 @@ if (event === "charge.success") {
   status: "processing",
   hubnetOrderId: "TXN-12345", // Hubnet transaction_id
   hubnetResponse: "{...}", // Full Hubnet response JSON
+  completedAt: null, // Set only when webhook confirms delivery
   // ... other fields
 }
 ```
 
-## Webhook Implementation (Optional)
+## Webhook Implementation (✅ IMPLEMENTED - Final Authority)
 
-If you want to receive status updates from Hubnet:
+The webhook endpoint receives delivery status updates from Hubnet and is the **ONLY source of truth** for marking orders as completed or failed.
 
-### Create Webhook Endpoint
+### Webhook Endpoint (✅ Already Implemented)
 
-```javascript
-// src/routes/hubnetRoutes.js
-import express from "express";
-import { hubnetWebhook } from "../controllers/hubnetController.js";
+**URL:** `POST /api/hubnet/webhook`
 
-const router = express.Router();
+**What it does:**
 
-router.post("/webhook", hubnetWebhook);
+1. Receives delivery updates from Hubnet
+2. Verifies request authenticity by matching order details
+3. Finds order by reference (order ID) or transaction_id
+4. Updates order status to `completed` or `failed`
+5. Logs delivery timestamp
 
-export default router;
+**Expected Webhook Payload from Hubnet:**
+
+```json
+{
+  "reference": "ORD-12345",
+  "transaction_id": "TXN-12345",
+  "status": "success",
+  "message": "Data delivered successfully",
+  "phone": "0241234567",
+  "volume": "1024",
+  "network": "mtn",
+  "timestamp": "2026-01-29T12:00:00Z"
+}
 ```
 
-### Create Controller
+**Status Handling:**
 
-```javascript
-// src/controllers/hubnetController.js
-import { updateOrderStatus } from "../services/orderService.js";
-import { logger } from "../utils/logger.js";
+- `success`, `completed`, `delivered` → Order marked as `completed` ✅
+- `failed`, `error`, `cancelled` → Order marked as `failed` ❌
+- Other statuses → Logged but order remains `processing`
 
-export const hubnetWebhook = async (req, res) => {
-  try {
-    const { reference, status, transaction_id } = req.body;
+**Security Verification:**
 
-    logger.info("Hubnet webhook received", { reference, status });
+- Matches phone number with order
+- Validates volume matches bundle
+- Confirms network matches order
+- Logs any mismatches as warnings
 
-    // Find order by reference (order ID)
-    const order = await prisma.order.findUnique({
-      where: { id: reference },
-    });
+### Configure Webhook URL in Hubnet
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+1. Log in to [Hubnet Console](https://console.hubnet.app)
+2. Go to Settings → Webhooks
+3. Set webhook URL: `https://yourdomain.com/api/hubnet/webhook`
+4. For local testing, use ngrok:
+   ```bash
+   ngrok http 3000
+   # Use the ngrok URL: https://abc123.ngrok.io/api/hubnet/webhook
+   ```
+
+### Check Delivery Status (Debug Endpoint)
+
+**URL:** `GET /api/hubnet/status/:orderId`
+
+**Example:**
+
+```bash
+curl http://localhost:3000/api/hubnet/status/ORD-12345
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "order": {
+    "id": "ORD-12345",
+    "status": "completed",
+    "customerPhone": "0241234567",
+    "completedAt": "2026-01-29T12:05:30Z",
+    "hubnetOrderId": "TXN-12345",
+    "hubnetData": {
+      "webhookReceived": true,
+      "status": "success",
+      "webhookTimestamp": "2026-01-29T12:05:30Z"
     }
-
-    // Update order status based on Hubnet status
-    if (status === "completed" || status === "success") {
-      await updateOrderStatus(order.id, "completed", {
-        completedAt: new Date(),
-      });
-    } else if (status === "failed") {
-      await updateOrderStatus(order.id, "failed");
-    }
-
-    res.status(200).json({ message: "Webhook processed" });
-  } catch (error) {
-    logger.error("Hubnet webhook error", error);
-    res.status(500).json({ message: "Webhook processing failed" });
   }
-};
-```
-
-### Register Routes
-
-```javascript
-// src/index.js
-import hubnetRoutes from "./routes/hubnetRoutes.js";
-
-app.use("/api/hubnet", hubnetRoutes);
+}
 ```
 
 ## Testing

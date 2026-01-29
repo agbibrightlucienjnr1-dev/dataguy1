@@ -9,6 +9,8 @@ import subAgentPriceRoutes from "./routes/subAgentPriceRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import hubnetRoutes from "./routes/hubnetRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use("/api/sub-agent-prices", subAgentPriceRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/hubnet", hubnetRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

@@ -50,6 +50,30 @@ export const canAccessResource = (user, resourceUserId) => {
 };
 
 /**
+ * Middleware to require admin role
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+export const requireAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+  }
+
+  if (!isAdmin(req.user)) {
+    return res.status(403).json({
+      success: false,
+      message: "Admin access required",
+    });
+  }
+
+  next();
+};
+
+/**
  * Check if agent can access sub-agent data
  * @param {Object} user - Agent user object
  * @param {string} subAgentParentId - Parent agent ID of the sub-agent
