@@ -3,6 +3,7 @@ import {
   paystackWebhook,
   paymentCallback,
   verifyPaymentStatus,
+  verifyAndProcessPayment,
 } from "../controllers/paymentController.js";
 
 const router = express.Router();
@@ -15,5 +16,8 @@ router.get("/callback", paymentCallback);
 
 // Verify payment status (public)
 router.get("/verify/:reference", verifyPaymentStatus);
+
+// Verify and process payment (called after redirect)
+router.post("/verify-and-process/:reference", verifyAndProcessPayment);
 
 export default router;
