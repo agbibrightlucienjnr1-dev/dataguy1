@@ -110,7 +110,9 @@ export const createWithdrawalRequest = async (userId, withdrawalData) => {
  */
 export const getUserWithdrawals = async (userId, filters = {}) => {
   const prisma = getPrisma();
-  const { status, page = 1, limit = 20 } = filters;
+  const { status } = filters;
+  const page = parseInt(filters.page) || 1;
+  const limit = parseInt(filters.limit) || 20;
 
   const skip = (page - 1) * limit;
   const where = { userId };
@@ -145,7 +147,9 @@ export const getUserWithdrawals = async (userId, filters = {}) => {
  */
 export const getAllWithdrawals = async (filters = {}) => {
   const prisma = getPrisma();
-  const { status, userId, page = 1, limit = 50 } = filters;
+  const { status, userId } = filters;
+  const page = parseInt(filters.page) || 1;
+  const limit = parseInt(filters.limit) || 50;
 
   const skip = (page - 1) * limit;
   const where = {};
