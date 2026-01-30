@@ -82,10 +82,10 @@ export default function AgentBundlesPage() {
 
         {/* Payment Link */}
         {paymentLink && (
-          <Card className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4">
+          <Card className="bg-linear-to-r from-slate-900 to-slate-800 text-white p-4">
             <p className="text-xs text-slate-300 mb-1">Your Payment Link</p>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm truncate max-w-[200px]">
+              <span className="font-mono text-sm truncate max-w-50">
                 {paymentLink}
               </span>
               <button
@@ -248,7 +248,7 @@ export default function AgentBundlesPage() {
       {/* Info Card */}
       <Card className="p-4 bg-blue-50 border-blue-200">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
             <Wifi className="w-4 h-4 text-blue-600" />
           </div>
           <div>
