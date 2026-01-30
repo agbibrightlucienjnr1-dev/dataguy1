@@ -8,6 +8,8 @@ import {
   toggleBundleStatus,
   getFailedOrdersList,
   getDashboardSummary,
+  fulfillOrder,
+  markOrderCompleted,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -34,6 +36,8 @@ router.get("/users/:userId", getUserById); // Get user details
  */
 router.get("/orders", getOrders); // List all orders with filters
 router.get("/orders/failed", getFailedOrdersList); // Get failed orders
+router.post("/orders/:orderId/fulfill", fulfillOrder); // Manually fulfill order via Hubnet
+router.post("/orders/:orderId/complete", markOrderCompleted); // Manually mark order as completed
 
 /**
  * Statistics
