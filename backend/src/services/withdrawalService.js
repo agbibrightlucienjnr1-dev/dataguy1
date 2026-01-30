@@ -196,8 +196,15 @@ export const getAllWithdrawals = async (filters = {}) => {
 
 /**
  * Approve withdrawal and initiate transfer (admin)
+ * @param {string} withdrawalId - Withdrawal ID
+ * @param {string} adminId - Admin user ID
+ * @param {boolean} manualMode - If true, skip Paystack and mark for manual processing
  */
-export const approveWithdrawal = async (withdrawalId, adminId) => {
+export const approveWithdrawal = async (
+  withdrawalId,
+  adminId,
+  manualMode = false,
+) => {
   const prisma = getPrisma();
 
   return await prisma.$transaction(async (tx) => {
@@ -249,7 +256,45 @@ export const approveWithdrawal = async (withdrawalId, adminId) => {
       withdrawalId,
       adminId,
       amount: withdrawal.amount,
+      manualMode,
     });
+
+    // If manual mode, just mark as approved for manual processing
+    if (manualMode) {
+      // Debit wallet immediately for manual processing
+      await debitWallet(withdrawal.userId, withdrawal.amount, {
+        type: "withdrawal",
+        reference: withdrawal.reference,
+        description: `Withdrawal to ${withdrawal.accountType === "mobile_money" ? "mobile money" : "bank account"} (manual)`,
+      });
+
+      const updatedWithdrawal = await tx.withdrawal.update({
+        where: { id: withdrawalId },
+        data: {
+          status: "processing",
+          adminNote: "Manual processing - awaiting external transfer",
+          processedAt: new Date(),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      logger.success("Withdrawal approved for manual processing", {
+        withdrawalId,
+        reference: withdrawal.reference,
+      });
+
+      return updatedWithdrawal;
+    }
 
     // Initiate Paystack transfer
     try {
@@ -387,6 +432,60 @@ export const rejectWithdrawal = async (withdrawalId, adminId, reason) => {
     withdrawalId,
     adminId,
     reason,
+  });
+
+  return updatedWithdrawal;
+};
+
+/**
+ * Complete withdrawal manually (admin) - for manual transfers done outside Paystack
+ */
+export const completeWithdrawalManually = async (
+  withdrawalId,
+  adminId,
+  note = null,
+) => {
+  const prisma = getPrisma();
+
+  const withdrawal = await prisma.withdrawal.findUnique({
+    where: { id: withdrawalId },
+  });
+
+  if (!withdrawal) {
+    throw new AppError("Withdrawal not found", 404);
+  }
+
+  if (withdrawal.status !== "processing") {
+    throw new AppError(
+      `Only processing withdrawals can be completed manually. Current status: ${withdrawal.status}`,
+      400,
+    );
+  }
+
+  const updatedWithdrawal = await prisma.withdrawal.update({
+    where: { id: withdrawalId },
+    data: {
+      status: "completed",
+      completedAt: new Date(),
+      adminNote: note || "Completed manually by admin",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+        },
+      },
+    },
+  });
+
+  logger.success("Withdrawal completed manually", {
+    withdrawalId,
+    adminId,
+    amount: withdrawal.amount,
   });
 
   return updatedWithdrawal;

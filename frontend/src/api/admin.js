@@ -102,8 +102,18 @@ export const adminApi = {
   /**
    * Approve withdrawal
    * @param {string} id - Withdrawal ID
+   * @param {boolean} manual - If true, skip Paystack and process manually
    */
-  approveWithdrawal: (id) => apiClient.put(`/withdrawals/${id}/approve`),
+  approveWithdrawal: (id, manual = false) =>
+    apiClient.put(`/withdrawals/${id}/approve${manual ? "?manual=true" : ""}`),
+
+  /**
+   * Complete withdrawal manually (for processing status withdrawals)
+   * @param {string} id - Withdrawal ID
+   * @param {string} note - Optional note
+   */
+  completeWithdrawal: (id, note = null) =>
+    apiClient.put(`/withdrawals/${id}/complete`, { note }),
 
   /**
    * Reject withdrawal

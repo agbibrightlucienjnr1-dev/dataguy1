@@ -19,8 +19,9 @@ export default function AdminWithdrawalsPage() {
   const [page, setPage] = useState(1);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [actionType, setActionType] = useState(null); // 'approve' or 'reject'
+  const [actionType, setActionType] = useState(null); // 'approve', 'reject', or 'complete'
   const [rejectionReason, setRejectionReason] = useState("");
+  const [useManualMode, setUseManualMode] = useState(true); // Default to manual mode since Paystack payout not available
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -34,15 +35,32 @@ export default function AdminWithdrawalsPage() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: (id) => adminApi.approveWithdrawal(id),
-    onSuccess: () => {
-      toast.success("Withdrawal approved successfully");
+    mutationFn: ({ id, manual }) => adminApi.approveWithdrawal(id, manual),
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.manual
+          ? "Withdrawal approved for manual processing"
+          : "Withdrawal approved and transfer initiated",
+      );
       queryClient.invalidateQueries({ queryKey: ["admin", "withdrawals"] });
       setShowModal(false);
       setSelectedWithdrawal(null);
     },
     onError: (error) => {
       toast.error(error?.message || "Failed to approve withdrawal");
+    },
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (id) => adminApi.completeWithdrawal(id),
+    onSuccess: () => {
+      toast.success("Withdrawal marked as completed");
+      queryClient.invalidateQueries({ queryKey: ["admin", "withdrawals"] });
+      setShowModal(false);
+      setSelectedWithdrawal(null);
+    },
+    onError: (error) => {
+      toast.error(error?.message || "Failed to complete withdrawal");
     },
   });
 
@@ -110,16 +128,27 @@ export default function AdminWithdrawalsPage() {
     setShowModal(true);
   };
 
+  const handleComplete = (withdrawal) => {
+    setSelectedWithdrawal(withdrawal);
+    setActionType("complete");
+    setShowModal(true);
+  };
+
   const confirmAction = () => {
     if (!selectedWithdrawal) return;
 
     if (actionType === "approve") {
-      approveMutation.mutate(selectedWithdrawal.id);
+      approveMutation.mutate({
+        id: selectedWithdrawal.id,
+        manual: useManualMode,
+      });
     } else if (actionType === "reject") {
       rejectMutation.mutate({
         id: selectedWithdrawal.id,
         reason: rejectionReason,
       });
+    } else if (actionType === "complete") {
+      completeMutation.mutate(selectedWithdrawal.id);
     }
   };
 
@@ -272,6 +301,14 @@ export default function AdminWithdrawalsPage() {
                             Reject
                           </Button>
                         </div>
+                      ) : withdrawal.status === "processing" ? (
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => handleComplete(withdrawal)}
+                        >
+                          Mark Complete
+                        </Button>
                       ) : (
                         <span className="text-sm text-slate-400">—</span>
                       )}
@@ -313,7 +350,7 @@ export default function AdminWithdrawalsPage() {
         )}
       </Card>
 
-      {/* Approval/Rejection Modal */}
+      {/* Approval/Rejection/Complete Modal */}
       <Modal
         isOpen={showModal}
         onClose={() => {
@@ -322,7 +359,11 @@ export default function AdminWithdrawalsPage() {
           setRejectionReason("");
         }}
         title={
-          actionType === "approve" ? "Approve Withdrawal" : "Reject Withdrawal"
+          actionType === "approve"
+            ? "Approve Withdrawal"
+            : actionType === "complete"
+              ? "Complete Withdrawal"
+              : "Reject Withdrawal"
         }
       >
         {selectedWithdrawal && (
@@ -362,10 +403,46 @@ export default function AdminWithdrawalsPage() {
             </div>
 
             {actionType === "approve" ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800">
+                    Approve this withdrawal request. The user's wallet will be
+                    debited.
+                  </p>
+                </div>
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useManualMode}
+                      onChange={(e) => setUseManualMode(e.target.checked)}
+                      className="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    <div>
+                      <p className="font-medium text-amber-800">
+                        Manual Processing Mode
+                      </p>
+                      <p className="text-sm text-amber-700">
+                        Transfer funds manually (outside the system). Click
+                        "Mark Complete" after you've sent the money.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+                {!useManualMode && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      ⚠️ Automatic Paystack transfer requires a Registered
+                      Business account.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : actionType === "complete" ? (
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-green-800">
-                  Are you sure you want to approve this withdrawal request? The
-                  funds will be transferred to the user's account.
+                  Confirm that you have transferred the funds to the user's
+                  account. This will mark the withdrawal as completed.
                 </p>
               </div>
             ) : (
@@ -404,20 +481,27 @@ export default function AdminWithdrawalsPage() {
                 Cancel
               </Button>
               <Button
-                variant={actionType === "approve" ? "primary" : "danger"}
+                variant={actionType === "reject" ? "danger" : "primary"}
                 className="flex-1"
                 onClick={confirmAction}
                 disabled={
                   (actionType === "reject" && !rejectionReason.trim()) ||
                   approveMutation.isPending ||
-                  rejectMutation.isPending
+                  rejectMutation.isPending ||
+                  completeMutation.isPending
                 }
               >
-                {approveMutation.isPending || rejectMutation.isPending
+                {approveMutation.isPending ||
+                rejectMutation.isPending ||
+                completeMutation.isPending
                   ? "Processing..."
                   : actionType === "approve"
-                    ? "Approve Withdrawal"
-                    : "Reject Withdrawal"}
+                    ? useManualMode
+                      ? "Approve (Manual)"
+                      : "Approve & Transfer"
+                    : actionType === "complete"
+                      ? "Mark Complete"
+                      : "Reject Withdrawal"}
               </Button>
             </div>
           </div>

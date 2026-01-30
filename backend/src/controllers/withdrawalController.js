@@ -4,6 +4,7 @@ import {
   getAllWithdrawals,
   approveWithdrawal,
   rejectWithdrawal,
+  completeWithdrawalManually,
   getWithdrawalStatistics,
 } from "../services/withdrawalService.js";
 import {
@@ -157,17 +158,21 @@ export const getAllWithdrawalsAdmin = async (req, res, next) => {
 
 /**
  * Approve withdrawal (admin)
+ * Query params: ?manual=true for manual processing (skip Paystack)
  */
 export const approveWithdrawalRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
     const adminId = req.user.id;
+    const manualMode = req.query.manual === "true";
 
-    const withdrawal = await approveWithdrawal(id, adminId);
+    const withdrawal = await approveWithdrawal(id, adminId, manualMode);
 
     res.json({
       success: true,
-      message: "Withdrawal approved and transfer initiated",
+      message: manualMode
+        ? "Withdrawal approved for manual processing"
+        : "Withdrawal approved and transfer initiated",
       data: withdrawal,
     });
   } catch (error) {
@@ -196,6 +201,28 @@ export const rejectWithdrawalRequest = async (req, res, next) => {
     res.json({
       success: true,
       message: "Withdrawal rejected",
+      data: withdrawal,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Complete withdrawal manually (admin)
+ * For withdrawals processed outside Paystack
+ */
+export const completeWithdrawalManuallyRequest = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const adminId = req.user.id;
+    const { note } = req.body;
+
+    const withdrawal = await completeWithdrawalManually(id, adminId, note);
+
+    res.json({
+      success: true,
+      message: "Withdrawal marked as completed",
       data: withdrawal,
     });
   } catch (error) {

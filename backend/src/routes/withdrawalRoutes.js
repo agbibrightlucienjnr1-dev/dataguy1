@@ -6,6 +6,7 @@ import {
   getAllWithdrawalsAdmin,
   approveWithdrawalRequest,
   rejectWithdrawalRequest,
+  completeWithdrawalManuallyRequest,
   getWithdrawalStats,
   getGhanaBanks,
   verifyAccountNumber,
@@ -34,5 +35,11 @@ router.put(
   approveWithdrawalRequest,
 );
 router.put("/:id/reject", authenticate, requireAdmin, rejectWithdrawalRequest);
+router.put(
+  "/:id/complete",
+  authenticate,
+  requireAdmin,
+  completeWithdrawalManuallyRequest,
+);
 
 export default router;
