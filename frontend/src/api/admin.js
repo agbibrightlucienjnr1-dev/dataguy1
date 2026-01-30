@@ -40,6 +40,19 @@ export const adminApi = {
    */
   getFailedOrders: () => apiClient.get("/admin/orders/failed"),
 
+  /**
+   * Fulfill order - trigger Hubnet data delivery
+   * @param {string} orderId - Order ID
+   */
+  fulfillOrder: (orderId) => apiClient.post(`/admin/orders/${orderId}/fulfill`),
+
+  /**
+   * Mark order as completed - manually confirm delivery
+   * @param {string} orderId - Order ID
+   */
+  markOrderCompleted: (orderId) =>
+    apiClient.post(`/admin/orders/${orderId}/complete`),
+
   // ========== Bundles ==========
 
   /**
