@@ -101,7 +101,75 @@ export const creditWallet = async (userId, amount, transactionData = {}) => {
 };
 
 /**
+ * Debit wallet using a transaction client (for use inside existing transactions)
+ * @param {Object} tx - Prisma transaction client
+ * @param {string} userId - User ID
+ * @param {string|Decimal} amount - Amount to debit
+ * @param {Object} transactionData - Transaction metadata
+ */
+export const debitWalletInTransaction = async (
+  tx,
+  userId,
+  amount,
+  transactionData = {},
+) => {
+  const { type = "withdrawal", description, reference } = transactionData;
+
+  // Get or create wallet using transaction client
+  let wallet = await tx.wallet.findUnique({
+    where: { userId },
+  });
+
+  if (!wallet) {
+    wallet = await tx.wallet.create({
+      data: { userId },
+    });
+  }
+
+  // Check sufficient balance
+  if (wallet.balance.lessThan(amount)) {
+    throw new AppError("Insufficient wallet balance", 400);
+  }
+
+  // Calculate new balance
+  const balanceBefore = wallet.balance;
+  const balanceAfter = balanceBefore.sub(amount);
+
+  // Create transaction record and update wallet (both in same transaction)
+  const [transaction, updatedWallet] = await Promise.all([
+    // Create transaction record
+    tx.walletTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type,
+        amount: amount.neg(), // Negative amount for debit
+        balanceBefore,
+        balanceAfter,
+        status: "completed",
+        description,
+        reference,
+      },
+    }),
+    // Update wallet balance
+    tx.wallet.update({
+      where: { id: wallet.id },
+      data: {
+        balance: balanceAfter,
+        totalWithdrawn: wallet.totalWithdrawn.add(amount),
+      },
+    }),
+  ]);
+
+  return {
+    transaction,
+    wallet: updatedWallet,
+  };
+};
+
+/**
  * Debit wallet (withdraw funds)
+ * Note: This creates its own transaction. For use inside existing transactions,
+ * use debitWalletInTransaction instead.
  */
 export const debitWallet = async (userId, amount, transactionData = {}) => {
   const prisma = getPrisma();

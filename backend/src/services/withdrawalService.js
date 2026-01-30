@@ -1,7 +1,7 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
-import { debitWallet } from "./walletService.js";
+import { debitWalletInTransaction } from "./walletService.js";
 import {
   createTransferRecipient,
   initiateTransfer,
@@ -261,12 +261,17 @@ export const approveWithdrawal = async (
 
     // If manual mode, just mark as approved for manual processing
     if (manualMode) {
-      // Debit wallet immediately for manual processing
-      await debitWallet(withdrawal.userId, withdrawal.amount, {
-        type: "withdrawal",
-        reference: withdrawal.reference,
-        description: `Withdrawal to ${withdrawal.accountType === "mobile_money" ? "mobile money" : "bank account"} (manual)`,
-      });
+      // Debit wallet immediately for manual processing (using transaction client)
+      await debitWalletInTransaction(
+        tx,
+        withdrawal.userId,
+        withdrawal.amount,
+        {
+          type: "withdrawal",
+          reference: withdrawal.reference,
+          description: `Withdrawal to ${withdrawal.accountType === "mobile_money" ? "mobile money" : "bank account"} (manual)`,
+        },
+      );
 
       const updatedWithdrawal = await tx.withdrawal.update({
         where: { id: withdrawalId },
@@ -330,12 +335,17 @@ export const approveWithdrawal = async (
         reason: `Withdrawal for ${withdrawal.user.name}`,
       });
 
-      // 3. Debit wallet
-      await debitWallet(withdrawal.userId, withdrawal.amount, {
-        type: "withdrawal",
-        reference: withdrawal.reference,
-        description: `Withdrawal to ${withdrawal.accountType === "mobile_money" ? "mobile money" : "bank account"}`,
-      });
+      // 3. Debit wallet (using transaction client)
+      await debitWalletInTransaction(
+        tx,
+        withdrawal.userId,
+        withdrawal.amount,
+        {
+          type: "withdrawal",
+          reference: withdrawal.reference,
+          description: `Withdrawal to ${withdrawal.accountType === "mobile_money" ? "mobile money" : "bank account"}`,
+        },
+      );
 
       // 4. Update withdrawal with transfer details
       const updatedWithdrawal = await tx.withdrawal.update({
