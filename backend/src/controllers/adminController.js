@@ -7,6 +7,8 @@ import {
   updateBundleStatus,
   getFailedOrders,
 } from "../services/adminService.js";
+import { initiateHubnetOrder } from "../services/orderService.js";
+import { asyncHandler, AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -212,3 +214,83 @@ export const getDashboardSummary = async (req, res) => {
     throw error;
   }
 };
+
+/**
+ * Fulfill order - manually trigger Hubnet data delivery
+ * POST /api/admin/orders/:orderId/fulfill
+ */
+export const fulfillOrder = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+
+  logger.info("Admin triggering order fulfillment", { orderId });
+
+  const result = await initiateHubnetOrder(orderId);
+
+  res.status(200).json({
+    success: true,
+    message: "Order fulfillment initiated successfully",
+    order: result,
+  });
+});
+
+/**
+ * Mark order as completed - manually confirm delivery
+ * Used when webhook doesn't work (e.g., local development) or for manual verification
+ * POST /api/admin/orders/:orderId/complete
+ */
+export const markOrderCompleted = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+  const prisma = (await import("../config/database.js")).getPrisma();
+
+  logger.info("Admin manually marking order as completed", { orderId });
+
+  // Get the order first
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  // Only allow completing orders that are in "processing" status
+  if (order.status !== "processing") {
+    throw new AppError(
+      `Cannot mark order as completed. Current status: ${order.status}. Only 'processing' orders can be marked as completed.`,
+      400,
+    );
+  }
+
+  // Update order to completed
+  const updatedOrder = await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: "completed",
+      completedAt: new Date(),
+      hubnetResponse: JSON.stringify({
+        ...JSON.parse(order.hubnetResponse || "{}"),
+        manuallyCompleted: true,
+        completedBy: "admin",
+        completedAt: new Date().toISOString(),
+      }),
+    },
+    include: {
+      bundle: true,
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+        },
+      },
+    },
+  });
+
+  logger.success("Order manually marked as completed", { orderId });
+
+  res.status(200).json({
+    success: true,
+    message: "Order marked as completed successfully",
+    order: updatedOrder,
+  });
+});
