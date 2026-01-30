@@ -182,7 +182,7 @@ export default function AgentPricingPage() {
       {/* Info Card */}
       <Card className="p-4 bg-blue-50 border-blue-200">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800">
             <p className="font-medium">Pricing Rules:</p>
             <ul className="mt-1 space-y-1 list-disc list-inside">
@@ -297,7 +297,7 @@ export default function AgentPricingPage() {
                               </span>
                             </td>
                             <td className="p-4">
-                              <div className="max-w-[120px]">
+                              <div className="max-w-30">
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -328,7 +328,7 @@ export default function AgentPricingPage() {
                             </td>
                             {isAgent && (
                               <td className="p-4">
-                                <div className="max-w-[120px]">
+                                <div className="max-w-30">
                                   <Input
                                     type="number"
                                     step="0.01"
