@@ -109,7 +109,7 @@ export default function AgentWalletPage() {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Available Balance */}
-        <Card className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+        <Card className="p-6 bg-linear-to-br from-slate-900 to-slate-800 text-white">
           <div className="flex items-center justify-between mb-4">
             <span className="text-slate-300 text-sm">Available Balance</span>
             <Wallet className="w-5 h-5 text-slate-400" />
@@ -279,7 +279,7 @@ export default function AgentWalletPage() {
       {/* Info */}
       <Card className="p-4 bg-green-50 border-green-200">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
             <Wallet className="w-4 h-4 text-green-600" />
           </div>
           <div>
