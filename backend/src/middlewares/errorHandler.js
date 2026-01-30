@@ -16,9 +16,10 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Send error response
+  // Send error response with message at top level for easier frontend access
   res.status(statusCode).json({
     success: false,
+    message, // Include at top level for easier access
     error: {
       message,
       ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
