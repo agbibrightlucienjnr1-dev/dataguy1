@@ -110,7 +110,7 @@ export default function AgentWithdrawalsPage() {
     register,
     handleSubmit,
     reset,
-    watch,
+    getValues,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -123,9 +123,6 @@ export default function AgentWithdrawalsPage() {
       mobileNetwork: "MTN",
     },
   });
-
-  // Watch amount for validation
-  const watchedAmount = watch("amount");
 
   // Withdraw mutation
   const withdrawMutation = useMutation({
@@ -216,7 +213,7 @@ export default function AgentWithdrawalsPage() {
       </div>
 
       {/* Balance Card */}
-      <Card className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+      <Card className="p-6 bg-linear-to-br from-slate-900 to-slate-800 text-white">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-300 text-sm mb-1">Available Balance</p>
@@ -404,12 +401,13 @@ export default function AgentWithdrawalsPage() {
             <p className="text-xs text-slate-500 mt-1">
               Available: {formatCurrency(balance)}
             </p>
-            {watchedAmount && parseFloat(watchedAmount) > balance && (
-              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" />
-                Insufficient balance
-              </p>
-            )}
+            {errors.amount &&
+              parseFloat(getValues("amount") || "0") > balance && (
+                <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  Insufficient balance
+                </p>
+              )}
           </div>
 
           {/* Mobile Money Fields */}
