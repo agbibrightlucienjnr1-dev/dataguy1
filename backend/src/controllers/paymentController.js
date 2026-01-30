@@ -1,9 +1,5 @@
 import { asyncHandler } from "../middlewares/errorHandler.js";
-import {
-  confirmPayment,
-  initiateHubnetOrder,
-  getOrderById,
-} from "../services/orderService.js";
+import { confirmPayment, getOrderById } from "../services/orderService.js";
 import {
   verifyTransaction,
   verifyWebhookSignature,
@@ -74,8 +70,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
     // Process payment confirmation and credit wallet
     const result = await confirmPayment(orderId, paymentReference);
 
-    // Initiate Hubnet order
-    await initiateHubnetOrder(orderId);
+    // Note: Hubnet order is now triggered manually by admin via admin panel
 
     logger.success("Payment processed successfully", { orderId });
 
@@ -198,8 +193,7 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
   // Process payment confirmation and credit wallet
   const result = await confirmPayment(orderId, reference);
 
-  // Initiate Hubnet order
-  await initiateHubnetOrder(orderId);
+  // Note: Hubnet order is now triggered manually by admin via admin panel
 
   logger.success("Payment verified and processed", { orderId });
 
