@@ -8,7 +8,14 @@ import { AuthLayout, DashboardLayout } from "./components/layout";
 import { RequireAuth, RequireAdmin, GuestOnly } from "./components/auth";
 
 // Public Pages
-import { LandingPage, LoginPage, RegisterPage } from "./pages/public";
+import {
+  LandingPage,
+  LoginPage,
+  RegisterPage,
+  BuyPage,
+  PaymentCallbackPage,
+  OrderTrackingPage,
+} from "./pages/public";
 
 // Dashboard Pages
 import { DashboardPage } from "./pages/dashboard";
@@ -37,6 +44,9 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/buy/:code" element={<BuyPage />} />
+        <Route path="/payment/callback" element={<PaymentCallbackPage />} />
+        <Route path="/track" element={<OrderTrackingPage />} />
 
         {/* Auth Routes - Only for non-authenticated users */}
         <Route element={<GuestOnly />}>
