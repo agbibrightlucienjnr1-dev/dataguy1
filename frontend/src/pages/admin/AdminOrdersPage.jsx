@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   ShoppingCart,
@@ -11,7 +11,11 @@ import {
   XCircle,
   AlertCircle,
   Filter,
+  Send,
+  Loader2,
+  Check,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { Card, Badge, Button, Modal } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -23,6 +27,7 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: [
@@ -37,6 +42,63 @@ export default function AdminOrdersPage() {
         page,
         limit: 20,
       }),
+  });
+
+  // Mutation for fulfilling orders
+  const fulfillMutation = useMutation({
+    mutationFn: (orderId) => adminApi.fulfillOrder(orderId),
+    onSuccess: (data) => {
+      toast.success("Order sent to Hubnet! Awaiting delivery confirmation.");
+      // Invalidate orders query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+      setShowOrderModal(false);
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fulfill order";
+
+      // Provide user-friendly error messages
+      let displayMessage = errorMessage;
+      if (errorMessage.includes("insufficient")) {
+        displayMessage =
+          "Hubnet balance is insufficient. Please top up your Hubnet wallet and try again.";
+      } else if (errorMessage.includes("Invalid network")) {
+        displayMessage =
+          "Invalid network. This bundle's network is not supported by Hubnet.";
+      } else if (errorMessage.includes("Invalid volume")) {
+        displayMessage =
+          "Invalid data volume. Please check the bundle configuration.";
+      } else if (errorMessage.includes("HUBNET_API_KEY")) {
+        displayMessage =
+          "Hubnet API key is not configured. Please contact the administrator.";
+      } else if (
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("ECONNREFUSED")
+      ) {
+        displayMessage = "Could not connect to Hubnet. Please try again later.";
+      }
+
+      toast.error(displayMessage, { duration: 5000 });
+    },
+  });
+
+  // Mutation for marking orders as completed
+  const completeMutation = useMutation({
+    mutationFn: (orderId) => adminApi.markOrderCompleted(orderId),
+    onSuccess: () => {
+      toast.success("Order marked as completed!");
+      queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+      setShowOrderModal(false);
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to mark order as completed";
+      toast.error(errorMessage, { duration: 5000 });
+    },
   });
 
   // API client returns response.data directly: { success, orders, pagination }
@@ -55,6 +117,8 @@ export default function AdminOrdersPage() {
         return <XCircle className="w-4 h-4 text-red-500" />;
       case "pending":
         return <Clock className="w-4 h-4 text-yellow-500" />;
+      case "payment_confirmed":
+        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
       case "processing":
         return <AlertCircle className="w-4 h-4 text-blue-500" />;
       default:
@@ -70,6 +134,8 @@ export default function AdminOrdersPage() {
         return <Badge variant="danger">Failed</Badge>;
       case "pending":
         return <Badge variant="warning">Pending</Badge>;
+      case "payment_confirmed":
+        return <Badge variant="success">Payment Confirmed</Badge>;
       case "processing":
         return <Badge variant="primary">Processing</Badge>;
       default:
@@ -133,6 +199,7 @@ export default function AdminOrdersPage() {
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
+            <option value="payment_confirmed">Payment Confirmed</option>
             <option value="processing">Processing</option>
             <option value="completed">Completed</option>
             <option value="failed">Failed</option>
@@ -221,7 +288,7 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="p-4">
                       <p className="text-sm text-slate-900">
-                        {order.recipientPhone}
+                        {order.customerPhone}
                       </p>
                     </td>
                     <td className="p-4">
@@ -234,7 +301,7 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="p-4">
                       <span className="font-medium text-slate-900">
-                        {formatCurrency(order.amount)}
+                        {formatCurrency(order.pricePaid)}
                       </span>
                     </td>
                     <td className="p-4">{getStatusBadge(order.status)}</td>
@@ -244,16 +311,57 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setShowOrderModal(true);
-                        }}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        {/* Fulfill button - show for payment_confirmed and failed orders */}
+                        {(order.status === "payment_confirmed" ||
+                          order.status === "failed") && (
+                          <Button
+                            variant={
+                              order.status === "failed" ? "danger" : "primary"
+                            }
+                            size="sm"
+                            onClick={() => fulfillMutation.mutate(order.id)}
+                            disabled={fulfillMutation.isPending}
+                            title={
+                              order.status === "failed"
+                                ? "Retry Order - Send data to customer"
+                                : "Fulfill Order - Send data to customer"
+                            }
+                          >
+                            {fulfillMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Send className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+                        {/* Mark as Completed button - show for processing orders */}
+                        {order.status === "processing" && (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => completeMutation.mutate(order.id)}
+                            disabled={completeMutation.isPending}
+                            title="Mark as Completed - Confirm delivery"
+                          >
+                            {completeMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Check className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowOrderModal(true);
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -332,13 +440,13 @@ export default function AdminOrdersPage() {
               <div>
                 <p className="text-sm text-slate-500">Recipient</p>
                 <p className="font-medium text-slate-900">
-                  {selectedOrder.recipientPhone}
+                  {selectedOrder.customerPhone}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Amount</p>
                 <p className="font-medium text-slate-900">
-                  {formatCurrency(selectedOrder.amount)}
+                  {formatCurrency(selectedOrder.pricePaid)}
                 </p>
               </div>
               <div>
@@ -356,21 +464,21 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Transaction Reference */}
-            {selectedOrder.paystackReference && (
+            {selectedOrder.paymentReference && (
               <div>
                 <p className="text-sm text-slate-500">Payment Reference</p>
                 <p className="font-mono text-sm text-slate-900">
-                  {selectedOrder.paystackReference}
+                  {selectedOrder.paymentReference}
                 </p>
               </div>
             )}
 
             {/* Hubnet Reference */}
-            {selectedOrder.hubnetReference && (
+            {selectedOrder.hubnetOrderId && (
               <div>
                 <p className="text-sm text-slate-500">Hubnet Reference</p>
                 <p className="font-mono text-sm text-slate-900">
-                  {selectedOrder.hubnetReference}
+                  {selectedOrder.hubnetOrderId}
                 </p>
               </div>
             )}
@@ -387,6 +495,37 @@ export default function AdminOrdersPage() {
                   </p>
                 </div>
               )}
+
+            {/* Fulfill Order Button - only for payment_confirmed status */}
+            {selectedOrder.status === "payment_confirmed" && (
+              <div className="pt-4 border-t border-slate-200">
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  onClick={() => fulfillMutation.mutate(selectedOrder.id)}
+                  disabled={fulfillMutation.isPending}
+                >
+                  {fulfillMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending Data...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Fulfill Order - Send Data
+                    </>
+                  )}
+                </Button>
+                {fulfillMutation.isError && (
+                  <p className="text-sm text-red-600 mt-2">
+                    Error:{" "}
+                    {fulfillMutation.error?.message ||
+                      "Failed to fulfill order"}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </Modal>
