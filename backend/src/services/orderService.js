@@ -236,11 +236,27 @@ export const initiateHubnetOrder = async (orderId) => {
       throw new AppError("Order not found", 404);
     }
 
-    if (order.status !== "pending") {
-      logger.warn("Order is not in pending status", {
+    // Order should be in payment_confirmed status (after confirmPayment was called)
+    if (order.status !== "payment_confirmed") {
+      logger.warn("Order is not in payment_confirmed status", {
         orderId,
         status: order.status,
       });
+      // If already processing or completed, just return
+      if (order.status === "processing" || order.status === "completed") {
+        return order;
+      }
+      // If still pending, payment wasn't confirmed yet
+      if (order.status === "pending") {
+        throw new AppError(
+          "Payment must be confirmed before initiating Hubnet order",
+          400,
+        );
+      }
+      // If failed, don't retry automatically
+      if (order.status === "failed") {
+        throw new AppError("Order has failed and cannot be processed", 400);
+      }
       return order;
     }
 
