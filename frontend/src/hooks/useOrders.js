@@ -78,8 +78,10 @@ export function useCreateOrder() {
     mutationFn: ({ code, data }) => ordersApi.createFromLink(code, data),
     onSuccess: (response) => {
       // Redirect to Paystack payment page
-      if (response.data?.paymentUrl) {
-        window.location.href = response.data.paymentUrl;
+      // Response structure: { data: { order, payment: { authorizationUrl } } }
+      const paymentUrl = response.data?.payment?.authorizationUrl;
+      if (paymentUrl) {
+        window.location.href = paymentUrl;
       }
     },
     onError: (error) => {
