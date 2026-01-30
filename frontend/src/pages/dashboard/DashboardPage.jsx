@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { useAuthStore } from "../../stores";
-import { useOrders, useOrderStats } from "../../hooks";
+import { useOrders, useOrderStats, useWallet } from "../../hooks";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { ORDER_STATUSES } from "../../utils/constants";
 import toast from "react-hot-toast";
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: ordersData, isLoading } = useOrders({ limit: 5 });
   const { data: statsData } = useOrderStats();
+  const { balance: walletBalance } = useWallet();
 
   const orders = ordersData?.orders || [];
   const stats = statsData?.stats || {
@@ -139,7 +140,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Wallet Balance</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
-                {formatCurrency(user?.walletBalance || 0)}
+                {formatCurrency(walletBalance || 0)}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
@@ -255,16 +256,18 @@ export default function DashboardPage() {
                   {getStatusIcon(order.status)}
                   <div>
                     <p className="font-medium text-slate-900">
-                      {order.bundle?.name || "Data Bundle"}
+                      {order.bundle
+                        ? `${order.bundle.network} ${order.bundle.volume}`
+                        : "Data Bundle"}
                     </p>
                     <p className="text-sm text-slate-500">
-                      {order.recipientPhone} • {formatDate(order.createdAt)}
+                      {order.customerPhone} • {formatDate(order.createdAt)}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-slate-900">
-                    {formatCurrency(order.amount)}
+                    {formatCurrency(order.pricePaid)}
                   </p>
                   <p
                     className={`text-xs capitalize ${

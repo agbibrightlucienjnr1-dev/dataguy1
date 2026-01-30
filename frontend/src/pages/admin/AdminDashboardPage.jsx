@@ -175,7 +175,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-slate-900 text-sm">
-                      {formatCurrency(order.amount)}
+                      {formatCurrency(order.pricePaid)}
                     </p>
                     <p className="text-xs text-slate-500 capitalize">
                       {order.status}

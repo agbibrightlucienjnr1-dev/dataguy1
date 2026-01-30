@@ -9,7 +9,7 @@ export function useWalletBalance() {
   return useQuery({
     queryKey: queryKeys.wallet.balance,
     queryFn: walletApi.getBalance,
-    select: (response) => response.data,
+    select: (response) => response.data?.wallet,
   });
 }
 

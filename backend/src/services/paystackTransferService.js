@@ -1,17 +1,17 @@
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_BASE_URL = "https://api.paystack.co";
 
 /**
- * Get Paystack API key
+ * Get Paystack API key - read at runtime to ensure dotenv is loaded
  */
 const getApiKey = () => {
-  if (!PAYSTACK_SECRET_KEY) {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) {
     throw new AppError("PAYSTACK_SECRET_KEY is not set", 500);
   }
-  return PAYSTACK_SECRET_KEY;
+  return secretKey;
 };
 
 /**
