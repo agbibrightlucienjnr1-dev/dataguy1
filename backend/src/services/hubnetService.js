@@ -1,20 +1,32 @@
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
-const HUBNET_API_KEY = process.env.HUBNET_API_KEY;
-const HUBNET_BASE_URL = process.env.HUBNET_BASE_URL;
-
 /**
- * Get Hubnet API key
+ * Get Hubnet API key - read at runtime to ensure dotenv has loaded
  */
 const getApiKey = () => {
-  if (!HUBNET_API_KEY) {
+  const apiKey = process.env.HUBNET_API_KEY;
+  if (!apiKey) {
     throw new AppError(
       "HUBNET_API_KEY is not set in environment variables",
       500,
     );
   }
-  return HUBNET_API_KEY;
+  return apiKey;
+};
+
+/**
+ * Get Hubnet base URL - read at runtime
+ */
+const getBaseUrl = () => {
+  const baseUrl = process.env.HUBNET_BASE_URL;
+  if (!baseUrl) {
+    throw new AppError(
+      "HUBNET_BASE_URL is not set in environment variables",
+      500,
+    );
+  }
+  return baseUrl;
 };
 
 /**
@@ -37,6 +49,7 @@ const mapNetworkToHubnet = (network) => {
 /**
  * Extract volume number from bundle volume string
  * E.g., "1GB" -> 1000, "500MB" -> 500, "2GB" -> 2000
+ * Note: Hubnet uses decimal (1GB = 1000MB), not binary (1024MB)
  */
 const extractVolumeInMB = (volumeString) => {
   const match = volumeString.match(/^(\d+(?:\.\d+)?)\s*(GB|MB)$/i);
@@ -49,7 +62,7 @@ const extractVolumeInMB = (volumeString) => {
   const unit = match[2].toUpperCase();
 
   if (unit === "GB") {
-    return Math.round(value * 1024); // Convert GB to MB
+    return Math.round(value * 1000); // Convert GB to MB (decimal: 1GB = 1000MB)
   } else {
     return Math.round(value);
   }
@@ -62,7 +75,7 @@ export const checkBalance = async () => {
   try {
     logger.info("Checking Hubnet wallet balance");
 
-    const response = await fetch(`${HUBNET_BASE_URL}/check_balance`, {
+    const response = await fetch(`${getBaseUrl()}/check_balance`, {
       method: "GET",
       headers: {
         token: `Bearer ${getApiKey()}`,
@@ -71,6 +84,12 @@ export const checkBalance = async () => {
     });
 
     const data = await response.json();
+
+    logger.info("Hubnet balance API response", {
+      status: data.status,
+      balance: data.balance,
+      rawData: JSON.stringify(data),
+    });
 
     if (!response.ok || !data.status) {
       logger.error("Hubnet balance check failed", data);
@@ -147,7 +166,7 @@ export const initiateDataTransaction = async (transactionData) => {
       reference,
     });
 
-    const endpoint = `${HUBNET_BASE_URL}/${hubnetNetwork}-new-transaction`;
+    const endpoint = `${getBaseUrl()}/${hubnetNetwork}-new-transaction`;
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -217,7 +236,7 @@ export const getTransactionStatus = async (transactionId) => {
     // Note: This endpoint might not exist in Hubnet API
     // Keeping it here for future use if they add it
     const response = await fetch(
-      `${HUBNET_BASE_URL}/transaction/${transactionId}`,
+      `${getBaseUrl()}/transaction/${transactionId}`,
       {
         method: "GET",
         headers: {
