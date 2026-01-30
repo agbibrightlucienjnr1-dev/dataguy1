@@ -115,3 +115,99 @@ export function parseQueryString(queryString) {
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Get user-friendly error message from API error
+ * Maps technical error messages to user-friendly ones
+ * @param {Object|string} error - Error object or message
+ * @param {string} fallback - Fallback message if error cannot be parsed
+ * @returns {string} User-friendly error message
+ */
+export function getErrorMessage(
+  error,
+  fallback = "Something went wrong. Please try again.",
+) {
+  // Extract message from error object
+  const rawMessage =
+    typeof error === "string"
+      ? error
+      : error?.message || error?.response?.data?.message || fallback;
+
+  // Map of technical messages to user-friendly messages
+  const errorMap = {
+    // Authentication errors
+    "Invalid credentials":
+      "Incorrect phone number or password. Please try again.",
+    "Invalid phone or password":
+      "Incorrect phone number or password. Please try again.",
+    "User not found": "No account found with this phone number.",
+    "Email already exists": "An account with this email already exists.",
+    "Phone already exists": "An account with this phone number already exists.",
+    "Invalid token": "Your session has expired. Please log in again.",
+    "Token expired": "Your session has expired. Please log in again.",
+    "Not authenticated": "Please log in to continue.",
+    "Not authorized": "You don't have permission to perform this action.",
+
+    // Payment/Order errors
+    "Payment not verified":
+      "Payment verification failed. Please check your payment status or try again.",
+    "Order not found": "We couldn't find this order. It may have been deleted.",
+    "Bundle not found": "This data bundle is no longer available.",
+    "Insufficient balance":
+      "You don't have enough balance for this transaction.",
+    "Payment already processed": "This payment has already been processed.",
+
+    // Withdrawal errors
+    "Withdrawal not found": "This withdrawal request could not be found.",
+    "Insufficient wallet balance":
+      "You don't have enough balance to withdraw this amount.",
+    "Minimum withdrawal amount": "The minimum withdrawal amount is GHS 10.",
+    "Invalid account number": "Please check your account number and try again.",
+    "Failed to initiate transfer":
+      "We couldn't process the transfer. Please try again later.",
+
+    // Network/Server errors
+    "Network Error":
+      "Unable to connect. Please check your internet connection.",
+    "timeout of": "The request timed out. Please try again.",
+    ECONNREFUSED: "Server is currently unavailable. Please try again later.",
+    500: "Something went wrong on our end. Please try again later.",
+    503: "Service temporarily unavailable. Please try again in a few minutes.",
+
+    // Hubnet errors
+    "HUBNET_API_KEY is not set":
+      "Data service is not configured. Please contact support.",
+    "Failed to send data bundle":
+      "Could not deliver data bundle. Please try again or contact support.",
+
+    // Validation errors
+    "Validation failed": "Please check your input and try again.",
+    "Invalid phone number":
+      "Please enter a valid Ghana phone number (e.g., 0241234567).",
+    "Invalid email": "Please enter a valid email address.",
+  };
+
+  // Check for exact matches
+  if (errorMap[rawMessage]) {
+    return errorMap[rawMessage];
+  }
+
+  // Check for partial matches
+  for (const [key, value] of Object.entries(errorMap)) {
+    if (rawMessage.toLowerCase().includes(key.toLowerCase())) {
+      return value;
+    }
+  }
+
+  // If the message is already user-friendly (not too technical), return it
+  if (
+    rawMessage &&
+    !rawMessage.includes("Error:") &&
+    !rawMessage.includes("error:") &&
+    rawMessage.length < 150
+  ) {
+    return rawMessage;
+  }
+
+  return fallback;
+}

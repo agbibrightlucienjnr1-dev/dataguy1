@@ -21,6 +21,7 @@ import { Card, Button, Input, Badge, Modal } from "../../components/ui";
 import { withdrawalsApi, walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { MOBILE_MONEY_NETWORKS } from "../../utils/constants";
+import { getErrorMessage } from "../../utils/helpers";
 import toast from "react-hot-toast";
 
 const WITHDRAWAL_STATUSES = {
@@ -154,14 +155,17 @@ export default function AgentWithdrawalsPage() {
     },
     onError: (error) => {
       toast.error(
-        error.response?.data?.message || "Failed to submit withdrawal",
+        getErrorMessage(
+          error,
+          "Unable to submit withdrawal request. Please check your details and try again.",
+        ),
       );
     },
   });
 
   const onSubmit = (data) => {
     if (parseFloat(data.amount) > balance) {
-      toast.error("Insufficient balance");
+      toast.error("You don't have enough balance for this withdrawal.");
       return;
     }
     withdrawMutation.mutate(data);

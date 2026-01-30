@@ -13,6 +13,7 @@ import {
 import { Card, Badge, Button, Modal } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import { getErrorMessage } from "../../utils/helpers";
 
 export default function AdminWithdrawalsPage() {
   const [statusFilter, setStatusFilter] = useState("pending");
@@ -47,7 +48,12 @@ export default function AdminWithdrawalsPage() {
       setSelectedWithdrawal(null);
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to approve withdrawal");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to approve withdrawal. Please try again.",
+        ),
+      );
     },
   });
 
@@ -60,7 +66,12 @@ export default function AdminWithdrawalsPage() {
       setSelectedWithdrawal(null);
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to complete withdrawal");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to mark withdrawal as complete. Please try again.",
+        ),
+      );
     },
   });
 
@@ -74,7 +85,12 @@ export default function AdminWithdrawalsPage() {
       setRejectionReason("");
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to reject withdrawal");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to reject withdrawal. Please try again.",
+        ),
+      );
     },
   });
 

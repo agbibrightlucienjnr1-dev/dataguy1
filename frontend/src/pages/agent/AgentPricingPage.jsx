@@ -13,6 +13,7 @@ import { Card, Button, Input, Badge } from "../../components/ui";
 import { pricingApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
+import { getErrorMessage } from "../../utils/helpers";
 import { useAuthStore } from "../../stores";
 import toast from "react-hot-toast";
 
@@ -56,7 +57,12 @@ export default function AgentPricingPage() {
       queryClient.invalidateQueries(["myPricingBundles"]);
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Failed to save prices");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to save prices. Please ensure all prices are valid.",
+        ),
+      );
     },
   });
 

@@ -2,6 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { ordersApi } from "../api";
 import { queryKeys } from "../lib";
+import { getErrorMessage } from "../utils/helpers";
 
 /**
  * Hook to get authenticated user's orders
@@ -91,7 +92,12 @@ export function useCreateOrder() {
       }
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to create order");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to process your order. Please try again.",
+        ),
+      );
     },
   });
 }

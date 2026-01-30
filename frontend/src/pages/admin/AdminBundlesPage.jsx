@@ -17,6 +17,7 @@ import { Card, Badge, Button, Modal, Input } from "../../components/ui";
 import { bundlesApi, adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
+import { getErrorMessage } from "../../utils/helpers";
 
 // Validation schema for bundle form
 const bundleSchema = z.object({
@@ -102,7 +103,12 @@ export default function AdminBundlesPage() {
       reset();
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to create bundle");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to create bundle. Please check the details and try again.",
+        ),
+      );
     },
   });
 
@@ -116,7 +122,9 @@ export default function AdminBundlesPage() {
       resetEdit();
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to update bundle");
+      toast.error(
+        getErrorMessage(error, "Unable to update bundle. Please try again."),
+      );
     },
   });
 
@@ -129,7 +137,12 @@ export default function AdminBundlesPage() {
       setSelectedBundle(null);
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to delete bundle");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to delete bundle. It may be in use by active orders.",
+        ),
+      );
     },
   });
 

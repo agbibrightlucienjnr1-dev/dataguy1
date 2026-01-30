@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { authApi } from "../api";
 import { useAuthStore } from "../stores";
+import { getErrorMessage } from "../utils/helpers";
 
 /**
  * Hook for handling login
@@ -26,7 +27,12 @@ export function useLogin() {
       }
     },
     onError: (error) => {
-      toast.error(error.message || "Login failed");
+      toast.error(
+        getErrorMessage(
+          error,
+          "Unable to log in. Please check your credentials.",
+        ),
+      );
     },
   });
 }
@@ -47,7 +53,9 @@ export function useRegister() {
       navigate("/dashboard");
     },
     onError: (error) => {
-      toast.error(error.message || "Registration failed");
+      toast.error(
+        getErrorMessage(error, "Unable to create account. Please try again."),
+      );
     },
   });
 }
