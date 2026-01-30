@@ -1,6 +1,6 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
-import { creditWallet } from "./walletService.js";
+import { getOrCreateWallet } from "./walletService.js";
 
 /**
  * Calculate commission for an order
@@ -92,6 +92,24 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
     throw new AppError("Order not found", 404);
   }
 
+  // Check if already processed by looking for existing wallet transaction
+  const existingTransaction = await prisma.walletTransaction.findUnique({
+    where: { orderId },
+  });
+
+  if (existingTransaction) {
+    // Already processed - return the existing state
+    const wallet = await prisma.wallet.findUnique({
+      where: { id: existingTransaction.walletId },
+    });
+    return {
+      order,
+      wallet,
+      transaction: existingTransaction,
+      alreadyProcessed: true,
+    };
+  }
+
   if (order.status !== "pending") {
     throw new AppError(
       `Order cannot be confirmed. Current status: ${order.status}`,
@@ -102,41 +120,110 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
   // Calculate commission
   const { commission, description } = await calculateCommission(order);
 
-  // Use transaction to ensure atomicity
-  const result = await prisma.$transaction(async (tx) => {
-    // 1. Update order status to payment_confirmed
-    const updatedOrder = await tx.order.update({
-      where: { id: orderId },
-      data: {
-        status: "payment_confirmed",
-        paymentReference,
-        paymentConfirmedAt: new Date(),
-        commissionAmount: commission,
+  // Get or create wallet first (outside transaction)
+  const wallet = await getOrCreateWallet(order.sellerId);
+
+  // Calculate new balance
+  const balanceBefore = wallet.balance;
+  const balanceAfter = balanceBefore.add(commission);
+
+  // Use transaction with increased timeout
+  try {
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // Double-check order is still pending inside transaction
+        const currentOrder = await tx.order.findUnique({
+          where: { id: orderId },
+        });
+
+        if (currentOrder.status !== "pending") {
+          // Already processed by another request
+          return { alreadyProcessed: true, orderId };
+        }
+
+        // 1. Update order status to payment_confirmed
+        const updatedOrder = await tx.order.update({
+          where: { id: orderId },
+          data: {
+            status: "payment_confirmed",
+            paymentReference,
+            paymentConfirmedAt: new Date(),
+            commissionAmount: commission,
+            commissionPaid: true,
+          },
+        });
+
+        // 2. Create wallet transaction
+        const walletTransaction = await tx.walletTransaction.create({
+          data: {
+            walletId: wallet.id,
+            type: "commission",
+            amount: commission,
+            balanceBefore,
+            balanceAfter,
+            status: "completed",
+            description,
+            orderId,
+            reference: paymentReference,
+          },
+        });
+
+        // 3. Update wallet balance
+        const updatedWallet = await tx.wallet.update({
+          where: { id: wallet.id },
+          data: {
+            balance: balanceAfter,
+            totalEarned: wallet.totalEarned.add(commission),
+          },
+        });
+
+        return {
+          order: updatedOrder,
+          wallet: updatedWallet,
+          transaction: walletTransaction,
+        };
       },
-    });
+      {
+        maxWait: 10000, // 10 seconds
+        timeout: 15000, // 15 seconds
+      },
+    );
 
-    // 2. Credit seller's wallet
-    const walletCredit = await creditWallet(order.sellerId, commission, {
-      type: "commission",
-      description,
-      orderId,
-      reference: paymentReference,
-    });
+    // If already processed inside transaction, fetch current state
+    if (result.alreadyProcessed) {
+      const existingTx = await prisma.walletTransaction.findUnique({
+        where: { orderId },
+      });
+      const walletState = existingTx
+        ? await prisma.wallet.findUnique({ where: { id: existingTx.walletId } })
+        : null;
+      return {
+        order,
+        wallet: walletState,
+        transaction: existingTx,
+        alreadyProcessed: true,
+      };
+    }
 
-    // 3. Mark commission as paid
-    await tx.order.update({
-      where: { id: orderId },
-      data: { commissionPaid: true },
-    });
-
-    return {
-      order: updatedOrder,
-      wallet: walletCredit.wallet,
-      transaction: walletCredit.transaction,
-    };
-  });
-
-  return result;
+    return result;
+  } catch (error) {
+    // Handle unique constraint violation (race condition with another request)
+    if (error.code === "P2002" && error.meta?.target?.includes("order_id")) {
+      const existingTx = await prisma.walletTransaction.findUnique({
+        where: { orderId },
+      });
+      const walletState = existingTx
+        ? await prisma.wallet.findUnique({ where: { id: existingTx.walletId } })
+        : null;
+      return {
+        order,
+        wallet: walletState,
+        transaction: existingTx,
+        alreadyProcessed: true,
+      };
+    }
+    throw error;
+  }
 };
 
 /**
