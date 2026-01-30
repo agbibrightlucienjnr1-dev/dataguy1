@@ -94,8 +94,14 @@ export default function PaymentCallbackPage() {
         // Refetch order after processing
         refetch();
       } catch (err) {
-        // If already processed, that's fine
-        if (err.response?.data?.message !== "Order already processed") {
+        // If already processed or order status is not pending, that's fine
+        const errorMsg = err.response?.data?.message || "";
+        const isAlreadyProcessed =
+          errorMsg.includes("already processed") ||
+          errorMsg.includes("Order cannot be confirmed") ||
+          errorMsg.includes("Unique constraint");
+
+        if (!isAlreadyProcessed) {
           setProcessError(
             err.response?.data?.message || "Failed to process payment",
           );
@@ -133,8 +139,12 @@ export default function PaymentCallbackPage() {
     );
   }
 
-  // Error state
-  if (error || processError) {
+  // Error state - only show if order is still pending or not found
+  // If order was processed (even if 2nd request failed), show success
+  const showError =
+    (error || processError) && (!order || order.status === "pending");
+
+  if (showError) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center">
