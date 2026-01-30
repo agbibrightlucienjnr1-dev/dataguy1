@@ -151,3 +151,61 @@ export const verifyPaymentStatus = asyncHandler(async (req, res) => {
     data: verification,
   });
 });
+
+/**
+ * Verify and process payment (for callback redirect)
+ * This endpoint verifies the payment and triggers order processing
+ * POST /api/payments/verify-and-process/:reference
+ */
+export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
+  const { reference } = req.params;
+  const orderId = reference; // We use orderId as reference
+
+  // Get order first
+  const order = await getOrderById(orderId);
+
+  // Check if already processed
+  if (order.status !== "pending") {
+    logger.info("Order already processed", { orderId, status: order.status });
+    return res.status(200).json({
+      success: true,
+      message: "Order already processed",
+      data: { order },
+    });
+  }
+
+  // Verify the transaction with Paystack
+  const verification = await verifyTransaction(reference);
+
+  if (!verification.success) {
+    logger.error("Payment verification failed", { reference });
+    throw new AppError("Payment verification failed", 400);
+  }
+
+  // Verify amount matches
+  const expectedAmount = parseFloat(order.pricePaid);
+  const paidAmount = verification.amount;
+
+  if (paidAmount !== expectedAmount) {
+    logger.error("Amount mismatch", {
+      expected: expectedAmount,
+      paid: paidAmount,
+      orderId,
+    });
+    throw new AppError("Payment amount mismatch", 400);
+  }
+
+  // Process payment confirmation and credit wallet
+  const result = await confirmPayment(orderId, reference);
+
+  // Initiate Hubnet order
+  await initiateHubnetOrder(orderId);
+
+  logger.success("Payment verified and processed", { orderId });
+
+  res.status(200).json({
+    success: true,
+    message: "Payment verified and order processing initiated",
+    data: { order: result.order },
+  });
+});
