@@ -71,7 +71,7 @@ export default function DashboardPage() {
 
       {/* Payment Link Card */}
       {paymentLink && (
-        <Card className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6">
+        <Card className="bg-linear-to-r from-slate-900 to-slate-800 text-white p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold">Your Payment Link</h3>
