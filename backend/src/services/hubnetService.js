@@ -85,13 +85,16 @@ export const checkBalance = async () => {
 
     const data = await response.json();
 
+    // Balance is nested in data.data.wallet_balance based on actual API response
+    const walletBalance = data.data?.wallet_balance;
+
     logger.info("Hubnet balance API response", {
       status: data.status,
-      balance: data.balance,
+      balance: walletBalance,
       rawData: JSON.stringify(data),
     });
 
-    if (!response.ok || !data.status) {
+    if (!response.ok || data.status !== "success") {
       logger.error("Hubnet balance check failed", data);
       throw new AppError(
         data.message || "Failed to check Hubnet balance",
@@ -99,12 +102,12 @@ export const checkBalance = async () => {
       );
     }
 
-    logger.success("Hubnet balance retrieved", { balance: data.balance });
+    logger.success("Hubnet balance retrieved", { balance: walletBalance });
 
     return {
       success: true,
-      balance: data.balance,
-      currency: data.currency || "GHS",
+      balance: walletBalance,
+      currency: "GHS",
       data: data,
     };
   } catch (error) {
