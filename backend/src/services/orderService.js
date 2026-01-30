@@ -236,9 +236,9 @@ export const initiateHubnetOrder = async (orderId) => {
       throw new AppError("Order not found", 404);
     }
 
-    // Order should be in payment_confirmed status (after confirmPayment was called)
-    if (order.status !== "payment_confirmed") {
-      logger.warn("Order is not in payment_confirmed status", {
+    // Order should be in payment_confirmed or failed status (allow retry for failed orders)
+    if (order.status !== "payment_confirmed" && order.status !== "failed") {
+      logger.warn("Order cannot be fulfilled", {
         orderId,
         status: order.status,
       });
@@ -252,10 +252,6 @@ export const initiateHubnetOrder = async (orderId) => {
           "Payment must be confirmed before initiating Hubnet order",
           400,
         );
-      }
-      // If failed, don't retry automatically
-      if (order.status === "failed") {
-        throw new AppError("Order has failed and cannot be processed", 400);
       }
       return order;
     }
@@ -298,13 +294,18 @@ export const initiateHubnetOrder = async (orderId) => {
       orderId,
       hubnetTransactionId: hubnetTransaction.transactionId,
       hubnetPaymentId: hubnetTransaction.paymentId,
+      code: hubnetTransaction.code,
     });
 
-    // Step 3: Store Hubnet reference and tracking ID (DO NOT mark as completed)
+    // Code "0000" means Hubnet has received the order and will process it
+    // Order stays as "processing" until we receive the delivery status via webhook
+    // Webhook endpoint: POST /api/hubnet/webhook
+
+    // Step 3: Store Hubnet reference and keep as processing
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
-        status: "processing", // Keep as processing, not completed
+        status: "processing",
         hubnetOrderId: hubnetTransaction.transactionId,
         hubnetResponse: JSON.stringify({
           transactionId: hubnetTransaction.transactionId,
@@ -326,6 +327,12 @@ export const initiateHubnetOrder = async (orderId) => {
           },
         },
       },
+    });
+
+    logger.info("Order awaiting Hubnet delivery confirmation", {
+      orderId,
+      hubnetCode: hubnetTransaction.code,
+      status: "processing",
     });
 
     return updatedOrder;
