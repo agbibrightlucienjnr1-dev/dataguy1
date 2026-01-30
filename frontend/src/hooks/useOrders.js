@@ -50,7 +50,13 @@ export function useTrackOrder(orderId) {
   return useQuery({
     queryKey: queryKeys.orders.track(orderId),
     queryFn: () => ordersApi.track(orderId),
-    select: (response) => response.data,
+    select: (response) => ({
+      // Backend returns data directly, normalize to have order property with id
+      order: {
+        ...response.data,
+        id: response.data?.orderId, // Map orderId to id for consistency
+      },
+    }),
     enabled: !!orderId,
     retry: false,
   });
