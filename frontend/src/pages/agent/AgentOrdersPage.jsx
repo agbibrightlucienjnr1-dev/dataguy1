@@ -224,11 +224,11 @@ export default function AgentOrdersPage() {
                     </td>
                     <td className="p-4">
                       <p className="text-sm font-medium text-slate-900">
-                        {formatCurrency(order.customerPrice)}
+                        {formatCurrency(order.pricePaid)}
                       </p>
-                      {order.commission > 0 && (
+                      {order.commissionAmount > 0 && (
                         <p className="text-xs text-green-600">
-                          +{formatCurrency(order.commission)} earned
+                          +{formatCurrency(order.commissionAmount)} earned
                         </p>
                       )}
                     </td>
@@ -359,7 +359,7 @@ export default function AgentOrdersPage() {
                   Amount Paid
                 </p>
                 <p className="text-sm font-medium mt-1">
-                  {formatCurrency(selectedOrder.customerPrice)}
+                  {formatCurrency(selectedOrder.pricePaid)}
                 </p>
               </div>
               <div>
@@ -367,16 +367,16 @@ export default function AgentOrdersPage() {
                   Your Commission
                 </p>
                 <p className="text-sm font-medium text-green-600 mt-1">
-                  {formatCurrency(selectedOrder.commission || 0)}
+                  {formatCurrency(selectedOrder.commissionAmount || 0)}
                 </p>
               </div>
-              {selectedOrder.hubnetReference && (
+              {selectedOrder.hubnetOrderId && (
                 <div>
                   <p className="text-xs text-slate-500 uppercase tracking-wide">
                     Hubnet Reference
                   </p>
                   <p className="font-mono text-sm mt-1">
-                    {selectedOrder.hubnetReference}
+                    {selectedOrder.hubnetOrderId}
                   </p>
                 </div>
               )}
