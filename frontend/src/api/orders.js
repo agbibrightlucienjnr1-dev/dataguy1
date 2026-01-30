@@ -19,7 +19,7 @@ export const ordersApi = {
    * Track orders by phone number (public)
    * @param {string} phone - Customer phone number
    */
-  trackByPhone: (phone) => apiClient.get(`/orders/track/${phone}`),
+  trackByPhone: (phone) => apiClient.get(`/orders/track/phone/${phone}`),
 
   /**
    * Get authenticated seller's orders
