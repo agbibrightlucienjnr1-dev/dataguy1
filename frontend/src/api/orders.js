@@ -13,7 +13,7 @@ export const ordersApi = {
    * Track order by ID (public)
    * @param {string} orderId - Order ID
    */
-  track: (orderId) => apiClient.get(`/orders/${orderId}`),
+  track: (orderId) => apiClient.get(`/orders/track/${orderId}`),
 
   /**
    * Track orders by phone number (public)
