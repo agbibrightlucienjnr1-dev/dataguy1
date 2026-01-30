@@ -22,7 +22,7 @@ export const bundlesApi = {
    * Get seller info from payment link code
    * @param {string} code - Payment link code
    */
-  getSellerInfo: (code) => apiClient.get(`/orders/link/${code}/seller`),
+  getSellerInfo: (code) => apiClient.get(`/orders/link/${code}`),
 
   /**
    * Get bundles with seller's pricing for payment link
