@@ -8,6 +8,7 @@ import {
   getFailedOrders,
 } from "../services/adminService.js";
 import { initiateHubnetOrder } from "../services/orderService.js";
+import { checkBalance } from "../services/hubnetService.js";
 import { asyncHandler, AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
@@ -231,6 +232,25 @@ export const fulfillOrder = asyncHandler(async (req, res) => {
     message: "Order fulfillment initiated successfully",
     order: result,
   });
+});
+
+/**
+ * Get Hubnet wallet balance
+ * GET /api/admin/hubnet-balance
+ */
+export const getHubnetBalance = asyncHandler(async (req, res) => {
+  try {
+    const balanceData = await checkBalance();
+
+    res.status(200).json({
+      success: true,
+      balance: balanceData.balance,
+      currency: balanceData.currency || "GHS",
+    });
+  } catch (error) {
+    logger.error("Error fetching Hubnet balance", error);
+    throw error;
+  }
 });
 
 /**
