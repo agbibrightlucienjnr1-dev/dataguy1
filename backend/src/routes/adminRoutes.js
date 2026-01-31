@@ -10,6 +10,7 @@ import {
   getDashboardSummary,
   fulfillOrder,
   markOrderCompleted,
+  getHubnetBalance,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -51,6 +52,11 @@ router.get("/statistics", getStatistics); // Platform statistics
  * Wallets
  */
 router.get("/wallets", getWallets); // View all wallet balances
+
+/**
+ * Hubnet
+ */
+router.get("/hubnet-balance", getHubnetBalance); // Get Hubnet wallet balance
 
 /**
  * Bundles Management
