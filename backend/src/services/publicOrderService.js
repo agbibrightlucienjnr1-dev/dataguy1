@@ -1,6 +1,7 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { initializeTransaction } from "./paystackService.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Get seller by payment link code
@@ -166,6 +167,67 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     }
 
     pricePaid = subAgentPrice.customerPrice;
+  }
+
+  // Check for recent duplicate order (same customer phone + bundle + seller within last 5 minutes)
+  // This prevents accidental duplicate orders from double-clicks or page refreshes
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  const existingOrder = await prisma.order.findFirst({
+    where: {
+      customerPhone,
+      bundleId,
+      sellerId: seller.id,
+      createdAt: {
+        gte: fiveMinutesAgo,
+      },
+      status: {
+        in: ["pending", "payment_confirmed", "processing"],
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  // If a recent pending/processing order exists, return it instead of creating a new one
+  if (existingOrder) {
+    logger.info("Duplicate order prevented", {
+      existingOrderId: existingOrder.id,
+      customerPhone,
+      bundleId,
+    });
+    
+    // Re-initialize payment for the existing order if it doesn't have a payment reference
+    if (!existingOrder.paymentReference) {
+      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
+      
+      const paymentData = await initializeTransaction({
+        email: customerPhone + "@customer.dataguy.com",
+        amount: existingOrder.pricePaid.toString(),
+        reference: existingOrder.id,
+        callbackUrl,
+        metadata: {
+          orderId: existingOrder.id,
+          customerPhone,
+          customerName,
+          bundleId,
+          sellerId: seller.id,
+          sellerName: seller.name,
+          bundleInfo: `${bundle.network} ${bundle.volume}`,
+        },
+      });
+
+      return {
+        order: existingOrder,
+        payment: paymentData,
+      };
+    }
+
+    // If payment already exists, just return the order
+    return {
+      order: existingOrder,
+      payment: null, // Payment already initialized
+    };
   }
 
   // Create order

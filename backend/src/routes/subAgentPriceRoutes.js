@@ -8,10 +8,12 @@ import {
   bulkSetPrices,
 } from "../controllers/subAgentPriceController.js";
 import { authenticate, authorize } from "../middlewares/auth.js";
+import { apiRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
 // All routes require authentication and sub-agent role
+router.use(apiRateLimiter);
 router.use(authenticate);
 router.use(authorize("sub_agent"));
 

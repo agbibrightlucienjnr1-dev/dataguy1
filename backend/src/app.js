@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { globalRateLimiter } from "./middlewares/rateLimiter.js";
 import authRoutes from "./routes/authRoutes.js";
 import dataBundleRoutes from "./routes/dataBundleRoutes.js";
 import agentPriceRoutes from "./routes/agentPriceRoutes.js";
@@ -15,10 +16,21 @@ import withdrawalRoutes from "./routes/withdrawalRoutes.js";
 
 const app = express();
 
+// Trust proxy - important for rate limiting to work correctly behind reverse proxies
+// This allows Express to correctly identify client IPs from X-Forwarded-For headers
+if (process.env.TRUST_PROXY === "true" || process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // Trust first proxy
+}
+
 // Basic middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Global rate limiter - applied to all routes as base layer
+// This catches extreme abuse (1000 requests per 15 minutes)
+// More specific limiters are applied per route
+app.use("/api", globalRateLimiter);
 
 // Request logging
 if (process.env.NODE_ENV === "development") {

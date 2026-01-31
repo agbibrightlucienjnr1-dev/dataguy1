@@ -527,6 +527,8 @@ export const trackOrdersByPhone = async (phone) => {
   return orders.map((order) => ({
     orderId: order.id,
     status: order.status,
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
     bundle: {
       network: order.bundle.network,
       volume: order.bundle.volume,
@@ -538,5 +540,6 @@ export const trackOrdersByPhone = async (phone) => {
     },
     createdAt: order.createdAt,
     completedAt: order.completedAt,
+    paymentReference: order.paymentReference,
   }));
 };

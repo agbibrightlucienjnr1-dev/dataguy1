@@ -41,43 +41,76 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
     const orderId = event.reference; // We use orderId as reference
     const paymentReference = event.reference;
 
-    // Verify the transaction with Paystack
-    const verification = await verifyTransaction(paymentReference);
+    try {
+      // Get order first to check if it exists and its status
+      const order = await getOrderById(orderId);
 
-    if (!verification.success) {
-      logger.error("Payment verification failed", {
-        reference: paymentReference,
+      // If order is already processed, just acknowledge the webhook
+      if (order.status !== "pending") {
+        logger.info("Order already processed via webhook", {
+          orderId,
+          status: order.status,
+        });
+        return res.status(200).json({
+          success: true,
+          message: "Order already processed",
+        });
+      }
+
+      // Verify the transaction with Paystack
+      const verification = await verifyTransaction(paymentReference);
+
+      if (!verification.success) {
+        logger.error("Payment verification failed", {
+          reference: paymentReference,
+        });
+        return res.status(200).json({ received: true });
+      }
+
+      // Verify amount matches
+      const expectedAmount = parseFloat(order.pricePaid);
+      const paidAmount = verification.amount;
+
+      if (paidAmount !== expectedAmount) {
+        logger.error("Amount mismatch", {
+          expected: expectedAmount,
+          paid: paidAmount,
+          orderId,
+        });
+        throw new AppError("Payment amount mismatch", 400);
+      }
+
+      // Process payment confirmation and credit wallet
+      const result = await confirmPayment(orderId, paymentReference);
+
+      // Note: Hubnet order is now triggered manually by admin via admin panel
+
+      logger.success("Payment processed successfully via webhook", { orderId });
+
+      return res.status(200).json({
+        success: true,
+        message: "Payment processed successfully",
       });
-      return res.status(200).json({ received: true });
+    } catch (error) {
+      // If order not found, log but don't fail (might be a test transaction)
+      if (error.statusCode === 404) {
+        logger.warn("Order not found in webhook", { orderId });
+        return res.status(200).json({ received: true });
+      }
+      // If already processed, that's fine
+      if (
+        error.message?.includes("already processed") ||
+        error.message?.includes("Order cannot be confirmed")
+      ) {
+        logger.info("Order already processed (webhook)", { orderId });
+        return res.status(200).json({
+          success: true,
+          message: "Order already processed",
+        });
+      }
+      // Re-throw other errors
+      throw error;
     }
-
-    // Get order to verify amount
-    const order = await getOrderById(orderId);
-
-    // Verify amount matches
-    const expectedAmount = parseFloat(order.pricePaid);
-    const paidAmount = verification.amount;
-
-    if (paidAmount !== expectedAmount) {
-      logger.error("Amount mismatch", {
-        expected: expectedAmount,
-        paid: paidAmount,
-        orderId,
-      });
-      throw new AppError("Payment amount mismatch", 400);
-    }
-
-    // Process payment confirmation and credit wallet
-    const result = await confirmPayment(orderId, paymentReference);
-
-    // Note: Hubnet order is now triggered manually by admin via admin panel
-
-    logger.success("Payment processed successfully", { orderId });
-
-    return res.status(200).json({
-      success: true,
-      message: "Payment processed successfully",
-    });
   }
 
   // Handle transfer events (withdrawal)
@@ -156,50 +189,81 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
   const { reference } = req.params;
   const orderId = reference; // We use orderId as reference
 
-  // Get order first
-  const order = await getOrderById(orderId);
+  try {
+    // Get order first
+    const order = await getOrderById(orderId);
 
-  // Check if already processed
-  if (order.status !== "pending") {
-    logger.info("Order already processed", { orderId, status: order.status });
-    return res.status(200).json({
+    // Check if already processed - if so, just return the current order state
+    if (order.status !== "pending") {
+      logger.info("Order already processed (callback)", {
+        orderId,
+        status: order.status,
+      });
+      return res.status(200).json({
+        success: true,
+        message: "Order already processed",
+        data: { order },
+      });
+    }
+
+    // Verify the transaction with Paystack
+    const verification = await verifyTransaction(reference);
+
+    if (!verification.success) {
+      logger.error("Payment verification failed", { reference });
+      throw new AppError("Payment verification failed", 400);
+    }
+
+    // Verify amount matches
+    const expectedAmount = parseFloat(order.pricePaid);
+    const paidAmount = verification.amount;
+
+    if (paidAmount !== expectedAmount) {
+      logger.error("Amount mismatch", {
+        expected: expectedAmount,
+        paid: paidAmount,
+        orderId,
+      });
+      throw new AppError("Payment amount mismatch", 400);
+    }
+
+    // Process payment confirmation and credit wallet
+    // This function has built-in duplicate prevention
+    const result = await confirmPayment(orderId, reference);
+
+    // Note: Hubnet order is now triggered manually by admin via admin panel
+
+    logger.success("Payment verified and processed (callback)", { orderId });
+
+    res.status(200).json({
       success: true,
-      message: "Order already processed",
-      data: { order },
+      message: "Payment verified and order processing initiated",
+      data: { order: result.order },
     });
+  } catch (error) {
+    // If already processed by webhook, that's fine - return success
+    if (
+      error.message?.includes("already processed") ||
+      error.message?.includes("Order cannot be confirmed") ||
+      error.statusCode === 400
+    ) {
+      // Try to get the current order state
+      try {
+        const currentOrder = await getOrderById(orderId);
+        logger.info("Order already processed, returning current state", {
+          orderId,
+        });
+        return res.status(200).json({
+          success: true,
+          message: "Order already processed",
+          data: { order: currentOrder },
+        });
+      } catch (getOrderError) {
+        // If we can't get the order, just return the error
+        throw error;
+      }
+    }
+    // Re-throw other errors
+    throw error;
   }
-
-  // Verify the transaction with Paystack
-  const verification = await verifyTransaction(reference);
-
-  if (!verification.success) {
-    logger.error("Payment verification failed", { reference });
-    throw new AppError("Payment verification failed", 400);
-  }
-
-  // Verify amount matches
-  const expectedAmount = parseFloat(order.pricePaid);
-  const paidAmount = verification.amount;
-
-  if (paidAmount !== expectedAmount) {
-    logger.error("Amount mismatch", {
-      expected: expectedAmount,
-      paid: paidAmount,
-      orderId,
-    });
-    throw new AppError("Payment amount mismatch", 400);
-  }
-
-  // Process payment confirmation and credit wallet
-  const result = await confirmPayment(orderId, reference);
-
-  // Note: Hubnet order is now triggered manually by admin via admin panel
-
-  logger.success("Payment verified and processed", { orderId });
-
-  res.status(200).json({
-    success: true,
-    message: "Payment verified and order processing initiated",
-    data: { order: result.order },
-  });
 });

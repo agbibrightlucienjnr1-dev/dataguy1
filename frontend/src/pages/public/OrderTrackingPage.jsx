@@ -30,7 +30,7 @@ const phoneSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .regex(/^0[235]\d{8}$/, "Enter a valid Ghana phone number"),
+    .regex(/^0[2-9]\d{8}$/, "Enter a valid Ghana phone number (e.g., 0241234567)"),
 });
 
 const STATUS_CONFIG = {
@@ -239,29 +239,34 @@ export default function OrderTrackingPage() {
           </div>
         )}
 
-        {/* No Results */}
+        {/* No Results / Not Found */}
         {hasSearched &&
           !isLoading &&
           !hasResults &&
-          !orderError &&
-          !phoneError && (
+          (orderError?.status === 404 ||
+            phoneError?.status === 404 ||
+            (!orderError && !phoneError)) && (
             <Card className="p-8 text-center">
               <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-600">
-                No orders found. Please check your search criteria.
+                {orderError?.status === 404 || phoneError?.status === 404
+                  ? "No orders found. Please check your search criteria."
+                  : "No orders found. Please check your search criteria."}
               </p>
             </Card>
           )}
 
-        {/* Error */}
-        {(orderError || phoneError) && (
-          <Card className="p-8 text-center">
-            <XCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
-            <p className="text-slate-600">
-              {orderError?.message || phoneError?.message || "Order not found"}
-            </p>
-          </Card>
-        )}
+        {/* Error (non-404 errors) */}
+        {(orderError || phoneError) &&
+          orderError?.status !== 404 &&
+          phoneError?.status !== 404 && (
+            <Card className="p-8 text-center">
+              <XCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
+              <p className="text-slate-600">
+                {orderError?.message || phoneError?.message || "An error occurred"}
+              </p>
+            </Card>
+          )}
 
         {/* Single Order Result */}
         {order && !isLoading && (
@@ -294,10 +299,10 @@ function OrderCard({ order, onCopy }) {
       <div className="flex items-start justify-between mb-4">
         <div>
           <button
-            onClick={() => onCopy(order.id)}
+            onClick={() => onCopy(order.id || order.orderId || "")}
             className="flex items-center gap-2 text-sm font-mono text-slate-600 hover:text-slate-900"
           >
-            {order.id.slice(0, 16)}...
+            {(order.id || order.orderId || "").slice(0, 16)}...
             <Copy className="w-3 h-3" />
           </button>
           <p className="text-sm text-slate-500 mt-1">
@@ -333,9 +338,9 @@ function OrderCard({ order, onCopy }) {
         </p>
       )}
 
-      {order.status === "failed" && order.failureReason && (
+      {order.status === "failed" && (
         <p className="text-sm text-red-600 mt-3">
-          Failed: {order.failureReason}
+          Order failed. Please contact support if you need assistance.
         </p>
       )}
     </Card>

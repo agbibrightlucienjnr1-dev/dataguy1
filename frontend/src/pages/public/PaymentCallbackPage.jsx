@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle,
   XCircle,
@@ -66,6 +66,7 @@ const STATUS_CONFIG = {
 
 export default function PaymentCallbackPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState(null);
   const [hasProcessed, setHasProcessed] = useState(false);
@@ -83,9 +84,17 @@ export default function PaymentCallbackPage() {
   const order = data?.order;
 
   // Verify and process payment on mount
+  // Only process if order is still pending (webhook might have already processed it)
   useEffect(() => {
     const verifyAndProcess = async () => {
       if (!orderId || hasProcessed) return;
+
+      // First, check the current order status
+      // If it's already processed, don't try to process again
+      if (order && order.status !== "pending") {
+        setHasProcessed(true);
+        return;
+      }
 
       setIsProcessing(true);
       setHasProcessed(true);
@@ -95,15 +104,16 @@ export default function PaymentCallbackPage() {
         refetch();
       } catch (err) {
         // If already processed or order status is not pending, that's fine
-        const errorMsg = err.response?.data?.message || "";
+        const errorMsg = err.message || err.response?.data?.message || "";
         const isAlreadyProcessed =
           errorMsg.includes("already processed") ||
           errorMsg.includes("Order cannot be confirmed") ||
-          errorMsg.includes("Unique constraint");
+          errorMsg.includes("Unique constraint") ||
+          err.response?.status === 200; // Success response even if already processed
 
         if (!isAlreadyProcessed) {
           setProcessError(
-            err.response?.data?.message || "Failed to process payment",
+            err.response?.data?.message || err.message || "Failed to process payment",
           );
         }
         // Still refetch to show current status
@@ -113,8 +123,14 @@ export default function PaymentCallbackPage() {
       }
     };
 
-    verifyAndProcess();
-  }, [orderId, hasProcessed, refetch]);
+    // Only process if we have an orderId and haven't processed yet
+    // Also wait a bit to let webhook process first if it's coming
+    const timeoutId = setTimeout(() => {
+      verifyAndProcess();
+    }, 500); // Small delay to let webhook process first
+
+    return () => clearTimeout(timeoutId);
+  }, [orderId, hasProcessed, refetch, order]);
 
   const copyOrderId = () => {
     if (order?.id) {
@@ -259,12 +275,13 @@ export default function PaymentCallbackPage() {
             <Loader2 className="w-4 h-4" />
             Refresh Status
           </Button>
-          <Link to="/">
-            <Button className="gap-2 w-full sm:w-auto">
-              Back to Home
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
+          <Button
+            className="gap-2 w-full sm:w-auto"
+            onClick={() => navigate(-1)}
+          >
+            Back
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Help Text */}

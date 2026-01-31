@@ -71,7 +71,18 @@ export function useTrackOrdersByPhone(phone) {
   return useQuery({
     queryKey: queryKeys.orders.trackByPhone(phone),
     queryFn: () => ordersApi.trackByPhone(phone),
-    select: (response) => response.data,
+    select: (response) => {
+      // Backend returns { success: true, data: orders[], count: X }
+      // Normalize to match frontend expectations
+      const orders = response.data || [];
+      return {
+        orders: orders.map((order) => ({
+          ...order,
+          id: order.orderId || order.id, // Map orderId to id for consistency
+        })),
+        count: orders.length,
+      };
+    },
     enabled: !!phone && phone.length >= 10,
     retry: false,
   });
