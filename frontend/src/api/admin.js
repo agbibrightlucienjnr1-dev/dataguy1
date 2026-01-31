@@ -129,4 +129,28 @@ export const adminApi = {
    * Get Hubnet wallet balance
    */
   getHubnetBalance: () => apiClient.get("/admin/hubnet-balance"),
+
+  // ========== System Management ==========
+
+  /**
+   * Get database size statistics
+   */
+  getDatabaseStats: () => apiClient.get("/admin/database/stats"),
+
+  /**
+   * Get memory usage statistics
+   */
+  getMemoryStats: () => apiClient.get("/admin/memory/stats"),
+
+  /**
+   * Run database cleanup
+   * @param {Object} data - { archiveOrdersDays?, cleanupTransactionsDays?, hardDeleteOrders?, optimize? }
+   */
+  runDatabaseCleanup: (data) =>
+    apiClient.post("/admin/database/cleanup", data),
+
+  /**
+   * Optimize database
+   */
+  optimizeDatabase: () => apiClient.post("/admin/database/optimize"),
 };

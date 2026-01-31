@@ -9,6 +9,12 @@ import {
 } from "../services/adminService.js";
 import { initiateHubnetOrder } from "../services/orderService.js";
 import { checkBalance } from "../services/hubnetService.js";
+import {
+  getDatabaseSize,
+  runFullCleanup,
+  optimizeDatabase,
+} from "../services/cleanupService.js";
+import { getMemoryUsage, checkMemoryUsage } from "../utils/memoryMonitor.js";
 import { asyncHandler, AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
@@ -313,4 +319,89 @@ export const markOrderCompleted = asyncHandler(async (req, res) => {
     message: "Order marked as completed successfully",
     order: updatedOrder,
   });
+});
+
+/**
+ * Get database size and statistics
+ * GET /api/admin/database/stats
+ */
+export const getDatabaseStats = asyncHandler(async (req, res) => {
+  try {
+    const stats = await getDatabaseSize();
+    res.status(200).json({
+      success: true,
+      ...stats,
+    });
+  } catch (error) {
+    logger.error("Error fetching database stats", error);
+    throw error;
+  }
+});
+
+/**
+ * Get memory usage statistics
+ * GET /api/admin/memory/stats
+ */
+export const getMemoryStats = asyncHandler(async (req, res) => {
+  try {
+    const memory = getMemoryUsage();
+    const status = checkMemoryUsage(80); // 80% threshold
+
+    res.status(200).json({
+      success: true,
+      ...memory,
+      status,
+    });
+  } catch (error) {
+    logger.error("Error fetching memory stats", error);
+    throw error;
+  }
+});
+
+/**
+ * Run database cleanup
+ * POST /api/admin/database/cleanup
+ */
+export const runDatabaseCleanup = asyncHandler(async (req, res) => {
+  try {
+    const {
+      archiveOrdersDays = 90,
+      cleanupTransactionsDays = 180,
+      hardDeleteOrders = false,
+      optimize = true,
+    } = req.body;
+
+    const result = await runFullCleanup({
+      archiveOrdersDays,
+      cleanupTransactionsDays,
+      hardDeleteOrders,
+      optimize,
+    });
+
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    logger.error("Error running database cleanup", error);
+    throw error;
+  }
+});
+
+/**
+ * Optimize database
+ * POST /api/admin/database/optimize
+ */
+export const optimizeDatabaseEndpoint = asyncHandler(async (req, res) => {
+  try {
+    const result = await optimizeDatabase();
+
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    logger.error("Error optimizing database", error);
+    throw error;
+  }
 });

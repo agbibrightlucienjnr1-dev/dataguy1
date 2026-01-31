@@ -36,6 +36,7 @@ import {
   AdminOrdersPage,
   AdminBundlesPage,
   AdminWithdrawalsPage,
+  AdminSystemPage,
 } from "./pages/admin";
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
               path="/admin/withdrawals"
               element={<AdminWithdrawalsPage />}
             />
+            <Route path="/admin/system" element={<AdminSystemPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

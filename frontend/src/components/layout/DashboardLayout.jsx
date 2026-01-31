@@ -18,6 +18,7 @@ import {
   Users,
   BarChart3,
   RefreshCw,
+  Server,
 } from "lucide-react";
 import { useAuthStore } from "../../stores";
 import { useLogout } from "../../hooks";
@@ -39,6 +40,7 @@ const adminNavItems = [
   { to: "/admin/users", icon: Users, label: "Users" },
   { to: "/admin/bundles", icon: Package, label: "Bundles" },
   { to: "/admin/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
+  { to: "/admin/system", icon: Server, label: "System" },
   { to: "/admin/reports", icon: BarChart3, label: "Reports" },
 ];
 

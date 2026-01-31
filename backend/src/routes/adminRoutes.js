@@ -11,6 +11,10 @@ import {
   fulfillOrder,
   markOrderCompleted,
   getHubnetBalance,
+  getDatabaseStats,
+  getMemoryStats,
+  runDatabaseCleanup,
+  optimizeDatabaseEndpoint,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -57,6 +61,14 @@ router.get("/wallets", getWallets); // View all wallet balances
  * Hubnet
  */
 router.get("/hubnet-balance", getHubnetBalance); // Get Hubnet wallet balance
+
+/**
+ * Database Management
+ */
+router.get("/database/stats", getDatabaseStats); // Get database size statistics
+router.get("/memory/stats", getMemoryStats); // Get memory usage statistics
+router.post("/database/cleanup", runDatabaseCleanup); // Run database cleanup
+router.post("/database/optimize", optimizeDatabaseEndpoint); // Optimize database
 
 /**
  * Bundles Management
