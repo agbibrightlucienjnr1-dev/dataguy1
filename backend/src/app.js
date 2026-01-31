@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { globalRateLimiter } from "./middlewares/rateLimiter.js";
+import { checkDatabaseHealth } from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import dataBundleRoutes from "./routes/dataBundleRoutes.js";
 import agentPriceRoutes from "./routes/agentPriceRoutes.js";
@@ -87,6 +88,19 @@ app.use(
   }),
 );
 
+// Request timeout (30 seconds)
+app.use((req, res, next) => {
+  req.setTimeout(30000, () => {
+    if (!res.headersSent) {
+      res.status(408).json({
+        success: false,
+        message: "Request timeout",
+      });
+    }
+  });
+  next();
+});
+
 // Request size limits to prevent DoS attacks
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -103,11 +117,22 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("combined"));
 }
 
-// Health check endpoint
-app.get("/health", (req, res) => {
+// Health check endpoint with database check
+app.get("/health", async (req, res) => {
+  const dbHealth = await checkDatabaseHealth();
+
+  if (!dbHealth.healthy) {
+    return res.status(503).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      database: dbHealth,
+    });
+  }
+
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
+    database: { healthy: true },
     // Only expose environment in development
     ...(process.env.NODE_ENV === "development" && {
       environment: process.env.NODE_ENV,

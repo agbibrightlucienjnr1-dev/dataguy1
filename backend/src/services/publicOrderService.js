@@ -201,9 +201,14 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     if (!existingOrder.paymentReference) {
       const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
       
+      // Calculate total amount (pricePaid + transactionFee)
+      const existingTotalAmount = existingOrder.pricePaid.add(
+        existingOrder.transactionFee || 0
+      );
+      
       const paymentData = await initializeTransaction({
         email: customerPhone + "@customer.dataguy.com",
-        amount: existingOrder.pricePaid.toString(),
+        amount: existingTotalAmount.toString(), // Total amount including transaction fee
         reference: existingOrder.id,
         callbackUrl,
         metadata: {
@@ -217,18 +222,27 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
         },
       });
 
+      // Return order without transactionFee for customer-facing response
+      const { transactionFee: _, ...orderWithoutFee } = existingOrder;
+
       return {
-        order: existingOrder,
+        order: orderWithoutFee, // Exclude transactionFee from customer response
         payment: paymentData,
       };
     }
 
-    // If payment already exists, just return the order
+    // If payment already exists, just return the order (without transactionFee)
+    const { transactionFee: __, ...orderWithoutFee2 } = existingOrder;
+
     return {
-      order: existingOrder,
+      order: orderWithoutFee2, // Exclude transactionFee from customer response
       payment: null, // Payment already initialized
     };
   }
+
+  // Calculate 4% transaction fee (hidden from customer)
+  const transactionFee = pricePaid.mul(0.04); // 4% of pricePaid
+  const totalAmount = pricePaid.add(transactionFee); // Total amount to charge
 
   // Create order
   const order = await prisma.order.create({
@@ -238,7 +252,8 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
       bundleId,
       sellerId: seller.id,
       sellerType: seller.role,
-      pricePaid,
+      pricePaid, // Original price (what customer sees)
+      transactionFee, // 4% fee (hidden from customer)
       status: "pending",
     },
     include: {
@@ -257,9 +272,10 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
   // Initialize Paystack transaction
   const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
 
+  // Initialize Paystack transaction with total amount (pricePaid + 4% fee)
   const paymentData = await initializeTransaction({
     email: customerPhone + "@customer.dataguy.com", // Convert phone to email format
-    amount: pricePaid.toString(),
+    amount: totalAmount.toString(), // Total amount including 4% transaction fee
     reference: order.id,
     callbackUrl,
     metadata: {
@@ -273,8 +289,12 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     },
   });
 
+  // Return order without transactionFee for customer-facing response
+  // Customers should only see pricePaid, not the hidden transaction fee
+  const { transactionFee: _, ...orderWithoutFee } = order;
+
   return {
-    order,
+    order: orderWithoutFee, // Exclude transactionFee from customer response
     payment: paymentData,
   };
 };

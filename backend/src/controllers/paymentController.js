@@ -67,11 +67,14 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
         return res.status(200).json({ received: true });
       }
 
-      // Verify amount matches
-      const expectedAmount = parseFloat(order.pricePaid);
+      // Verify amount matches (should be pricePaid + transactionFee)
+      const expectedAmount = parseFloat(
+        order.pricePaid.add(order.transactionFee || 0).toString()
+      );
       const paidAmount = verification.amount;
 
-      if (paidAmount !== expectedAmount) {
+      if (Math.abs(paidAmount - expectedAmount) > 0.01) {
+        // Allow small floating point differences (0.01 GHS)
         logger.error("Amount mismatch", {
           expected: expectedAmount,
           paid: paidAmount,
@@ -214,11 +217,14 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
       throw new AppError("Payment verification failed", 400);
     }
 
-    // Verify amount matches
-    const expectedAmount = parseFloat(order.pricePaid);
+    // Verify amount matches (should be pricePaid + transactionFee)
+    const expectedAmount = parseFloat(
+      order.pricePaid.add(order.transactionFee || 0).toString()
+    );
     const paidAmount = verification.amount;
 
-    if (paidAmount !== expectedAmount) {
+    if (Math.abs(paidAmount - expectedAmount) > 0.01) {
+      // Allow small floating point differences (0.01 GHS)
       logger.error("Amount mismatch", {
         expected: expectedAmount,
         paid: paidAmount,

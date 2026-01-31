@@ -151,6 +151,7 @@ model Order {
   
   // Pricing
   pricePaid           Decimal     @map("price_paid") @db.Decimal(10, 2)
+  transactionFee      Decimal     @default(0) @map("transaction_fee") @db.Decimal(10, 2)
   
   // Commission tracking
   commissionAmount    Decimal?    @map("commission_amount") @db.Decimal(10, 2)
