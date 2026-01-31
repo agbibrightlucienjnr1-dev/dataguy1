@@ -73,9 +73,10 @@ const extractVolumeInMB = (volumeString) => {
  */
 export const checkBalance = async () => {
   try {
-    logger.info("Checking Hubnet wallet balance");
+    const baseUrl = getBaseUrl();
+    logger.info("Checking Hubnet wallet balance", { baseUrl });
 
-    const response = await fetch(`${getBaseUrl()}/check_balance`, {
+    const response = await fetch(`${baseUrl}/check_balance`, {
       method: "GET",
       headers: {
         token: `Bearer ${getApiKey()}`,
@@ -112,6 +113,16 @@ export const checkBalance = async () => {
     };
   } catch (error) {
     logger.error("Error checking Hubnet balance", error);
+    
+    // Provide more helpful error messages for network/DNS errors
+    if (error.cause?.code === "ENOTFOUND" || error.message?.includes("getaddrinfo ENOTFOUND")) {
+      const baseUrl = getBaseUrl();
+      throw new AppError(
+        `Cannot reach Hubnet API at ${baseUrl}. Please verify HUBNET_BASE_URL is set correctly. Expected: https://console.hubnet.app/live/api/context/business/transaction`,
+        500,
+      );
+    }
+    
     throw error instanceof AppError
       ? error
       : new AppError("Failed to check Hubnet balance", 500);
@@ -169,7 +180,10 @@ export const initiateDataTransaction = async (transactionData) => {
       reference,
     });
 
-    const endpoint = `${getBaseUrl()}/${hubnetNetwork}-new-transaction`;
+    const baseUrl = getBaseUrl();
+    const endpoint = `${baseUrl}/${hubnetNetwork}-new-transaction`;
+
+    logger.info("Hubnet API endpoint", { endpoint, baseUrl });
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -223,6 +237,16 @@ export const initiateDataTransaction = async (transactionData) => {
     };
   } catch (error) {
     logger.error("Error initiating Hubnet transaction", error);
+    
+    // Provide more helpful error messages for network/DNS errors
+    if (error.cause?.code === "ENOTFOUND" || error.message?.includes("getaddrinfo ENOTFOUND")) {
+      const baseUrl = getBaseUrl();
+      throw new AppError(
+        `Cannot reach Hubnet API at ${baseUrl}. Please verify HUBNET_BASE_URL is set correctly. Expected: https://console.hubnet.app/live/api/context/business/transaction`,
+        500,
+      );
+    }
+    
     throw error instanceof AppError
       ? error
       : new AppError("Failed to initiate data transaction", 500);

@@ -1528,7 +1528,7 @@ PAYSTACK_PUBLIC_KEY=pk_test_xxx
 
 # Hubnet
 HUBNET_API_KEY=your-hubnet-key
-HUBNET_API_URL=https://hubnetapi.com/api
+HUBNET_BASE_URL=https://console.hubnet.app/live/api/context/business/transaction
 HUBNET_WEBHOOK_URL=https://yourdomain.com/api/hubnet/webhook
 
 # Frontend
