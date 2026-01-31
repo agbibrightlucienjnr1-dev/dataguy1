@@ -122,4 +122,11 @@ export const adminApi = {
    */
   rejectWithdrawal: (id, reason) =>
     apiClient.put(`/withdrawals/${id}/reject`, { reason }),
+
+  // ========== Hubnet ==========
+
+  /**
+   * Get Hubnet wallet balance
+   */
+  getHubnetBalance: () => apiClient.get("/admin/hubnet-balance"),
 };
