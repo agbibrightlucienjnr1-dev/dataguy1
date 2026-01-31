@@ -33,11 +33,16 @@ module.exports = {
         NODE_ENV: "production",
       },
       
-      // Logging
+      // Logging with rotation
       error_file: "./logs/pm2-error.log",
       out_file: "./logs/pm2-out.log",
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       merge_logs: true,
+      // Log rotation - PM2 will rotate logs when they exceed 10MB
+      // Keep last 10 log files
+      max_size: "10M",
+      retain: 10,
+      compress: true, // Compress old logs
       
       // Auto-restart on file changes (development only)
       ignore_watch: ["node_modules", "logs", ".git"],
