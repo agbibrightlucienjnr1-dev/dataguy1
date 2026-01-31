@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { globalRateLimiter } from "./middlewares/rateLimiter.js";
+import { standardPaginationLimiter } from "./middlewares/paginationLimiter.js";
 import { checkDatabaseHealth } from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import dataBundleRoutes from "./routes/dataBundleRoutes.js";
@@ -129,6 +130,14 @@ app.get("/health", async (req, res) => {
     });
   }
 
+  // Include memory info in health check (only in development or if requested)
+  let memoryInfo = null;
+  const includeMemory = process.env.NODE_ENV === "development" || req.query.memory === "true";
+  if (includeMemory) {
+    const { getMemoryUsage } = await import("./utils/memoryMonitor.js");
+    memoryInfo = getMemoryUsage();
+  }
+
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -137,20 +146,27 @@ app.get("/health", async (req, res) => {
     ...(process.env.NODE_ENV === "development" && {
       environment: process.env.NODE_ENV,
     }),
+    ...(memoryInfo && {
+      memory: {
+        rss: memoryInfo.formatted.rss,
+        heapUsed: memoryInfo.formatted.heapUsed,
+        systemUsage: memoryInfo.formatted.systemUsagePercent,
+      },
+    }),
   });
 });
 
-// API routes
+// API routes with pagination limiting
 app.use("/api/auth", authRoutes);
-app.use("/api/bundles", dataBundleRoutes);
-app.use("/api/agent-prices", agentPriceRoutes);
-app.use("/api/sub-agent-prices", subAgentPriceRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/wallet", walletRoutes);
+app.use("/api/bundles", standardPaginationLimiter, dataBundleRoutes);
+app.use("/api/agent-prices", standardPaginationLimiter, agentPriceRoutes);
+app.use("/api/sub-agent-prices", standardPaginationLimiter, subAgentPriceRoutes);
+app.use("/api/orders", standardPaginationLimiter, orderRoutes);
+app.use("/api/wallet", standardPaginationLimiter, walletRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/hubnet", hubnetRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/withdrawals", withdrawalRoutes);
+app.use("/api/admin", adminRoutes); // Admin routes have their own pagination limiter
+app.use("/api/withdrawals", standardPaginationLimiter, withdrawalRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
