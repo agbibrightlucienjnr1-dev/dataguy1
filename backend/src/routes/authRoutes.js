@@ -12,7 +12,4 @@ router.post("/login", authRateLimiter, login);
 // Protected routes - moderate rate limiting
 router.get("/me", apiRateLimiter, authenticate, getMe);
 
-// Protected routes
-router.get("/me", authenticate, getMe);
-
 export default router;
