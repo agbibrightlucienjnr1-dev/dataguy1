@@ -5,6 +5,7 @@ dotenv.config();
 
 import app from "./app.js";
 import { initDatabase, closeDatabase } from "./config/database.js";
+import { validateEnv } from "./config/env.js";
 
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -12,6 +13,9 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 // Start server only after database connection is established
 const startServer = async () => {
   try {
+    // Validate environment variables - fail fast if missing
+    validateEnv();
+
     // Initialize database - fail fast if unavailable
     await initDatabase();
 

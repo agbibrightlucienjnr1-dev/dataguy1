@@ -41,8 +41,13 @@ export const comparePassword = async (password, hash) => {
 export const validatePasswordStrength = (password) => {
   const errors = [];
 
-  if (!password || password.length < 8) {
-    errors.push("Password must be at least 8 characters long");
+  // Increased minimum length for better security
+  const minLength = process.env.MIN_PASSWORD_LENGTH
+    ? parseInt(process.env.MIN_PASSWORD_LENGTH, 10)
+    : 12;
+
+  if (!password || password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
   }
 
   if (!/[A-Z]/.test(password)) {
@@ -55,6 +60,11 @@ export const validatePasswordStrength = (password) => {
 
   if (!/[0-9]/.test(password)) {
     errors.push("Password must contain at least one number");
+  }
+
+  // Add special character requirement
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push("Password must contain at least one special character");
   }
 
   return {

@@ -4,25 +4,42 @@
  */
 export const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+  const isDevelopment = process.env.NODE_ENV === "development";
 
-  // Log error details in development
-  if (process.env.NODE_ENV === "development") {
+  // Log error details (always log, but with different detail levels)
+  if (isDevelopment) {
     console.error("❌ Error:", {
       message: err.message,
       stack: err.stack,
       url: req.originalUrl,
       method: req.method,
     });
+  } else {
+    // In production, log errors but don't expose details
+    console.error("❌ Error:", {
+      statusCode,
+      url: req.originalUrl,
+      method: req.method,
+      // Only log message for non-500 errors (user errors)
+      ...(statusCode < 500 && { message: err.message }),
+    });
+  }
+
+  // Sanitize error messages in production for security
+  // Don't expose internal error details to clients
+  let clientMessage = err.message || "Internal Server Error";
+  if (!isDevelopment && statusCode >= 500) {
+    // For server errors in production, use generic message
+    clientMessage = "An error occurred. Please try again later.";
   }
 
   // Send error response with message at top level for easier frontend access
   res.status(statusCode).json({
     success: false,
-    message, // Include at top level for easier access
+    message: clientMessage,
     error: {
-      message,
-      ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+      message: clientMessage,
+      ...(isDevelopment && { stack: err.stack }),
     },
   });
 };

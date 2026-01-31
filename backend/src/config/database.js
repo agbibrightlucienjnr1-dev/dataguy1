@@ -14,9 +14,15 @@ export const initDatabase = async () => {
   }
 
   try {
-    // Create PostgreSQL connection pool
+    // Create PostgreSQL connection pool with limits to prevent exhaustion
     const pool = new pg.Pool({
       connectionString: process.env.DATABASE_URL,
+      max: parseInt(process.env.DB_POOL_MAX || "20", 10), // Maximum pool size
+      idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT || "30000", 10), // 30 seconds
+      connectionTimeoutMillis: parseInt(
+        process.env.DB_POOL_CONNECTION_TIMEOUT || "2000",
+        10,
+      ), // 2 seconds
     });
 
     // Create Prisma adapter

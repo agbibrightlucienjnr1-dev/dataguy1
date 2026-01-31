@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import helmet from "helmet";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { globalRateLimiter } from "./middlewares/rateLimiter.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -22,10 +23,73 @@ if (process.env.TRUST_PROXY === "true" || process.env.NODE_ENV === "production")
   app.set("trust proxy", 1); // Trust first proxy
 }
 
-// Basic middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security headers with Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for React
+        scriptSrc: ["'self'"], // Only allow scripts from same origin
+        imgSrc: ["'self'", "data:", "https:"], // Allow images from same origin, data URIs, and HTTPS
+        connectSrc: ["'self'"], // API calls only to same origin
+        fontSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Disable for compatibility with some services
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+);
+
+// HTTPS enforcement in production (if not handled by reverse proxy)
+if (process.env.NODE_ENV === "production" && process.env.ENFORCE_HTTPS === "true") {
+  app.use((req, res, next) => {
+    // Check if request is already HTTPS or forwarded as HTTPS
+    if (
+      req.header("x-forwarded-proto") !== "https" &&
+      req.protocol !== "https"
+    ) {
+      return res.redirect(`https://${req.header("host")}${req.url}`);
+    }
+    next();
+  });
+}
+
+// CORS configuration - restrict to allowed origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  : process.env.NODE_ENV === "production"
+    ? [] // Must be set in production
+    : ["http://localhost:5173", "http://localhost:3000"]; // Development defaults
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.) in development
+      if (!origin && process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200,
+  }),
+);
+
+// Request size limits to prevent DoS attacks
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Global rate limiter - applied to all routes as base layer
 // This catches extreme abuse (1000 requests per 15 minutes)
@@ -44,7 +108,10 @@ app.get("/health", (req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
+    // Only expose environment in development
+    ...(process.env.NODE_ENV === "development" && {
+      environment: process.env.NODE_ENV,
+    }),
   });
 });
 
