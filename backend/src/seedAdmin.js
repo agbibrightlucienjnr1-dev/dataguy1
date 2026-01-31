@@ -13,9 +13,9 @@ async function seedAdmin() {
   const prisma = await initDatabase();
 
   const adminData = {
-    name: "Admin User",
-    email: "admin@dataguy.com",
-    phone: "0200000000", // Change this
+    name: "Bright Lucien Jnr Agbi",
+    email: "agbibrightlucienjnr@gmail.com",
+    phone: "0533853708", // Change this
     password: "Admin@123", // Change this immediately after first login!
     role: "admin",
   };
