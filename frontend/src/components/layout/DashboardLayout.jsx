@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   Wifi,
   LayoutDashboard,
@@ -16,9 +17,12 @@ import {
   Tag,
   Users,
   BarChart3,
+  RefreshCw,
 } from "lucide-react";
 import { useAuthStore } from "../../stores";
 import { useLogout } from "../../hooks";
+import { adminApi } from "../../api";
+import { formatCurrency } from "../../utils/formatters";
 
 const agentNavItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -45,6 +49,22 @@ export default function DashboardLayout() {
   const logout = useLogout();
 
   const navItems = isAdmin() ? adminNavItems : agentNavItems;
+
+  // Fetch Hubnet balance for admin users
+  const {
+    data: hubnetBalanceData,
+    isLoading: hubnetBalanceLoading,
+    refetch: refetchHubnetBalance,
+  } = useQuery({
+    queryKey: ["admin", "hubnet-balance"],
+    queryFn: () => adminApi.getHubnetBalance(),
+    enabled: isAdmin(), // Only fetch for admin users
+    refetchInterval: 60000, // Refetch every 60 seconds
+    retry: 2,
+    retryDelay: 3000,
+  });
+
+  const hubnetBalance = hubnetBalanceData?.balance || "0.00";
 
   const handleLogout = () => {
     logout();
@@ -146,6 +166,39 @@ export default function DashboardLayout() {
 
             {/* Right side */}
             <div className="flex items-center gap-4">
+              {/* Hubnet Balance (Admin only) */}
+              {isAdmin() && (
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
+                  <Wallet className="w-4 h-4 text-slate-600" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 leading-none">
+                      Hubnet Balance
+                    </span>
+                    <span className="text-sm font-semibold text-slate-900 leading-tight">
+                      {hubnetBalanceLoading ? (
+                        <span className="inline-flex items-center gap-1">
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          Loading...
+                        </span>
+                      ) : (
+                        formatCurrency(hubnetBalance)
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => refetchHubnetBalance()}
+                    className="ml-1 p-1 hover:bg-slate-200 rounded transition-colors"
+                    title="Refresh balance"
+                  >
+                    <RefreshCw
+                      className={`w-3.5 h-3.5 text-slate-500 ${
+                        hubnetBalanceLoading ? "animate-spin" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
+
               {/* User menu */}
               <div className="relative">
                 <button
