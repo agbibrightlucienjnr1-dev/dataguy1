@@ -18,7 +18,7 @@ import {
 } from "./pages/public";
 
 // Dashboard Pages
-import { DashboardPage } from "./pages/dashboard";
+import { DashboardPage, ProfilePage } from "./pages/dashboard";
 
 // Agent Pages
 import {
@@ -65,10 +65,7 @@ function App() {
             <Route path="/wallet" element={<AgentWalletPage />} />
             <Route path="/withdrawals" element={<AgentWithdrawalsPage />} />
             <Route path="/pricing" element={<AgentPricingPage />} />
-            <Route
-              path="/profile"
-              element={<PlaceholderPage title="Profile" />}
-            />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
 
@@ -83,6 +80,7 @@ function App() {
               path="/admin/withdrawals"
               element={<AdminWithdrawalsPage />}
             />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
 

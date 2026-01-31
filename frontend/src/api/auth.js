@@ -17,4 +17,10 @@ export const authApi = {
    * Get current authenticated user's profile
    */
   getProfile: () => apiClient.get("/auth/me"),
+
+  /**
+   * Change user password
+   * @param {Object} data - { currentPassword, newPassword }
+   */
+  changePassword: (data) => apiClient.patch("/auth/change-password", data),
 };

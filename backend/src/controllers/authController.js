@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   getUserById,
+  changePassword,
 } from "../services/authService.js";
 import { validatePasswordStrength } from "../utils/password.js";
 import { AppError } from "../middlewares/errorHandler.js";
@@ -114,5 +115,27 @@ export const getMe = asyncHandler(async (req, res) => {
       user,
       paymentLink,
     },
+  });
+});
+
+/**
+ * Change user password
+ * PATCH /api/auth/change-password
+ */
+export const updatePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.id; // From authenticate middleware
+
+  // Validate required fields
+  if (!currentPassword || !newPassword) {
+    throw new AppError("Current password and new password are required", 400);
+  }
+
+  // Change password
+  await changePassword(userId, currentPassword, newPassword);
+
+  res.status(200).json({
+    success: true,
+    message: "Password changed successfully",
   });
 });

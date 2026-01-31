@@ -1,5 +1,11 @@
 // Auth hooks
-export { useLogin, useRegister, useLogout, useAuth } from "./useAuth";
+export {
+  useLogin,
+  useRegister,
+  useLogout,
+  useAuth,
+  useChangePassword,
+} from "./useAuth";
 
 // Data hooks
 export {

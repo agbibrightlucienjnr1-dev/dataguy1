@@ -93,3 +93,23 @@ export function useAuth() {
     paymentLinkCode: user?.paymentLinkCode,
   };
 }
+
+/**
+ * Hook for changing password
+ */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: authApi.changePassword,
+    onSuccess: () => {
+      toast.success("Password changed successfully!");
+    },
+    onError: (error) => {
+      toast.error(
+        getErrorMessage(
+          error,
+          "Failed to change password. Please try again.",
+        ),
+      );
+    },
+  });
+}

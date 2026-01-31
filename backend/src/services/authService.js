@@ -1,5 +1,9 @@
 import { getPrisma } from "../config/database.js";
-import { hashPassword, comparePassword } from "../utils/password.js";
+import {
+  hashPassword,
+  comparePassword,
+  validatePasswordStrength,
+} from "../utils/password.js";
 import { generateAuthToken } from "../utils/jwt.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { createId } from "@paralleldrive/cuid2";
@@ -143,23 +147,93 @@ export const loginUser = async (phone, password) => {
 export const getUserById = async (userId) => {
   const prisma = getPrisma();
 
+  if (!userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        parentAgentId: true,
+        paymentLinkCode: true,
+        createdAt: true,
+        wallet: {
+          select: {
+            balance: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    // Flatten wallet balance onto user object
+    // Handle case where wallet might not exist (e.g., for admin users)
+    let walletBalance = "0.00";
+
+    if (user.wallet) {
+      try {
+        walletBalance =
+          user.wallet.balance != null
+            ? String(user.wallet.balance)
+            : "0.00";
+      } catch (walletError) {
+        // If there's an error converting wallet values, use defaults
+        console.warn("Error processing wallet values:", walletError);
+        walletBalance = "0.00";
+      }
+    }
+
+    // Remove wallet object from response and add flattened values
+    const { wallet: _wallet, ...userWithoutWallet } = user;
+
+    return {
+      ...userWithoutWallet,
+      walletBalance,
+    };
+  } catch (error) {
+    // If it's already an AppError, re-throw it
+    if (error instanceof AppError) {
+      throw error;
+    }
+    // Log the actual error for debugging
+    console.error("Error in getUserById:", {
+      userId,
+      error: error.message,
+      stack: error.stack,
+    });
+    // Otherwise, wrap it in an AppError
+    throw new AppError(
+      `Failed to get user: ${error.message}`,
+      500,
+    );
+  }
+};
+
+/**
+ * Change user password
+ * @param {string} userId - User ID
+ * @param {string} currentPassword - Current password
+ * @param {string} newPassword - New password
+ * @returns {Promise<void>}
+ */
+export const changePassword = async (userId, currentPassword, newPassword) => {
+  const prisma = getPrisma();
+
+  // Get user with password hash
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      parentAgentId: true,
-      paymentLinkCode: true,
-      createdAt: true,
-      wallet: {
-        select: {
-          balance: true,
-          pendingBalance: true,
-        },
-      },
+      passwordHash: true,
     },
   });
 
@@ -167,11 +241,40 @@ export const getUserById = async (userId) => {
     throw new AppError("User not found", 404);
   }
 
-  // Flatten wallet balance onto user object
-  return {
-    ...user,
-    walletBalance: user.wallet?.balance || "0.00",
-    pendingBalance: user.wallet?.pendingBalance || "0.00",
-    wallet: undefined,
-  };
+  // Verify current password
+  const isCurrentPasswordValid = await comparePassword(
+    currentPassword,
+    user.passwordHash,
+  );
+
+  if (!isCurrentPasswordValid) {
+    throw new AppError("Current password is incorrect", 400);
+  }
+
+  // Validate new password strength
+  const passwordValidation = validatePasswordStrength(newPassword);
+  if (!passwordValidation.isValid) {
+    throw new AppError(
+      `Password validation failed: ${passwordValidation.errors.join(", ")}`,
+      400,
+    );
+  }
+
+  // Check if new password is different from current
+  const isSamePassword = await comparePassword(newPassword, user.passwordHash);
+  if (isSamePassword) {
+    throw new AppError(
+      "New password must be different from current password",
+      400,
+    );
+  }
+
+  // Hash new password
+  const newPasswordHash = await hashPassword(newPassword);
+
+  // Update password
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: newPasswordHash },
+  });
 };
