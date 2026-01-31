@@ -79,6 +79,32 @@ export default function AdminSystemPage() {
     },
   });
 
+  // Cache stats
+  const {
+    data: cacheStatsData,
+    isLoading: cacheStatsLoading,
+    refetch: refetchCacheStats,
+  } = useQuery({
+    queryKey: ["admin", "cache-stats"],
+    queryFn: () => adminApi.getCacheStats(),
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Clear cache mutation
+  const clearCacheMutation = useMutation({
+    mutationFn: () => adminApi.clearCache(),
+    onSuccess: () => {
+      toast.success("Cache cleared successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin", "cache-stats"] });
+      refetchCacheStats();
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || "Failed to clear cache"
+      );
+    },
+  });
+
   const handleCleanup = () => {
     if (
       !window.confirm(
@@ -309,6 +335,96 @@ export default function AdminSystemPage() {
               </div>
             )}
           </div>
+        )}
+      </Card>
+
+      {/* Cache Management */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-purple-600" />
+            <h2 className="text-lg font-semibold text-slate-900">
+              Cache Management
+            </h2>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetchCacheStats()}
+            disabled={cacheStatsLoading}
+          >
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${
+                cacheStatsLoading ? "animate-spin" : ""
+              }`}
+            />
+            Refresh
+          </Button>
+        </div>
+        <p className="text-sm text-slate-600 mb-4">
+          Monitor and manage application cache to improve performance.
+        </p>
+
+        {cacheStatsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Spinner />
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="p-3 bg-slate-50 rounded-lg text-center">
+                <div className="text-xs text-slate-500 mb-1">Total Entries</div>
+                <div className="text-lg font-bold text-slate-900">
+                  {cacheStatsData?.data?.total || 0}
+                </div>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg text-center">
+                <div className="text-xs text-slate-500 mb-1">Active</div>
+                <div className="text-lg font-bold text-green-600">
+                  {cacheStatsData?.data?.active || 0}
+                </div>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg text-center">
+                <div className="text-xs text-slate-500 mb-1">Expired</div>
+                <div className="text-lg font-bold text-slate-600">
+                  {cacheStatsData?.data?.expired || 0}
+                </div>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg text-center">
+                <div className="text-xs text-slate-500 mb-1">Memory Usage</div>
+                <div className="text-lg font-bold text-slate-900">
+                  {cacheStatsData?.data?.memoryUsage || "0 MB"}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Are you sure you want to clear all cache? This may temporarily increase database load."
+                  )
+                ) {
+                  clearCacheMutation.mutate();
+                }
+              }}
+              variant="outline"
+              className="w-full"
+              disabled={clearCacheMutation.isPending}
+            >
+              {clearCacheMutation.isPending ? (
+                <>
+                  <Spinner className="w-4 h-4 mr-2" />
+                  Clearing...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Clear All Cache
+                </>
+              )}
+            </Button>
+          </>
         )}
       </Card>
 

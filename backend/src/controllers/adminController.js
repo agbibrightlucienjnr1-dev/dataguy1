@@ -95,25 +95,42 @@ export const getOrders = async (req, res) => {
 /**
  * Get platform statistics
  * GET /api/admin/statistics
+ * Cached for 2 minutes (statistics change frequently)
  */
-export const getStatistics = async (req, res) => {
+export const getStatistics = asyncHandler(async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
+
+    // Generate cache key based on date filters
+    const cacheKey = `admin:stats:${startDate || "all"}:${endDate || "all"}`;
+    const cache = (await import("../utils/cache.js")).default;
+    const cached = cache.get(cacheKey);
+
+    if (cached) {
+      res.setHeader("X-Cache", "HIT");
+      return res.status(200).json(cached);
+    }
 
     const result = await getPlatformStatistics({
       startDate,
       endDate,
     });
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: result,
-    });
+    };
+
+    // Cache for 2 minutes
+    cache.set(cacheKey, response, 2 * 60 * 1000);
+    res.setHeader("X-Cache", "MISS");
+
+    res.status(200).json(response);
   } catch (error) {
     logger.error("Error fetching statistics", error);
     throw error;
   }
-};
+});
 
 /**
  * Get all wallet balances
@@ -324,14 +341,31 @@ export const markOrderCompleted = asyncHandler(async (req, res) => {
 /**
  * Get database size and statistics
  * GET /api/admin/database/stats
+ * Cached for 2 minutes to reduce database load
  */
 export const getDatabaseStats = asyncHandler(async (req, res) => {
   try {
+    // Check cache first (2 minute TTL for database stats)
+    const cache = (await import("../utils/cache.js")).default;
+    const cacheKey = `db:stats:${req.user?.id || "anonymous"}`;
+    const cached = cache.get(cacheKey);
+
+    if (cached) {
+      res.setHeader("X-Cache", "HIT");
+      return res.status(200).json(cached);
+    }
+
     const stats = await getDatabaseSize();
-    res.status(200).json({
+    const response = {
       success: true,
       ...stats,
-    });
+    };
+
+    // Cache for 2 minutes
+    cache.set(cacheKey, response, 2 * 60 * 1000);
+    res.setHeader("X-Cache", "MISS");
+
+    res.status(200).json(response);
   } catch (error) {
     logger.error("Error fetching database stats", error);
     throw error;
@@ -341,17 +375,34 @@ export const getDatabaseStats = asyncHandler(async (req, res) => {
 /**
  * Get memory usage statistics
  * GET /api/admin/memory/stats
+ * Cached for 30 seconds (memory changes frequently)
  */
 export const getMemoryStats = asyncHandler(async (req, res) => {
   try {
+    // Check cache first (30 second TTL for memory stats)
+    const cache = (await import("../utils/cache.js")).default;
+    const cacheKey = "memory:stats";
+    const cached = cache.get(cacheKey);
+
+    if (cached) {
+      res.setHeader("X-Cache", "HIT");
+      return res.status(200).json(cached);
+    }
+
     const memory = getMemoryUsage();
     const status = checkMemoryUsage(80); // 80% threshold
 
-    res.status(200).json({
+    const response = {
       success: true,
       ...memory,
       status,
-    });
+    };
+
+    // Cache for 30 seconds
+    cache.set(cacheKey, response, 30 * 1000);
+    res.setHeader("X-Cache", "MISS");
+
+    res.status(200).json(response);
   } catch (error) {
     logger.error("Error fetching memory stats", error);
     throw error;
@@ -378,6 +429,15 @@ export const runDatabaseCleanup = asyncHandler(async (req, res) => {
       optimize,
     });
 
+    // Invalidate database stats cache after cleanup
+    const cache = (await import("../utils/cache.js")).default;
+    const cacheStore = cache.store;
+    cacheStore.forEach((_, key) => {
+      if (key.startsWith("db:stats:")) {
+        cache.delete(key);
+      }
+    });
+
     res.status(200).json({
       success: true,
       ...result,
@@ -395,6 +455,15 @@ export const runDatabaseCleanup = asyncHandler(async (req, res) => {
 export const optimizeDatabaseEndpoint = asyncHandler(async (req, res) => {
   try {
     const result = await optimizeDatabase();
+
+    // Invalidate database stats cache after optimization
+    const cache = (await import("../utils/cache.js")).default;
+    const cacheStore = cache.store;
+    cacheStore.forEach((_, key) => {
+      if (key.startsWith("db:stats:")) {
+        cache.delete(key);
+      }
+    });
 
     res.status(200).json({
       success: true,

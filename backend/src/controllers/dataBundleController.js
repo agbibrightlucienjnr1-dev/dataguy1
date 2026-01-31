@@ -9,6 +9,7 @@ import {
   toggleBundleStatus,
 } from "../services/dataBundleService.js";
 import { AppError } from "../middlewares/errorHandler.js";
+import cache from "../utils/cache.js";
 
 /**
  * Create new data bundle (Admin only)
@@ -32,6 +33,11 @@ export const createBundle = asyncHandler(async (req, res) => {
     adminPrice,
   });
 
+  // Invalidate bundle caches
+  cache.delete("bundles:admin:*");
+  cache.delete("bundles:active:*");
+  cache.delete(`bundles:${bundle.id}`);
+
   res.status(201).json({
     success: true,
     message: "Data bundle created successfully",
@@ -42,9 +48,19 @@ export const createBundle = asyncHandler(async (req, res) => {
 /**
  * Get all data bundles (Admin sees all, others see active only)
  * GET /api/bundles
+ * Cached for 10 minutes (bundles don't change frequently)
  */
 export const getAllBundles = asyncHandler(async (req, res) => {
   const { network, isActive } = req.query;
+
+  // Generate cache key based on user role and filters
+  const cacheKey = `bundles:${req.user.role}:${network || "all"}:${isActive || "all"}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached) {
+    res.setHeader("X-Cache", "HIT");
+    return res.status(200).json(cached);
+  }
 
   let bundles;
 
@@ -56,33 +72,67 @@ export const getAllBundles = asyncHandler(async (req, res) => {
     bundles = await getActiveBundles(network);
   }
 
-  res.status(200).json({
+  const response = {
     success: true,
     data: { bundles, count: bundles.length },
-  });
+  };
+
+  // Cache for 10 minutes (bundles rarely change)
+  cache.set(cacheKey, response, 10 * 60 * 1000);
+  res.setHeader("X-Cache", "MISS");
+
+  res.status(200).json(response);
 });
 
 /**
  * Get active bundles only (Public - for customers)
  * GET /api/bundles/active
+ * Cached for 10 minutes
  */
 export const getActiveBundlesOnly = asyncHandler(async (req, res) => {
   const { network } = req.query;
 
+  const cacheKey = `bundles:active:${network || "all"}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached) {
+    res.setHeader("X-Cache", "HIT");
+    return res.status(200).json(cached);
+  }
+
   const bundles = await getActiveBundles(network);
 
-  res.status(200).json({
+  const response = {
     success: true,
     data: { bundles, count: bundles.length },
-  });
+  };
+
+  // Cache for 10 minutes
+  cache.set(cacheKey, response, 10 * 60 * 1000);
+  res.setHeader("X-Cache", "MISS");
+
+  res.status(200).json(response);
 });
 
 /**
  * Get single data bundle by ID
  * GET /api/bundles/:id
+ * Cached for 10 minutes
  */
 export const getBundle = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  const cacheKey = `bundles:${id}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached) {
+    // Still check permissions
+    if (req.user.role !== "admin" && !cached.data.bundle.isActive) {
+      throw new AppError("Data bundle not found", 404);
+    }
+    res.setHeader("X-Cache", "HIT");
+    return res.status(200).json(cached);
+  }
 
   const bundle = await getDataBundleById(id);
 
@@ -91,10 +141,16 @@ export const getBundle = asyncHandler(async (req, res) => {
     throw new AppError("Data bundle not found", 404);
   }
 
-  res.status(200).json({
+  const response = {
     success: true,
     data: { bundle },
-  });
+  };
+
+  // Cache for 10 minutes
+  cache.set(cacheKey, response, 10 * 60 * 1000);
+  res.setHeader("X-Cache", "MISS");
+
+  res.status(200).json(response);
 });
 
 /**
@@ -114,6 +170,16 @@ export const updateBundle = asyncHandler(async (req, res) => {
 
   const bundle = await updateDataBundle(id, updateData);
 
+  // Invalidate bundle caches
+  cache.delete(`bundles:${id}`);
+  // Invalidate all bundle list caches (pattern matching would be better, but simple for now)
+  const cacheStore = cache.store;
+  cacheStore.forEach((_, key) => {
+    if (key.startsWith("bundles:")) {
+      cache.delete(key);
+    }
+  });
+
   res.status(200).json({
     success: true,
     message: "Data bundle updated successfully",
@@ -129,6 +195,15 @@ export const deleteBundle = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   await deleteDataBundle(id);
+
+  // Invalidate bundle caches
+  cache.delete(`bundles:${id}`);
+  const cacheStore = cache.store;
+  cacheStore.forEach((_, key) => {
+    if (key.startsWith("bundles:")) {
+      cache.delete(key);
+    }
+  });
 
   res.status(200).json({
     success: true,
@@ -149,6 +224,15 @@ export const toggleBundle = asyncHandler(async (req, res) => {
   }
 
   const bundle = await toggleBundleStatus(id, isActive);
+
+  // Invalidate bundle caches
+  cache.delete(`bundles:${id}`);
+  const cacheStore = cache.store;
+  cacheStore.forEach((_, key) => {
+    if (key.startsWith("bundles:")) {
+      cache.delete(key);
+    }
+  });
 
   res.status(200).json({
     success: true,

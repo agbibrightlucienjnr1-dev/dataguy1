@@ -19,6 +19,10 @@ import {
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
 import { adminRateLimiter } from "../middlewares/rateLimiter.js";
+import {
+  getCacheStatsMiddleware,
+  clearCacheMiddleware,
+} from "../middlewares/cacheMiddleware.js";
 
 const router = express.Router();
 
@@ -65,10 +69,16 @@ router.get("/hubnet-balance", getHubnetBalance); // Get Hubnet wallet balance
 /**
  * Database Management
  */
-router.get("/database/stats", getDatabaseStats); // Get database size statistics
-router.get("/memory/stats", getMemoryStats); // Get memory usage statistics
+router.get("/database/stats", getDatabaseStats); // Get database size statistics (cached 2 min)
+router.get("/memory/stats", getMemoryStats); // Get memory usage statistics (cached 30 sec)
 router.post("/database/cleanup", runDatabaseCleanup); // Run database cleanup
 router.post("/database/optimize", optimizeDatabaseEndpoint); // Optimize database
+
+/**
+ * Cache Management
+ */
+router.get("/cache/stats", getCacheStatsMiddleware); // Get cache statistics
+router.post("/cache/clear", clearCacheMiddleware); // Clear all cache
 
 /**
  * Bundles Management

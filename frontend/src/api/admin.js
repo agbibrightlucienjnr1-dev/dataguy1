@@ -153,4 +153,16 @@ export const adminApi = {
    * Optimize database
    */
   optimizeDatabase: () => apiClient.post("/admin/database/optimize"),
+
+  // ========== Cache Management ==========
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats: () => apiClient.get("/admin/cache/stats"),
+
+  /**
+   * Clear all cache
+   */
+  clearCache: () => apiClient.post("/admin/cache/clear"),
 };
