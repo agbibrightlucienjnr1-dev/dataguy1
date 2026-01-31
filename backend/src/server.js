@@ -54,6 +54,20 @@ const startServer = async () => {
     // Initialize database - fail fast if unavailable
     await initDatabase();
 
+    // Auto-seed admin user if enabled or in production
+    // This ensures admin exists on first deployment without needing shell access
+    if (process.env.AUTO_SEED_ADMIN === "true" || NODE_ENV === "production") {
+      try {
+        const { seedAdmin } = await import("./seedAdmin.js");
+        await seedAdmin();
+      } catch (seedError) {
+        // Log but don't fail startup if seeding fails (admin might already exist)
+        logger.warn("Admin seeding failed (non-critical)", {
+          error: seedError.message,
+        });
+      }
+    }
+
     server = app.listen(PORT, () => {
       logger.info("Server started successfully", {
         port: PORT,
