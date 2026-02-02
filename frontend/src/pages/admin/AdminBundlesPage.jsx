@@ -161,6 +161,24 @@ export default function AdminBundlesPage() {
   const bundles = data?.data?.bundles || [];
   const totalBundles = data?.data?.count || bundles.length;
 
+  // Helper function to parse volume string to number (e.g., "1GB" -> 1, "500MB" -> 0.5)
+  const parseVolume = (volume) => {
+    const match = volume.match(/^([\d.]+)\s*(GB|MB|TB)$/i);
+    if (!match) return 0;
+    const value = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+    if (unit === "MB") return value / 1000; // Convert MB to GB
+    if (unit === "TB") return value * 1000; // Convert TB to GB
+    return value; // Already in GB
+  };
+
+  // Sort bundles by volume (smallest to largest)
+  const sortedBundles = [...bundles].sort((a, b) => {
+    const volumeA = parseVolume(a.volume);
+    const volumeB = parseVolume(b.volume);
+    return volumeA - volumeB;
+  });
+
   const onSubmitAdd = (formData) => {
     createMutation.mutate({
       network: formData.network,
@@ -276,7 +294,7 @@ export default function AdminBundlesPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {bundles.map((bundle) => (
+          {sortedBundles.map((bundle) => (
             <Card
               key={bundle.id}
               className={`p-4 ${!bundle.isActive ? "opacity-60" : ""}`}

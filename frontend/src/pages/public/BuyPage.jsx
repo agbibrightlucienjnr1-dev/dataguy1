@@ -102,15 +102,37 @@ export default function BuyPage() {
     return bundles.filter((b) => b.network === networkFilter);
   }, [bundles, networkFilter]);
 
+  // Helper function to parse volume string to number (e.g., "1GB" -> 1, "500MB" -> 0.5)
+  const parseVolume = (volume) => {
+    const match = volume.match(/^([\d.]+)\s*(GB|MB|TB)$/i);
+    if (!match) return 0;
+    const value = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+    if (unit === "MB") return value / 1000; // Convert MB to GB
+    if (unit === "TB") return value * 1000; // Convert TB to GB
+    return value; // Already in GB
+  };
+
   // Group bundles by network
   const bundlesByNetwork = useMemo(() => {
-    return filteredBundles.reduce((acc, bundle) => {
+    const grouped = filteredBundles.reduce((acc, bundle) => {
       if (!acc[bundle.network]) {
         acc[bundle.network] = [];
       }
       acc[bundle.network].push(bundle);
       return acc;
     }, {});
+
+    // Sort bundles by volume (smallest to largest) within each network
+    Object.keys(grouped).forEach((network) => {
+      grouped[network].sort((a, b) => {
+        const volumeA = parseVolume(a.volume);
+        const volumeB = parseVolume(b.volume);
+        return volumeA - volumeB;
+      });
+    });
+
+    return grouped;
   }, [filteredBundles]);
 
   // Get unique networks
