@@ -1,6 +1,6 @@
 import { asyncHandler } from "../middlewares/errorHandler.js";
 import {
-  getWalletByUserId,
+  getOrCreateWallet,
   getWalletTransactions,
   getWalletSummary,
 } from "../services/walletService.js";
@@ -12,7 +12,8 @@ import {
 export const getMyWallet = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
-  const wallet = await getWalletByUserId(userId);
+  // Get or create wallet (creates if doesn't exist)
+  const wallet = await getOrCreateWallet(userId);
 
   res.status(200).json({
     success: true,

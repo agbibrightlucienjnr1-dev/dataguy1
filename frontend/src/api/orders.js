@@ -38,4 +38,10 @@ export const ordersApi = {
    * @param {string} id - Order ID
    */
   getById: (id) => apiClient.get(`/orders/${id}`),
+
+  /**
+   * Get seller info by payment link code (public)
+   * @param {string} code - Payment link code
+   */
+  getSellerInfo: (code) => apiClient.get(`/orders/link/${code}`),
 };

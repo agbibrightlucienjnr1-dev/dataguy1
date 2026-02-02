@@ -10,6 +10,7 @@ import {
   XCircle,
   Copy,
   ExternalLink,
+  Users,
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { useAuthStore } from "../../stores";
@@ -32,15 +33,28 @@ export default function DashboardPage() {
     totalRevenue: 0,
   };
 
-  // Generate payment link
+  // Generate payment link for customers
   const paymentLink = user?.paymentLinkCode
     ? `${window.location.origin}/buy/${user.paymentLinkCode}`
     : null;
+
+  // Generate sub-agent registration link (only for agents)
+  const subAgentRegistrationLink =
+    user?.paymentLinkCode && user?.role === "agent"
+      ? `${window.location.origin}/register/${user.paymentLinkCode}`
+      : null;
 
   const copyPaymentLink = () => {
     if (paymentLink) {
       navigator.clipboard.writeText(paymentLink);
       toast.success("Payment link copied!");
+    }
+  };
+
+  const copySubAgentLink = () => {
+    if (subAgentRegistrationLink) {
+      navigator.clipboard.writeText(subAgentRegistrationLink);
+      toast.success("Sub-agent registration link copied!");
     }
   };
 
@@ -70,40 +84,84 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Payment Link Card */}
-      {paymentLink && (
-        <Card className="bg-linear-to-r from-slate-900 to-slate-800 text-white p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-semibold">Your Payment Link</h3>
-              <p className="text-slate-300 text-sm mt-1">
-                Share this link with customers to receive payments
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="bg-white/10 rounded-lg px-3 py-2 text-sm font-mono truncate max-w-xs">
-                {paymentLink}
+      {/* Links Section */}
+      <div className="space-y-4">
+        {/* Customer Payment Link */}
+        {paymentLink && (
+          <Card className="bg-linear-to-r from-slate-900 to-slate-800 text-white p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <ShoppingCart className="w-5 h-5" />
+                  <h3 className="font-semibold">Customer Payment Link</h3>
+                </div>
+                <p className="text-slate-300 text-sm">
+                  Share this link with customers to receive payments
+                </p>
               </div>
-              <button
-                onClick={copyPaymentLink}
-                className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-                title="Copy link"
-              >
-                <Copy className="w-4 h-4" />
-              </button>
-              <a
-                href={paymentLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-                title="Open link"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
+              <div className="flex items-center gap-2">
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-sm font-mono truncate max-w-xs">
+                  {paymentLink}
+                </div>
+                <button
+                  onClick={copyPaymentLink}
+                  className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                  title="Copy link"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+                <a
+                  href={paymentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                  title="Open link"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
             </div>
-          </div>
-        </Card>
-      )}
+          </Card>
+        )}
+
+        {/* Sub-Agent Registration Link (only for agents) */}
+        {subAgentRegistrationLink && (
+          <Card className="bg-linear-to-r from-blue-900 to-blue-800 text-white p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Users className="w-5 h-5" />
+                  <h3 className="font-semibold">Sub-Agent Registration Link</h3>
+                </div>
+                <p className="text-blue-300 text-sm">
+                  Share this link to recruit sub-agents under you
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-sm font-mono truncate max-w-xs">
+                  {subAgentRegistrationLink}
+                </div>
+                <button
+                  onClick={copySubAgentLink}
+                  className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                  title="Copy link"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+                <a
+                  href={subAgentRegistrationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                  title="Open link"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

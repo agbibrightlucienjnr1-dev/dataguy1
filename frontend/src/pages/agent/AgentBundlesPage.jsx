@@ -7,6 +7,8 @@ import {
   Copy,
   ExternalLink,
   Wifi,
+  Users,
+  ShoppingCart,
 } from "lucide-react";
 import { Card, Button, Input, Badge } from "../../components/ui";
 import { pricingApi } from "../../api";
@@ -68,15 +70,27 @@ export default function AgentBundlesPage() {
     });
   });
 
-  // Generate payment link
+  // Generate payment link for customers
   const paymentLink = user?.paymentLinkCode
     ? `${window.location.origin}/buy/${user.paymentLinkCode}`
+    : null;
+
+  // Generate sub-agent registration link
+  const subAgentRegistrationLink = user?.paymentLinkCode
+    ? `${window.location.origin}/register/${user.paymentLinkCode}`
     : null;
 
   const copyPaymentLink = () => {
     if (paymentLink) {
       navigator.clipboard.writeText(paymentLink);
       toast.success("Payment link copied!");
+    }
+  };
+
+  const copySubAgentLink = () => {
+    if (subAgentRegistrationLink) {
+      navigator.clipboard.writeText(subAgentRegistrationLink);
+      toast.success("Sub-agent registration link copied!");
     }
   };
 
@@ -100,32 +114,78 @@ export default function AgentBundlesPage() {
           </p>
         </div>
 
-        {/* Payment Link */}
-        {paymentLink && (
-          <Card className="bg-linear-to-r from-slate-900 to-slate-800 text-white p-4">
-            <p className="text-xs text-slate-300 mb-1">Your Payment Link</p>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm truncate max-w-50">
-                {paymentLink}
-              </span>
-              <button
-                onClick={copyPaymentLink}
-                className="p-1.5 bg-white/10 rounded hover:bg-white/20"
-                title="Copy"
-              >
-                <Copy className="w-3.5 h-3.5" />
-              </button>
-              <a
-                href={paymentLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 bg-white/10 rounded hover:bg-white/20"
-                title="Open"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </Card>
+        {/* Links Section - Only show for agents */}
+        {isAgent && (paymentLink || subAgentRegistrationLink) && (
+          <div className="flex flex-col gap-3">
+            {/* Customer Payment Link */}
+            {paymentLink && (
+              <Card className="bg-linear-to-r from-slate-900 to-slate-800 text-white p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShoppingCart className="w-4 h-4" />
+                  <p className="text-xs text-slate-300 font-medium">
+                    Customer Payment Link
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm truncate max-w-50 flex-1">
+                    {paymentLink}
+                  </span>
+                  <button
+                    onClick={copyPaymentLink}
+                    className="p-1.5 bg-white/10 rounded hover:bg-white/20"
+                    title="Copy"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  <a
+                    href={paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 bg-white/10 rounded hover:bg-white/20"
+                    title="Open"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </Card>
+            )}
+
+            {/* Sub-Agent Registration Link */}
+            {subAgentRegistrationLink && (
+              <Card className="bg-linear-to-r from-blue-900 to-blue-800 text-white p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4" />
+                  <p className="text-xs text-blue-300 font-medium">
+                    Sub-Agent Registration Link
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm truncate max-w-50 flex-1">
+                    {subAgentRegistrationLink}
+                  </span>
+                  <button
+                    onClick={copySubAgentLink}
+                    className="p-1.5 bg-white/10 rounded hover:bg-white/20"
+                    title="Copy"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  <a
+                    href={subAgentRegistrationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 bg-white/10 rounded hover:bg-white/20"
+                    title="Open"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+                <p className="text-xs text-blue-300 mt-2">
+                  Share this link to recruit sub-agents under you
+                </p>
+              </Card>
+            )}
+          </div>
         )}
       </div>
 

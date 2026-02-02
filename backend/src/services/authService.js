@@ -23,6 +23,7 @@ export const registerUser = async (userData) => {
   }
 
   // Sub-agents must have a referral code
+  let parentAgent = null;
   if (role === "sub_agent") {
     if (!referralCode) {
       throw new AppError(
@@ -31,11 +32,14 @@ export const registerUser = async (userData) => {
       );
     }
 
-    // Verify referral code belongs to an agent
-    const parentAgent = await prisma.user.findFirst({
+    // Verify referral code (payment link code) belongs to an agent
+    // Try to find agent by payment link code first, then by id (for backward compatibility)
+    parentAgent = await prisma.user.findFirst({
       where: {
-        id: referralCode,
-        role: "agent",
+        OR: [
+          { paymentLinkCode: referralCode, role: "agent" },
+          { id: referralCode, role: "agent" }, // Backward compatibility
+        ],
       },
     });
 
@@ -78,7 +82,7 @@ export const registerUser = async (userData) => {
       phone,
       passwordHash,
       role: role || "agent",
-      parentAgentId: role === "sub_agent" ? referralCode : null,
+      parentAgentId: role === "sub_agent" ? parentAgent.id : null,
       paymentLinkCode,
     },
     select: {

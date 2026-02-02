@@ -307,16 +307,24 @@ export const getWalletSummary = async (userId) => {
       }),
     ]);
 
+  // Convert Decimal values to strings for JSON serialization
+  const commissionTotal = commissionStats._sum.amount
+    ? String(commissionStats._sum.amount)
+    : "0.00";
+  const withdrawalTotal = withdrawalStats._sum.amount
+    ? String(Math.abs(parseFloat(withdrawalStats._sum.amount)))
+    : "0.00";
+
   return {
-    balance: wallet.balance,
-    totalEarned: wallet.totalEarned,
-    totalWithdrawn: wallet.totalWithdrawn,
+    balance: String(wallet.balance),
+    totalEarned: String(wallet.totalEarned),
+    totalWithdrawn: String(wallet.totalWithdrawn),
     commissions: {
-      total: commissionStats._sum.amount || 0,
+      total: commissionTotal,
       count: commissionStats._count,
     },
     withdrawals: {
-      total: Math.abs(withdrawalStats._sum.amount || 0),
+      total: withdrawalTotal,
       count: withdrawalStats._count,
     },
     totalTransactions: transactionCount,

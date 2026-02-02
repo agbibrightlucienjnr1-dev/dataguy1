@@ -54,6 +54,7 @@ function App() {
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register/:code" element={<RegisterPage />} />
           </Route>
         </Route>
 

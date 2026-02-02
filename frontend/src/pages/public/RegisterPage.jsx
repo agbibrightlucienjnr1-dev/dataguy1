@@ -1,21 +1,35 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Eye, EyeOff, Mail, Lock, User, Phone, UserCheck } from "lucide-react";
 import { Button } from "../../components/ui";
 import { registerSchema } from "../../utils/validators";
 import { useRegister } from "../../hooks";
+import { ordersApi } from "../../api";
 
 export default function RegisterPage() {
+  const { code } = useParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const isSubAgentRegistration = !!code;
 
   const registerMutation = useRegister();
+
+  // Fetch agent info if referral code is present
+  const { data: agentData } = useQuery({
+    queryKey: ["agentInfo", code],
+    queryFn: () => ordersApi.getSellerInfo(code),
+    enabled: !!code,
+  });
+
+  const agentName = agentData?.data?.seller?.name;
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(registerSchema),
@@ -25,13 +39,29 @@ export default function RegisterPage() {
       phone: "",
       password: "",
       confirmPassword: "",
+      referralCode: code || "",
     },
   });
 
+  // Auto-fill referral code if provided in URL
+  useEffect(() => {
+    if (code) {
+      setValue("referralCode", code);
+    }
+  }, [code, setValue]);
+
   const onSubmit = (data) => {
-    // Remove confirmPassword before sending and add role as agent
-    const { confirmPassword: _confirmPassword, ...registerData } = data;
-    registerMutation.mutate({ ...registerData, role: "agent" });
+    // Remove confirmPassword before sending
+    const { confirmPassword: _confirmPassword, referralCode, ...registerData } = data;
+    
+    // If referral code is present, register as sub-agent, otherwise as agent
+    const role = referralCode ? "sub_agent" : "agent";
+    
+    registerMutation.mutate({ 
+      ...registerData, 
+      role,
+      referralCode: referralCode || undefined,
+    });
   };
 
   return (
@@ -41,6 +71,16 @@ export default function RegisterPage() {
         <p className="text-slate-600 mt-2">
           Start selling data bundles and earning commissions today
         </p>
+        {isSubAgentRegistration && agentName && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 text-blue-800">
+              <UserCheck className="w-4 h-4" />
+              <p className="text-sm font-medium">
+                Referred by <span className="font-semibold">{agentName}</span>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -174,6 +214,11 @@ export default function RegisterPage() {
             </p>
           )}
         </div>
+
+        {/* Hidden referral code field for sub-agent registration via URL */}
+        {isSubAgentRegistration && (
+          <input type="hidden" {...register("referralCode")} />
+        )}
 
         {/* Terms */}
         <div className="flex items-start gap-2">
