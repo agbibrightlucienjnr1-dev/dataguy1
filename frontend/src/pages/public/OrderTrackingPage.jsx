@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -74,6 +74,7 @@ const STATUS_CONFIG = {
 };
 
 export default function OrderTrackingPage() {
+  const navigate = useNavigate();
   const [searchType, setSearchType] = useState("phone"); // "phone" or "orderId"
   const [searchQuery, setSearchQuery] = useState("");
   const [searchPhone, setSearchPhone] = useState("");
@@ -135,13 +136,19 @@ export default function OrderTrackingPage() {
             <Link to="/" className="text-xl font-bold text-slate-900">
               DataGuy
             </Link>
-            <Link
-              to="/"
+            <button
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate("/");
+                }
+              }}
               className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
-            </Link>
+            </button>
           </div>
         </div>
       </header>
