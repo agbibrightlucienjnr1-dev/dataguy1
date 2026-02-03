@@ -169,19 +169,21 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     pricePaid = subAgentPrice.customerPrice;
   }
 
-  // Check for recent duplicate order (same customer phone + bundle + seller within last 5 minutes)
+  // Check for recent duplicate order (same customer phone + bundle + seller within last 30 seconds)
   // This prevents accidental duplicate orders from double-clicks or page refreshes
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  // Only blocks if there's an active (pending/payment_confirmed/processing) order
+  // Completed/failed orders don't block, and different bundles/sellers are always allowed
+  const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
   const existingOrder = await prisma.order.findFirst({
     where: {
       customerPhone,
       bundleId,
       sellerId: seller.id,
       createdAt: {
-        gte: fiveMinutesAgo,
+        gte: thirtySecondsAgo,
       },
       status: {
-        in: ["pending", "payment_confirmed", "processing"],
+        in: ["pending", "payment_confirmed", "processing"], // Only block active orders
       },
     },
     orderBy: {
