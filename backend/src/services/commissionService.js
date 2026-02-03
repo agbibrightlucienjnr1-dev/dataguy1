@@ -1,9 +1,11 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { getOrCreateWallet } from "./walletService.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Calculate commission for an order
+ * Returns commission for the seller, and optionally parent agent commission for sub-agent orders
  */
 export const calculateCommission = async (order) => {
   const prisma = getPrisma();
@@ -22,6 +24,9 @@ export const calculateCommission = async (order) => {
 
   let commission;
   let description;
+  let parentAgentCommission = null;
+  let parentAgentId = null;
+  let parentAgentDescription = null;
 
   if (sellerType === "agent") {
     // Agent commission = customer price - admin price
@@ -54,21 +59,60 @@ export const calculateCommission = async (order) => {
       throw new AppError("Agent pricing not found", 404);
     }
 
-    // Sub-agent commission = customer price - agent's sub-agent price
+      // Sub-agent commission = customer price - agent's sub-agent price
     commission = pricePaid - agentPrice.subAgentPrice;
+    
+    // Validate sub-agent commission is non-negative
+    if (parseFloat(commission.toString()) < 0) {
+      throw new AppError(
+        "Invalid pricing: customer price is less than sub-agent price",
+        400,
+      );
+    }
+    
     description = `Sub-agent commission for order ${order.id}`;
+
+    // Parent agent commission = agent's sub-agent price - admin price
+    parentAgentCommission = agentPrice.subAgentPrice - adminPrice;
+    
+    // Validate parent agent commission is non-negative
+    if (parseFloat(parentAgentCommission.toString()) < 0) {
+      logger.warn("Parent agent commission is negative", {
+        orderId: order.id,
+        subAgentPrice: agentPrice.subAgentPrice.toString(),
+        adminPrice: adminPrice.toString(),
+        parentAgentCommission: parentAgentCommission.toString(),
+      });
+      // Set to null so it won't be processed (parent agent gets 0 commission)
+      parentAgentCommission = null;
+    }
+    
+    parentAgentId = seller.parentAgentId;
+    parentAgentDescription = `Parent agent commission from sub-agent order ${order.id}`;
   } else {
     throw new AppError("Invalid seller type", 400);
+  }
+
+  // Validate seller commission is non-negative
+  if (parseFloat(commission.toString()) < 0) {
+    throw new AppError(
+      "Invalid pricing: calculated commission is negative",
+      400,
+    );
   }
 
   return {
     commission,
     description,
+    parentAgentCommission,
+    parentAgentId,
+    parentAgentDescription,
     breakdown: {
       pricePaid: pricePaid,
       hubnetCost: hubnetCost,
       adminPrice: adminPrice,
       sellerCommission: commission,
+      parentAgentCommission: parentAgentCommission,
     },
   };
 };
@@ -84,7 +128,16 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
     where: { id: orderId },
     include: {
       bundle: true,
-      seller: true,
+      seller: {
+        include: {
+          parentAgent: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -93,7 +146,7 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
   }
 
   // Check if already processed by looking for existing wallet transaction
-  const existingTransaction = await prisma.walletTransaction.findUnique({
+  const existingTransaction = await prisma.walletTransaction.findFirst({
     where: { orderId },
   });
 
@@ -118,7 +171,31 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
   }
 
   // Calculate commission
-  const { commission, description } = await calculateCommission(order);
+  let commission, description, parentAgentCommission, parentAgentId, parentAgentDescription;
+  try {
+    const commissionResult = await calculateCommission(order);
+    commission = commissionResult.commission;
+    description = commissionResult.description;
+    parentAgentCommission = commissionResult.parentAgentCommission;
+    parentAgentId = commissionResult.parentAgentId;
+    parentAgentDescription = commissionResult.parentAgentDescription;
+  } catch (error) {
+    logger.error("Error calculating commission", {
+      orderId,
+      sellerType: order.sellerType,
+      sellerId: order.sellerId,
+      error: error.message,
+    });
+    throw error;
+  }
+
+  // Validate commission is positive before processing
+  if (parseFloat(commission.toString()) <= 0) {
+    throw new AppError(
+      "Commission must be greater than zero",
+      400,
+    );
+  }
 
   // Get or create wallet first (outside transaction)
   const wallet = await getOrCreateWallet(order.sellerId);
@@ -126,6 +203,31 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
   // Calculate new balance
   const balanceBefore = wallet.balance;
   const balanceAfter = balanceBefore.add(commission);
+
+  // Get parent agent wallet if needed (outside transaction)
+  let parentAgentWallet = null;
+  let parentBalanceBefore = null;
+  let parentBalanceAfter = null;
+  if (
+    parentAgentCommission !== null &&
+    parentAgentId &&
+    parseFloat(parentAgentCommission.toString()) > 0
+  ) {
+    try {
+      parentAgentWallet = await getOrCreateWallet(parentAgentId);
+      parentBalanceBefore = parentAgentWallet.balance;
+      parentBalanceAfter = parentBalanceBefore.add(parentAgentCommission);
+    } catch (error) {
+      logger.error("Error getting parent agent wallet", {
+        orderId,
+        parentAgentId,
+        error: error.message,
+      });
+      // If we can't get parent agent wallet, log but continue with seller commission only
+      // This shouldn't happen, but we'll handle it gracefully
+      parentAgentWallet = null;
+    }
+  }
 
   // Use transaction with increased timeout
   try {
@@ -153,7 +255,7 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
           },
         });
 
-        // 2. Create wallet transaction
+        // 2. Create wallet transaction for seller (sub-agent or agent)
         const walletTransaction = await tx.walletTransaction.create({
           data: {
             walletId: wallet.id,
@@ -163,12 +265,12 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
             balanceAfter,
             status: "completed",
             description,
-            orderId,
+            orderId, // Link to order (unique constraint)
             reference: paymentReference,
           },
         });
 
-        // 3. Update wallet balance
+        // 3. Update seller wallet balance
         const updatedWallet = await tx.wallet.update({
           where: { id: wallet.id },
           data: {
@@ -177,10 +279,48 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
           },
         });
 
+        // 4. If sub-agent order, also credit parent agent
+        let parentAgentTransaction = null;
+        let updatedParentWallet = null;
+        if (
+          parentAgentCommission !== null &&
+          parentAgentId &&
+          parentAgentWallet &&
+          parseFloat(parentAgentCommission.toString()) > 0
+        ) {
+          // Create wallet transaction for parent agent (without orderId since it's unique)
+          parentAgentTransaction = await tx.walletTransaction.create({
+            data: {
+              walletId: parentAgentWallet.id,
+              type: "commission",
+              amount: parentAgentCommission,
+              balanceBefore: parentBalanceBefore,
+              balanceAfter: parentBalanceAfter,
+              status: "completed",
+              description: parentAgentDescription,
+              // orderId is null - we can't link it since orderId is unique
+              reference: `PARENT-${paymentReference}`,
+            },
+          });
+
+          // Update parent agent wallet balance
+          updatedParentWallet = await tx.wallet.update({
+            where: { id: parentAgentWallet.id },
+            data: {
+              balance: parentBalanceAfter,
+              totalEarned: parentAgentWallet.totalEarned.add(
+                parentAgentCommission,
+              ),
+            },
+          });
+        }
+
         return {
           order: updatedOrder,
           wallet: updatedWallet,
           transaction: walletTransaction,
+          parentAgentTransaction,
+          parentAgentWallet: updatedParentWallet,
         };
       },
       {
@@ -191,7 +331,7 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
 
     // If already processed inside transaction, fetch current state
     if (result.alreadyProcessed) {
-      const existingTx = await prisma.walletTransaction.findUnique({
+      const existingTx = await prisma.walletTransaction.findFirst({
         where: { orderId },
       });
       const walletState = existingTx
@@ -209,7 +349,7 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
   } catch (error) {
     // Handle unique constraint violation (race condition with another request)
     if (error.code === "P2002" && error.meta?.target?.includes("order_id")) {
-      const existingTx = await prisma.walletTransaction.findUnique({
+      const existingTx = await prisma.walletTransaction.findFirst({
         where: { orderId },
       });
       const walletState = existingTx
