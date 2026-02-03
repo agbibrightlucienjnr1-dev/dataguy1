@@ -27,6 +27,7 @@ import {
   AgentWalletPage,
   AgentWithdrawalsPage,
   AgentPricingPage,
+  AgentSubAgentsPage,
 } from "./pages/agent";
 
 // Admin Pages
@@ -67,6 +68,7 @@ function App() {
             <Route path="/wallet" element={<AgentWalletPage />} />
             <Route path="/withdrawals" element={<AgentWithdrawalsPage />} />
             <Route path="/pricing" element={<AgentPricingPage />} />
+            <Route path="/sub-agents" element={<AgentSubAgentsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

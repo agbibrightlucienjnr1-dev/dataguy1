@@ -32,6 +32,7 @@ const agentNavItems = [
   { to: "/wallet", icon: Wallet, label: "Wallet" },
   { to: "/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
   { to: "/pricing", icon: Tag, label: "My Pricing" },
+  { to: "/sub-agents", icon: Users, label: "My Sub-Agents" },
 ];
 
 const adminNavItems = [

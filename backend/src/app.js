@@ -16,6 +16,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import hubnetRoutes from "./routes/hubnetRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import withdrawalRoutes from "./routes/withdrawalRoutes.js";
+import agentRoutes from "./routes/agentRoutes.js";
 
 const app = express();
 
@@ -167,6 +168,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/hubnet", hubnetRoutes);
 app.use("/api/admin", adminRoutes); // Admin routes have their own pagination limiter
 app.use("/api/withdrawals", standardPaginationLimiter, withdrawalRoutes);
+app.use("/api/agent", standardPaginationLimiter, agentRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
