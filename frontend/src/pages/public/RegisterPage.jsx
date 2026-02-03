@@ -156,7 +156,7 @@ export default function RegisterPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="Create a strong password"
               className={`w-full h-11 pl-10 pr-12 rounded-lg border bg-white text-sm
                 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900
                 ${errors.password ? "border-red-500" : "border-slate-200"}`}
@@ -179,6 +179,11 @@ export default function RegisterPage() {
               {errors.password.message}
             </p>
           )}
+          {!errors.password && (
+            <p className="mt-1.5 text-xs text-slate-500">
+              Must be at least 12 characters with uppercase, lowercase, number, and special character
+            </p>
+          )}
         </div>
 
         {/* Confirm Password */}
@@ -190,7 +195,7 @@ export default function RegisterPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="Re-enter your password"
               className={`w-full h-11 pl-10 pr-12 rounded-lg border bg-white text-sm
                 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900
                 ${errors.confirmPassword ? "border-red-500" : "border-slate-200"}`}

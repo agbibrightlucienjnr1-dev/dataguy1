@@ -8,40 +8,48 @@ export const loginSchema = z.object({
     .min(1, "Phone number is required")
     .regex(
       /^(\+233|0)[0-9]{9}$/,
-      "Please enter a valid Ghana phone number (e.g., 0241234567)",
+      "Please enter a valid Ghana phone number starting with 0 or +233 (e.g., 0241234567)",
     ),
   password: z
     .string()
-    .min(1, "Password is required")
-    .min(6, "Password must be at least 6 characters"),
+    .min(1, "Password is required"),
 });
 
 export const registerSchema = z
   .object({
     name: z
       .string()
-      .min(1, "Name is required")
-      .min(2, "Name must be at least 2 characters"),
+      .min(1, "Full name is required")
+      .min(2, "Name must be at least 2 characters")
+      .max(100, "Name is too long (maximum 100 characters)"),
     email: z
       .string()
-      .min(1, "Email is required")
-      .email("Please enter a valid email address"),
+      .min(1, "Email address is required")
+      .email("Please enter a valid email address (e.g., yourname@example.com)")
+      .max(255, "Email address is too long"),
     phone: z
       .string()
       .min(1, "Phone number is required")
       .regex(
         /^(\+233|0)[0-9]{9}$/,
-        "Please enter a valid Ghana phone number (e.g., 0241234567)",
+        "Please enter a valid Ghana phone number starting with 0 or +233 (e.g., 0241234567)",
       ),
     password: z
       .string()
       .min(1, "Password is required")
-      .min(6, "Password must be at least 6 characters"),
+      .min(12, "Password must be at least 12 characters long")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter (A-Z)")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter (a-z)")
+      .regex(/[0-9]/, "Password must contain at least one number (0-9)")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Password must contain at least one special character (!@#$%^&*)",
+      ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
     referralCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Passwords do not match. Please make sure both passwords are identical.",
     path: ["confirmPassword"],
   });
 

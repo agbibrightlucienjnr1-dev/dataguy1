@@ -17,16 +17,22 @@ export const register = asyncHandler(async (req, res) => {
 
   // Validate required fields
   if (!name || !email || !phone || !password) {
-    throw new AppError("Name, email, phone, and password are required", 400);
+    throw new AppError(
+      "Please fill in all required fields: name, email, phone number, and password.",
+      400,
+    );
   }
 
   // Validate password strength
   const passwordValidation = validatePasswordStrength(password);
   if (!passwordValidation.isValid) {
-    throw new AppError(
-      `Password validation failed: ${passwordValidation.errors.join(", ")}`,
-      400,
-    );
+    // Format password errors in a user-friendly way
+    const errorMessage =
+      passwordValidation.errors.length === 1
+        ? `Your password ${passwordValidation.errors[0].toLowerCase()}.`
+        : `Your password needs to meet the following requirements:\n• ${passwordValidation.errors.join("\n• ")}`;
+    
+    throw new AppError(errorMessage, 400);
   }
 
   // Register user
@@ -67,7 +73,10 @@ export const login = asyncHandler(async (req, res) => {
 
   // Validate required fields
   if (!phone || !password) {
-    throw new AppError("Phone and password are required", 400);
+    throw new AppError(
+      "Please enter both your phone number and password to sign in.",
+      400,
+    );
   }
 
   // Login user

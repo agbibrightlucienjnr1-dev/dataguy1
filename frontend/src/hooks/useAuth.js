@@ -27,12 +27,13 @@ export function useLogin() {
       }
     },
     onError: (error) => {
-      toast.error(
-        getErrorMessage(
-          error,
-          "Unable to log in. Please check your credentials.",
-        ),
+      const errorMessage = getErrorMessage(
+        error,
+        "Unable to log in. Please check your phone number and password, then try again.",
       );
+      toast.error(errorMessage, {
+        duration: 5000,
+      });
     },
   });
 }
@@ -53,9 +54,31 @@ export function useRegister() {
       navigate("/dashboard");
     },
     onError: (error) => {
-      toast.error(
-        getErrorMessage(error, "Unable to create account. Please try again."),
+      let errorMessage = getErrorMessage(
+        error,
+        "Unable to create account. Please check all fields and try again.",
       );
+      
+      // Format multi-line password errors for better display
+      if (errorMessage.includes("\n•")) {
+        // Replace newlines with spaces for toast display
+        errorMessage = errorMessage.replace(/\n•/g, "\n•");
+      }
+      
+      // For password errors, show longer duration to allow reading
+      const isPasswordError = errorMessage.includes("password") || 
+                             errorMessage.includes("Password") ||
+                             errorMessage.includes("must be") ||
+                             errorMessage.includes("must contain") ||
+                             errorMessage.includes("\n");
+      
+      toast.error(errorMessage, {
+        duration: isPasswordError ? 8000 : 5000,
+        style: {
+          whiteSpace: 'pre-line', // Allow line breaks in toast
+          maxWidth: '500px',
+        },
+      });
     },
   });
 }

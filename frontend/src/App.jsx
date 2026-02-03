@@ -101,6 +101,8 @@ function App() {
           style: {
             background: "#1e293b",
             color: "#fff",
+            whiteSpace: "pre-line", // Allow line breaks in toast messages
+            maxWidth: "500px",
           },
           success: {
             iconTheme: {
@@ -112,6 +114,12 @@ function App() {
             iconTheme: {
               primary: "#ef4444",
               secondary: "#fff",
+            },
+            style: {
+              background: "#1e293b",
+              color: "#fff",
+              whiteSpace: "pre-line", // Allow line breaks in error messages
+              maxWidth: "500px",
             },
           },
         }}

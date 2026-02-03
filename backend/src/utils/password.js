@@ -47,24 +47,24 @@ export const validatePasswordStrength = (password) => {
     : 12;
 
   if (!password || password.length < minLength) {
-    errors.push(`Password must be at least ${minLength} characters long`);
+    errors.push(`must be at least ${minLength} characters long`);
   }
 
   if (!/[A-Z]/.test(password)) {
-    errors.push("Password must contain at least one uppercase letter");
+    errors.push("must contain at least one uppercase letter (A-Z)");
   }
 
   if (!/[a-z]/.test(password)) {
-    errors.push("Password must contain at least one lowercase letter");
+    errors.push("must contain at least one lowercase letter (a-z)");
   }
 
   if (!/[0-9]/.test(password)) {
-    errors.push("Password must contain at least one number");
+    errors.push("must contain at least one number (0-9)");
   }
 
   // Add special character requirement
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push("Password must contain at least one special character");
+    errors.push("must contain at least one special character (!@#$%^&*)");
   }
 
   return {

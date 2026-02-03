@@ -137,16 +137,35 @@ export function getErrorMessage(
   const errorMap = {
     // Authentication errors
     "Invalid credentials":
-      "Incorrect phone number or password. Please try again.",
+      "The phone number or password you entered is incorrect. Please check your credentials and try again.",
     "Invalid phone or password":
-      "Incorrect phone number or password. Please try again.",
-    "User not found": "No account found with this phone number.",
-    "Email already exists": "An account with this email already exists.",
-    "Phone already exists": "An account with this phone number already exists.",
+      "The phone number or password you entered is incorrect. Please check your credentials and try again.",
+    "The phone number or password you entered is incorrect":
+      "The phone number or password you entered is incorrect. Please check your credentials and try again.",
+    "User not found": 
+      "The phone number or password you entered is incorrect. Please check your credentials and try again.",
+    "Email already exists": 
+      "An account with this email address already exists. Please use a different email or try logging in instead.",
+    "An account with this email address already exists":
+      "An account with this email address already exists. Please use a different email or try logging in instead.",
+    "Phone already exists": 
+      "An account with this phone number already exists. Please use a different phone number or try logging in instead.",
+    "An account with this phone number already exists":
+      "An account with this phone number already exists. Please use a different phone number or try logging in instead.",
+    "Invalid referral code":
+      "The referral code you entered is invalid or has expired. Please check the code and try again, or contact the agent who provided it.",
+    "The referral code you entered is invalid":
+      "The referral code you entered is invalid or has expired. Please check the code and try again, or contact the agent who provided it.",
+    "Referral code required for sub-agent registration":
+      "A referral code is required to register as a sub-agent. Please use the registration link provided by your agent.",
     "Invalid token": "Your session has expired. Please log in again.",
     "Token expired": "Your session has expired. Please log in again.",
     "Not authenticated": "Please log in to continue.",
     "Not authorized": "You don't have permission to perform this action.",
+    "Please fill in all required fields":
+      "Please fill in all required fields: name, email, phone number, and password.",
+    "Please enter both your phone number and password":
+      "Please enter both your phone number and password to sign in.",
 
     // Payment/Order errors
     "Payment not verified":
@@ -186,6 +205,19 @@ export function getErrorMessage(
       "Please enter a valid Ghana phone number (e.g., 0241234567).",
     "Invalid email": "Please enter a valid email address.",
   };
+
+  // Handle password validation errors with better formatting
+  if (rawMessage.includes("Your password") || rawMessage.includes("Password")) {
+    // Check if it's a multi-line password error (from backend)
+    if (rawMessage.includes("\n•")) {
+      return rawMessage; // Return formatted password requirements as-is
+    }
+    // Check if it's a single password error
+    if (rawMessage.includes("must be at least") || 
+        rawMessage.includes("must contain")) {
+      return rawMessage; // Return password requirements as-is
+    }
+  }
 
   // Check for exact matches
   if (errorMap[rawMessage]) {

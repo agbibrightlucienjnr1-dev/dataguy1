@@ -44,7 +44,10 @@ export const registerUser = async (userData) => {
     });
 
     if (!parentAgent) {
-      throw new AppError("Invalid referral code", 400);
+      throw new AppError(
+        "The referral code you entered is invalid or has expired. Please check the code and try again, or contact the agent who provided it.",
+        400,
+      );
     }
   } else if (role === "agent" && referralCode) {
     throw new AppError("Agents cannot use referral codes", 400);
@@ -56,7 +59,10 @@ export const registerUser = async (userData) => {
   });
 
   if (existingEmail) {
-    throw new AppError("Email already registered", 400);
+    throw new AppError(
+      "An account with this email address already exists. Please use a different email or try logging in instead.",
+      400,
+    );
   }
 
   // Check if phone already exists
@@ -65,7 +71,10 @@ export const registerUser = async (userData) => {
   });
 
   if (existingPhone) {
-    throw new AppError("Phone number already registered", 400);
+    throw new AppError(
+      "An account with this phone number already exists. Please use a different phone number or try logging in instead.",
+      400,
+    );
   }
 
   // Hash password
@@ -121,14 +130,22 @@ export const loginUser = async (phone, password) => {
   });
 
   if (!user) {
-    throw new AppError("Invalid phone number or password", 401);
+    // Don't reveal if user exists - use generic message for security
+    throw new AppError(
+      "The phone number or password you entered is incorrect. Please check your credentials and try again.",
+      401,
+    );
   }
 
   // Verify password
   const isPasswordValid = await comparePassword(password, user.passwordHash);
 
   if (!isPasswordValid) {
-    throw new AppError("Invalid phone number or password", 401);
+    // Don't reveal if user exists - use generic message for security
+    throw new AppError(
+      "The phone number or password you entered is incorrect. Please check your credentials and try again.",
+      401,
+    );
   }
 
   // Generate token
