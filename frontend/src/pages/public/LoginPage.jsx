@@ -128,12 +128,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Demo credentials hint */}
-      <div className="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-100">
-        <p className="text-xs text-slate-500 text-center">
-          <span className="font-medium">Demo:</span> 0241234567 / Password123!
-        </p>
-      </div>
+     
     </div>
   );
 }
