@@ -414,6 +414,16 @@ export default function BuyPage() {
         </div>
       </main>
 
+      {/* Register as Agent CTA */}
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <Link to={`/register/subagent?agent=${code}`}>
+          <Button variant="outline" className="gap-2">
+            <User className="w-4 h-4" />
+            Register as an Agent
+          </Button>
+        </Link>
+      </div>
+
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 mt-12">
         <div className="max-w-4xl mx-auto px-4 py-6">
