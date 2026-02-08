@@ -2,6 +2,7 @@ import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { initializeTransaction } from "./paystackService.js";
 import { logger } from "../utils/logger.js";
+import { Prisma } from "@prisma/client";
 
 /**
  * Get seller by payment link code
@@ -244,8 +245,12 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     };
   }
 
-  // Calculate 4% transaction fee (hidden from customer)
-  const transactionFee = pricePaid.mul(0.04); // 4% of pricePaid
+  // Calculate transaction fee (hidden from customer)
+  // If amount < 20: flat fee of 0.5
+  // If amount >= 20: 4% of amount
+  const priceAsNumber = parseFloat(pricePaid.toString());
+  const transactionFee =
+    priceAsNumber < 20 ? new Prisma.Decimal(0.5) : pricePaid.mul(0.04);
   const totalAmount = pricePaid.add(transactionFee); // Total amount to charge
 
   // Create order
@@ -257,7 +262,7 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
       sellerId: seller.id,
       sellerType: seller.role,
       pricePaid, // Original price (what customer sees)
-      transactionFee, // 4% fee (hidden from customer)
+      transactionFee, // Fee: 0.5 if < 20, else 4% (hidden from customer)
       status: "pending",
     },
     include: {
@@ -276,10 +281,10 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
   // Initialize Paystack transaction
   const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
 
-  // Initialize Paystack transaction with total amount (pricePaid + 4% fee)
+  // Initialize Paystack transaction with total amount (pricePaid + fee)
   const paymentData = await initializeTransaction({
     email: customerPhone + "@customer.dataguy.com", // Convert phone to email format
-    amount: totalAmount.toString(), // Total amount including 4% transaction fee
+    amount: totalAmount.toString(), // Total amount including transaction fee
     reference: order.id,
     callbackUrl,
     metadata: {
