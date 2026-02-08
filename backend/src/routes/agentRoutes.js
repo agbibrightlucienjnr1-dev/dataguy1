@@ -1,16 +1,21 @@
 import express from "express";
-import { getMySubAgents } from "../controllers/agentController.js";
+import {
+  getMySubAgents,
+  updateShopName,
+} from "../controllers/agentController.js";
 import { authenticate, authorize } from "../middlewares/auth.js";
 import { apiRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
-// All routes require authentication and agent role
+// All routes require authentication
 router.use(apiRateLimiter);
 router.use(authenticate);
-router.use(authorize("agent"));
 
-// Get agent's sub-agents
-router.get("/sub-agents", getMySubAgents);
+// Get agent's sub-agents (agents only)
+router.get("/sub-agents", authorize("agent"), getMySubAgents);
+
+// Update shop name (agents and sub-agents)
+router.patch("/shop-name", authorize("agent", "sub_agent"), updateShopName);
 
 export default router;

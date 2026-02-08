@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, User, Mail, Phone, Key } from "lucide-react";
+import { Eye, EyeOff, Lock, User, Mail, Phone, Key, Store } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -12,7 +12,7 @@ import {
 } from "../../components/ui";
 import Input from "../../components/ui/Input";
 import { changePasswordSchema } from "../../utils/validators";
-import { useChangePassword, useAuth } from "../../hooks";
+import { useChangePassword, useAuth, useUpdateShopName } from "../../hooks";
 import { formatDate } from "../../utils/formatters";
 import { useQuery } from "@tanstack/react-query";
 import { authApi } from "../../api";
@@ -23,9 +23,12 @@ export default function ProfilePage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [shopName, setShopName] = useState("");
+  const [isEditingShopName, setIsEditingShopName] = useState(false);
 
   const { user: authUser } = useAuth();
   const changePasswordMutation = useChangePassword();
+  const updateShopNameMutation = useUpdateShopName();
 
   // Fetch full user profile
   const { data: profileData, isLoading } = useQuery({
@@ -35,6 +38,19 @@ export default function ProfilePage() {
   });
 
   const user = profileData || authUser;
+
+  // Initialize shop name when user data loads
+  if (user?.shopName && !shopName && !isEditingShopName) {
+    setShopName(user.shopName);
+  }
+
+  const handleUpdateShopName = () => {
+    updateShopNameMutation.mutate(shopName || null, {
+      onSuccess: () => {
+        setIsEditingShopName(false);
+      },
+    });
+  };
 
   const {
     register,
@@ -82,87 +98,150 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              Profile Information
-            </CardTitle>
-            <CardDescription>
-              Your account details and information
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Full Name
-              </label>
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <User className="w-4 h-4 text-slate-400" />
-                <span className="text-sm text-slate-900">{user?.name || "N/A"}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Email Address
-              </label>
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <Mail className="w-4 h-4 text-slate-400" />
-                <span className="text-sm text-slate-900">{user?.email || "N/A"}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Phone Number
-              </label>
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <Phone className="w-4 h-4 text-slate-400" />
-                <span className="text-sm text-slate-900">{user?.phone || "N/A"}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Role
-              </label>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-blue-100 text-blue-800">
-                  {user?.role || "N/A"}
-                </span>
-              </div>
-            </div>
-
-            {user?.paymentLinkCode && (
+      <div className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Profile Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Profile Information
+              </CardTitle>
+              <CardDescription>
+                Your account details and information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Payment Link Code
+                  Full Name
                 </label>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <code className="text-sm font-mono text-slate-900">
-                    {user.paymentLinkCode}
-                  </code>
-                </div>
-              </div>
-            )}
-
-            {user?.createdAt && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Member Since
-                </label>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <User className="w-4 h-4 text-slate-400" />
                   <span className="text-sm text-slate-900">
-                    {formatDate(user.createdAt)}
+                    {user?.name || "N/A"}
                   </span>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Email Address
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <Mail className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-900">
+                    {user?.email || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Phone Number
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <Phone className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-900">
+                    {user?.phone || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Role
+                </label>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-blue-100 text-blue-800">
+                    {user?.role || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              {user?.paymentLinkCode && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Payment Link Code
+                  </label>
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <code className="text-sm font-mono text-slate-900">
+                      {user.paymentLinkCode}
+                    </code>
+                  </div>
+                </div>
+              )}
+
+              {user?.createdAt && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Member Since
+                  </label>
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <span className="text-sm text-slate-900">
+                      {formatDate(user.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Shop Name (for agents and sub-agents only) */}
+          {(user?.role === "agent" || user?.role === "sub_agent") && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="w-5 h-5" />
+                  Shop Name
+                </CardTitle>
+                <CardDescription>
+                  Set a custom shop name to display on your buy page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Shop Display Name
+                  </label>
+                  <Input
+                    value={shopName}
+                    onChange={(e) => {
+                      setShopName(e.target.value);
+                      setIsEditingShopName(true);
+                    }}
+                    placeholder={user?.name || "Enter shop name"}
+                    icon={Store}
+                  />
+                  <p className="mt-1 text-sm text-slate-500">
+                    {user?.shopName
+                      ? "Your current shop name is displayed on your buy page"
+                      : "If not set, your account name will be shown"}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleUpdateShopName}
+                  variant="primary"
+                  className="w-full"
+                  disabled={
+                    updateShopNameMutation.isPending ||
+                    (!isEditingShopName && shopName === (user?.shopName || ""))
+                  }
+                >
+                  {updateShopNameMutation.isPending ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Shop Name"
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Change Password */}
         <Card>

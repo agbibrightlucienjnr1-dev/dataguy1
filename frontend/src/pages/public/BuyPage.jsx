@@ -226,7 +226,9 @@ export default function BuyPage() {
             </div>
             <div>
               <p className="text-slate-300 text-sm">Buying from</p>
-              <h2 className="text-xl font-semibold">{seller?.name}</h2>
+              <h2 className="text-xl font-semibold">
+                {seller?.shopName || seller?.name}
+              </h2>
             </div>
           </div>
         </Card>

@@ -14,6 +14,7 @@ export const getSellerByCode = async (code) => {
     select: {
       id: true,
       name: true,
+      shopName: true,
       phone: true,
       role: true,
       paymentLinkCode: true,
@@ -103,6 +104,7 @@ export const getBundlesWithSellerPricing = async (sellerCode) => {
   return {
     seller: {
       name: seller.name,
+      shopName: seller.shopName,
       phone: seller.phone,
       code: seller.paymentLinkCode,
     },
@@ -198,16 +200,16 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
       customerPhone,
       bundleId,
     });
-    
+
     // Re-initialize payment for the existing order if it doesn't have a payment reference
     if (!existingOrder.paymentReference) {
       const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
-      
+
       // Calculate total amount (pricePaid + transactionFee)
       const existingTotalAmount = existingOrder.pricePaid.add(
-        existingOrder.transactionFee || 0
+        existingOrder.transactionFee || 0,
       );
-      
+
       const paymentData = await initializeTransaction({
         email: customerPhone + "@customer.dataguy.com",
         amount: existingTotalAmount.toString(), // Total amount including transaction fee

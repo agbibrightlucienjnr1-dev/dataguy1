@@ -48,6 +48,9 @@ export {
   useBulkSetSubAgentPrices,
 } from "./usePricing";
 
+// Agent hooks
+export { useUpdateShopName } from "./useAgent";
+
 // Admin hooks
 export {
   useAdminDashboard,

@@ -137,3 +137,38 @@ export const getAgentSubAgents = async (agentId) => {
     total: subAgentsWithStats.length,
   };
 };
+
+/**
+ * Update agent/sub-agent shop name
+ */
+export const updateAgentShopName = async (userId, shopName) => {
+  const prisma = getPrisma();
+
+  // Verify user exists and is agent or sub-agent
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (user.role === "admin") {
+    throw new AppError("Admins cannot set shop names", 400);
+  }
+
+  // Update shop name
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { shopName: shopName || null },
+    select: {
+      id: true,
+      name: true,
+      shopName: true,
+      paymentLinkCode: true,
+    },
+  });
+
+  return updated;
+};
