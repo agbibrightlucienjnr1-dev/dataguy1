@@ -173,7 +173,7 @@ export default function AgentPricingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 sm:pb-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -182,11 +182,12 @@ export default function AgentPricingPage() {
             Set your selling prices for data bundles
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Button
             variant="outline"
             onClick={() => refetch()}
             disabled={isFetching}
+            className="w-full sm:w-auto"
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${isFetching ? "animate-spin" : ""}`}
@@ -197,6 +198,7 @@ export default function AgentPricingPage() {
             <Button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
+              className="w-full sm:w-auto hidden sm:flex"
             >
               <Save className="w-4 h-4 mr-2" />
               {saveMutation.isPending ? "Saving..." : "Save Changes"}
@@ -210,17 +212,19 @@ export default function AgentPricingPage() {
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800">
-            <p className="font-medium">Pricing Rules:</p>
-            <ul className="mt-1 space-y-1 list-disc list-inside">
-              <li>
+            <p className="font-medium mb-2">Pricing Rules:</p>
+            <ul className="space-y-1.5 list-disc list-inside">
+              <li className="leading-relaxed">
                 Customer price must be equal to or higher than your cost price
               </li>
               {isAgent && (
-                <li>
+                <li className="leading-relaxed">
                   Sub-agent price must be between your cost and customer price
                 </li>
               )}
-              <li>Your profit = Customer Price - Your Cost</li>
+              <li className="leading-relaxed">
+                Your profit = Customer Price - Your Cost
+              </li>
             </ul>
           </div>
         </div>
@@ -244,17 +248,23 @@ export default function AgentPricingPage() {
               <Card key={network} className="overflow-hidden">
                 {/* Network Header */}
                 <div
-                  className={`${networkData.color} text-white px-4 py-3 flex items-center gap-3`}
+                  className={`${networkData.color} text-white px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3`}
                 >
-                  <Wifi className="w-5 h-5" />
-                  <span className="font-semibold">{networkData.label}</span>
-                  <Badge variant="secondary" className="bg-white/20 text-white">
-                    {networkBundles.length} bundles
+                  <Wifi className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-base sm:text-lg font-semibold">
+                    {networkData.label}
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="bg-white/20 text-white text-xs"
+                  >
+                    {networkBundles.length}{" "}
+                    {networkBundles.length === 1 ? "bundle" : "bundles"}
                   </Badge>
                 </div>
 
-                {/* Pricing Table */}
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-slate-100 bg-slate-50">
@@ -344,6 +354,7 @@ export default function AgentPricingPage() {
                                       ? "border-red-300 focus:border-red-500"
                                       : ""
                                   }
+                                  placeholder="Enter price"
                                 />
                                 {!customerValidation.valid && (
                                   <p className="text-xs text-red-600 mt-1">
@@ -376,6 +387,7 @@ export default function AgentPricingPage() {
                                         ? "border-red-300 focus:border-red-500"
                                         : ""
                                     }
+                                    placeholder="Enter price"
                                   />
                                   {!subAgentValidation.valid && (
                                     <p className="text-xs text-red-600 mt-1">
@@ -423,6 +435,159 @@ export default function AgentPricingPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden divide-y divide-slate-100">
+                  {networkBundles.map((bundle) => {
+                    const costPrice = getCostPrice(bundle);
+                    const customerPrice = parseFloat(
+                      getCurrentPrice(bundle, "customerPrice"),
+                    );
+                    const profit = customerPrice - costPrice;
+                    const customerValidation = validatePrice(
+                      bundle,
+                      "customerPrice",
+                      getCurrentPrice(bundle, "customerPrice"),
+                    );
+                    const subAgentValidation = isAgent
+                      ? validatePrice(
+                          bundle,
+                          "subAgentPrice",
+                          getCurrentPrice(bundle, "subAgentPrice"),
+                        )
+                      : { valid: true };
+
+                    const hasError =
+                      !customerValidation.valid || !subAgentValidation.valid;
+                    const isEdited = !!editedPrices[bundle.id];
+
+                    return (
+                      <div
+                        key={bundle.id}
+                        className={`p-4 ${hasError ? "bg-red-50" : ""}`}
+                      >
+                        {/* Bundle Header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h4 className="font-semibold text-slate-900 text-lg">
+                              {bundle.volume}
+                            </h4>
+                            <p className="text-sm text-slate-600">
+                              Cost: {formatCurrency(costPrice)}
+                            </p>
+                          </div>
+                          <div>
+                            {hasError ? (
+                              <Badge variant="danger" className="gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                Error
+                              </Badge>
+                            ) : isEdited ? (
+                              <Badge variant="warning" className="gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                Unsaved
+                              </Badge>
+                            ) : (
+                              <Badge variant="success" className="gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                Saved
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Pricing Inputs */}
+                        <div className="space-y-4">
+                          {/* Customer Price */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                              Customer Price
+                            </label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={costPrice}
+                              value={getCurrentPrice(bundle, "customerPrice")}
+                              onChange={(e) =>
+                                handlePriceChange(
+                                  bundle.id,
+                                  "customerPrice",
+                                  e.target.value,
+                                )
+                              }
+                              className={`text-base ${
+                                !customerValidation.valid
+                                  ? "border-red-300 focus:border-red-500"
+                                  : ""
+                              }`}
+                              placeholder="Enter customer price"
+                            />
+                            {!customerValidation.valid && (
+                              <p className="text-xs text-red-600 mt-1">
+                                {customerValidation.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Sub-Agent Price (Agents Only) */}
+                          {isAgent && (
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-2">
+                                Sub-Agent Price
+                              </label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min={costPrice}
+                                max={customerPrice}
+                                value={getCurrentPrice(bundle, "subAgentPrice")}
+                                onChange={(e) =>
+                                  handlePriceChange(
+                                    bundle.id,
+                                    "subAgentPrice",
+                                    e.target.value,
+                                  )
+                                }
+                                className={`text-base ${
+                                  !subAgentValidation.valid
+                                    ? "border-red-300 focus:border-red-500"
+                                    : ""
+                                }`}
+                                placeholder="Enter sub-agent price"
+                              />
+                              {!subAgentValidation.valid && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  {subAgentValidation.message}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Profit Display */}
+                          <div className="pt-2 border-t border-slate-200">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-slate-700">
+                                Your Profit
+                              </span>
+                              <span
+                                className={`text-lg font-semibold ${
+                                  profit > 0
+                                    ? "text-green-600"
+                                    : profit < 0
+                                      ? "text-red-600"
+                                      : "text-slate-600"
+                                }`}
+                              >
+                                {profit > 0 ? "+" : ""}
+                                {formatCurrency(profit)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </Card>
             );
           })}
@@ -431,11 +596,12 @@ export default function AgentPricingPage() {
 
       {/* Save Button Fixed at Bottom on Mobile */}
       {hasChanges && (
-        <div className="fixed bottom-4 left-4 right-4 sm:hidden">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 sm:hidden z-10 shadow-lg">
           <Button
-            className="w-full shadow-lg"
+            className="w-full"
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
+            size="lg"
           >
             <Save className="w-4 h-4 mr-2" />
             {saveMutation.isPending ? "Saving..." : "Save All Changes"}
