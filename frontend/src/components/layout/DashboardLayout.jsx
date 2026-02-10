@@ -19,6 +19,7 @@ import {
   BarChart3,
   RefreshCw,
   Server,
+  MessageCircle,
 } from "lucide-react";
 import { useAuthStore } from "../../stores";
 import { useLogout } from "../../hooks";
@@ -132,7 +133,31 @@ export default function DashboardLayout() {
           </nav>
 
           {/* User section at bottom */}
-          <div className="p-3 border-t border-slate-800">
+          <div className="p-3 border-t border-slate-800 space-y-1">
+            {/* WhatsApp Channel Link */}
+            <a
+              href="https://whatsapp.com/channel/0029Vb7gnkoKbYMFemxIZF2w"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-green-600 hover:bg-green-700 text-white"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="flex-1">Join WhatsApp</span>
+              <svg
+                className="w-4 h-4 opacity-75"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
             <NavLink
               to="/profile"
               onClick={() => setSidebarOpen(false)}

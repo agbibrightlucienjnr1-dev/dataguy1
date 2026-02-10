@@ -11,6 +11,7 @@ import {
   Copy,
   ExternalLink,
   Users,
+  MessageCircle,
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { useAuthStore } from "../../stores";
@@ -83,6 +84,48 @@ export default function DashboardPage() {
           Here's what's happening with your sales today.
         </p>
       </div>
+
+      {/* WhatsApp Channel Banner */}
+      <Card className="bg-linear-to-r from-green-600 to-green-500 text-white p-4 sm:p-6 border-0 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0">
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-base sm:text-lg mb-1">
+                Join Our WhatsApp Channel
+              </h3>
+              <p className="text-green-50 text-xs sm:text-sm leading-relaxed">
+                Get instant updates on new features, promotions, system
+                announcements, and important notifications
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://whatsapp.com/channel/0029Vb7gnkoKbYMFemxIZF2w"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white text-green-600 hover:bg-green-50 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg whitespace-nowrap"
+          >
+            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+            Join Now
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
+        </div>
+      </Card>
 
       {/* Links Section */}
       <div className="space-y-4">
