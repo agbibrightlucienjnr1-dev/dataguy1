@@ -7,9 +7,17 @@ import app from "./app.js";
 import { initDatabase, closeDatabase } from "./config/database.js";
 import { validateEnv } from "./config/env.js";
 import { logger } from "./utils/logger.js";
+import { verifyAllPendingPayments } from "./services/paymentVerificationService.js";
 
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
+
+// Payment verification interval (default: 2 minutes)
+const VERIFICATION_INTERVAL_MS = parseInt(
+  process.env.PAYMENT_VERIFICATION_INTERVAL_MS || "120000",
+  10,
+);
+let verificationIntervalId = null;
 
 // Global error handlers - MUST be set before any async operations
 // Handle uncaught exceptions (synchronous errors)
@@ -74,6 +82,9 @@ const startServer = async () => {
         environment: NODE_ENV,
         healthCheck: `http://localhost:${PORT}/health`,
       });
+
+      // Start background payment verification
+      startPaymentVerificationInterval();
     });
 
     // Handle server errors (e.g., port already in use)
@@ -97,9 +108,74 @@ const startServer = async () => {
   }
 };
 
+/**
+ * Start background payment verification interval
+ * This periodically checks for pending orders and verifies their payment status
+ */
+const startPaymentVerificationInterval = () => {
+  if (VERIFICATION_INTERVAL_MS <= 0) {
+    logger.info("Background payment verification disabled");
+    return;
+  }
+
+  logger.info("Starting background payment verification", {
+    intervalMs: VERIFICATION_INTERVAL_MS,
+    intervalMinutes: VERIFICATION_INTERVAL_MS / 60000,
+  });
+
+  // Run verification periodically
+  verificationIntervalId = setInterval(async () => {
+    try {
+      const result = await verifyAllPendingPayments({
+        minAgeMinutes: 1, // Only check orders at least 1 minute old
+        maxAgeHours: 24, // Don't check orders older than 24 hours
+        limit: 20, // Check up to 20 orders per interval
+      });
+
+      if (result.confirmed > 0) {
+        logger.success("Background verification confirmed payments", {
+          confirmed: result.confirmed,
+          checked: result.checked,
+        });
+      } else if (result.checked > 0) {
+        logger.info("Background verification completed", {
+          checked: result.checked,
+          notPaid: result.notPaid,
+        });
+      }
+    } catch (error) {
+      logger.error("Background payment verification error", {
+        error: error.message,
+      });
+    }
+  }, VERIFICATION_INTERVAL_MS);
+
+  // Run initial verification after 30 seconds (give server time to fully start)
+  setTimeout(async () => {
+    try {
+      logger.info("Running initial payment verification");
+      await verifyAllPendingPayments({
+        minAgeMinutes: 1,
+        maxAgeHours: 24,
+        limit: 50,
+      });
+    } catch (error) {
+      logger.error("Initial payment verification error", {
+        error: error.message,
+      });
+    }
+  }, 30000);
+};
+
 // Graceful shutdown handler
 const gracefulShutdown = async (signal) => {
   logger.info("Graceful shutdown initiated", { signal });
+
+  // Clear background verification interval
+  if (verificationIntervalId) {
+    clearInterval(verificationIntervalId);
+    logger.info("Background payment verification stopped");
+  }
 
   // Prevent new requests
   if (server) {

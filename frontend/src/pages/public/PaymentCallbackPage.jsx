@@ -70,6 +70,7 @@ export default function PaymentCallbackPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState(null);
   const [hasProcessed, setHasProcessed] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
 
   // Get order ID from URL params using useMemo
   // The reference is the order ID directly
@@ -113,7 +114,9 @@ export default function PaymentCallbackPage() {
 
         if (!isAlreadyProcessed) {
           setProcessError(
-            err.response?.data?.message || err.message || "Failed to process payment",
+            err.response?.data?.message ||
+              err.message ||
+              "Failed to process payment",
           );
         }
         // Still refetch to show current status
@@ -131,6 +134,56 @@ export default function PaymentCallbackPage() {
 
     return () => clearTimeout(timeoutId);
   }, [orderId, hasProcessed, refetch, order]);
+
+  // Polling effect - automatically check payment status if order is still pending
+  // This catches payments that take longer to process (e.g., customer taking 3+ minutes)
+  useEffect(() => {
+    if (!orderId || !order || order.status !== "pending") return;
+
+    setIsPolling(true);
+    let pollCount = 0;
+    const maxPolls = 60; // Poll for up to 5 minutes (60 * 5 seconds)
+    const pollInterval = 5000; // Poll every 5 seconds
+
+    const pollPaymentStatus = async () => {
+      try {
+        const response = await paymentsApi.checkStatus(orderId);
+        const statusData = response.data;
+
+        // If payment was just confirmed or status changed, refetch order
+        if (statusData.justConfirmed || statusData.status !== "pending") {
+          refetch();
+          setIsPolling(false);
+          return true; // Stop polling
+        }
+      } catch (err) {
+        // Silently ignore polling errors
+        console.warn("Polling error:", err.message);
+      }
+      return false; // Continue polling
+    };
+
+    const intervalId = setInterval(async () => {
+      pollCount++;
+      const shouldStop = await pollPaymentStatus();
+
+      if (shouldStop || pollCount >= maxPolls) {
+        clearInterval(intervalId);
+        setIsPolling(false);
+      }
+    }, pollInterval);
+
+    // Initial poll after 3 seconds
+    const initialPollTimeout = setTimeout(() => {
+      pollPaymentStatus();
+    }, 3000);
+
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(initialPollTimeout);
+      setIsPolling(false);
+    };
+  }, [orderId, order?.status, refetch]);
 
   const copyOrderId = () => {
     if (order?.id) {
@@ -285,6 +338,26 @@ export default function PaymentCallbackPage() {
         </div>
 
         {/* Help Text */}
+        {order?.status === "pending" && (
+          <Card className="mt-6 p-4 bg-yellow-50 border-yellow-200">
+            <div className="flex items-center gap-3 mb-2">
+              {isPolling && (
+                <Loader2 className="w-4 h-4 text-yellow-600 animate-spin" />
+              )}
+              <p className="text-sm font-medium text-yellow-800">
+                {isPolling
+                  ? "Checking payment status..."
+                  : "Waiting for payment confirmation"}
+              </p>
+            </div>
+            <p className="text-sm text-yellow-700">
+              If you've completed the payment, please wait a moment. We're
+              verifying your payment with Paystack. This usually takes a few
+              seconds.
+            </p>
+          </Card>
+        )}
+
         {order?.status === "completed" && (
           <Card className="mt-6 p-4 bg-green-50 border-green-200">
             <p className="text-sm text-green-800 text-center">

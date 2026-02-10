@@ -13,4 +13,19 @@ export const paymentsApi = {
    * @param {string} reference - Payment reference
    */
   verify: (reference) => apiClient.get(`/payments/verify/${reference}`),
+
+  /**
+   * Check payment status for polling
+   * This endpoint also triggers verification if payment is detected
+   * @param {string} reference - Payment/Order reference
+   */
+  checkStatus: (reference) =>
+    apiClient.get(`/payments/check-status/${reference}`),
+
+  /**
+   * Force verify payment (manual retry)
+   * @param {string} reference - Payment/Order reference
+   */
+  forceVerify: (reference) =>
+    apiClient.post(`/payments/force-verify/${reference}`),
 };

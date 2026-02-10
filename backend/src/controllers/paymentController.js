@@ -6,6 +6,10 @@ import {
   parseWebhookEvent,
 } from "../services/paystackService.js";
 import { processTransferWebhook } from "../services/withdrawalService.js";
+import {
+  verifyOrderPayment,
+  checkPaymentStatus,
+} from "../services/paymentVerificationService.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 
@@ -69,7 +73,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
 
       // Verify amount matches (should be pricePaid + transactionFee)
       const expectedAmount = parseFloat(
-        order.pricePaid.add(order.transactionFee || 0).toString()
+        order.pricePaid.add(order.transactionFee || 0).toString(),
       );
       const paidAmount = verification.amount;
 
@@ -219,7 +223,7 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
 
     // Verify amount matches (should be pricePaid + transactionFee)
     const expectedAmount = parseFloat(
-      order.pricePaid.add(order.transactionFee || 0).toString()
+      order.pricePaid.add(order.transactionFee || 0).toString(),
     );
     const paidAmount = verification.amount;
 
@@ -272,4 +276,82 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
     // Re-throw other errors
     throw error;
   }
+});
+
+/**
+ * Check payment status for polling
+ * This endpoint allows the frontend to poll for payment status updates
+ * GET /api/payments/check-status/:reference
+ */
+export const checkPaymentStatusEndpoint = asyncHandler(async (req, res) => {
+  const { reference } = req.params;
+
+  const result = await checkPaymentStatus(reference);
+
+  if (!result.exists) {
+    throw new AppError("Order not found", 404);
+  }
+
+  // If payment is made but order is still pending, trigger verification
+  if (result.needsVerification) {
+    logger.info("Payment detected, triggering verification", { reference });
+    const verifyResult = await verifyOrderPayment(reference);
+
+    if (verifyResult.confirmed) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          status: "payment_confirmed",
+          isPaid: true,
+          justConfirmed: true,
+          message: "Payment confirmed successfully",
+        },
+      });
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      status: result.status,
+      isPaid: result.isPaid,
+      paystackStatus: result.paystackStatus,
+    },
+  });
+});
+
+/**
+ * Force verify and process a specific order
+ * POST /api/payments/force-verify/:reference
+ */
+export const forceVerifyPayment = asyncHandler(async (req, res) => {
+  const { reference } = req.params;
+
+  logger.info("Force verification requested", { reference });
+
+  const result = await verifyOrderPayment(reference);
+
+  if (result.success && result.confirmed) {
+    return res.status(200).json({
+      success: true,
+      message: "Payment verified and confirmed",
+      data: {
+        orderId: reference,
+        amount: result.amount,
+      },
+    });
+  }
+
+  if (result.success && result.reason === "Already processed") {
+    return res.status(200).json({
+      success: true,
+      message: "Order already processed",
+      data: {
+        orderId: reference,
+        status: result.status,
+      },
+    });
+  }
+
+  throw new AppError(result.reason || "Payment verification failed", 400);
 });

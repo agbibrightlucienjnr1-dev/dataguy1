@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,9 +15,11 @@ import {
   ArrowLeft,
   Wifi,
   Copy,
+  RefreshCw,
 } from "lucide-react";
 import { Card, Button, Input, Badge } from "../../components/ui";
 import { useTrackOrder, useTrackOrdersByPhone } from "../../hooks";
+import { paymentsApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import toast from "react-hot-toast";
 
@@ -30,7 +32,10 @@ const phoneSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .regex(/^0[2-9]\d{8}$/, "Enter a valid Ghana phone number (e.g., 0241234567)"),
+    .regex(
+      /^0[2-9]\d{8}$/,
+      "Enter a valid Ghana phone number (e.g., 0241234567)",
+    ),
 });
 
 const STATUS_CONFIG = {
@@ -96,6 +101,7 @@ export default function OrderTrackingPage() {
     data: orderData,
     isLoading: orderLoading,
     error: orderError,
+    refetch: refetchOrder,
   } = useTrackOrder(searchQuery);
 
   // Track by phone
@@ -103,6 +109,7 @@ export default function OrderTrackingPage() {
     data: phoneData,
     isLoading: phoneLoading,
     error: phoneError,
+    refetch: refetchPhone,
   } = useTrackOrdersByPhone(searchPhone);
 
   const handleOrderIdSearch = (data) => {
@@ -119,6 +126,15 @@ export default function OrderTrackingPage() {
     navigator.clipboard.writeText(id);
     toast.success("Order ID copied!");
   };
+
+  // Handle refetch after verification
+  const handleRefetch = useCallback(() => {
+    if (searchQuery) {
+      refetchOrder();
+    } else if (searchPhone) {
+      refetchPhone();
+    }
+  }, [searchQuery, searchPhone, refetchOrder, refetchPhone]);
 
   const order = orderData?.order;
   const orders = phoneData?.orders || [];
@@ -270,14 +286,20 @@ export default function OrderTrackingPage() {
             <Card className="p-8 text-center">
               <XCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
               <p className="text-slate-600">
-                {orderError?.message || phoneError?.message || "An error occurred"}
+                {orderError?.message ||
+                  phoneError?.message ||
+                  "An error occurred"}
               </p>
             </Card>
           )}
 
         {/* Single Order Result */}
         {order && !isLoading && (
-          <OrderCard order={order} onCopy={copyOrderId} />
+          <OrderCard
+            order={order}
+            onCopy={copyOrderId}
+            onRefetch={handleRefetch}
+          />
         )}
 
         {/* Multiple Orders Result */}
@@ -287,7 +309,12 @@ export default function OrderTrackingPage() {
               Found {orders.length} order{orders.length > 1 ? "s" : ""}
             </p>
             {orders.map((o) => (
-              <OrderCard key={o.id} order={o} onCopy={copyOrderId} />
+              <OrderCard
+                key={o.id}
+                order={o}
+                onCopy={copyOrderId}
+                onRefetch={handleRefetch}
+              />
             ))}
           </div>
         )}
@@ -297,9 +324,43 @@ export default function OrderTrackingPage() {
 }
 
 // Order Card Component
-function OrderCard({ order, onCopy }) {
+function OrderCard({ order, onCopy, onRefetch }) {
+  const [isVerifying, setIsVerifying] = useState(false);
   const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
   const StatusIcon = status.icon;
+
+  const handleVerifyPayment = async () => {
+    setIsVerifying(true);
+    try {
+      const response = await paymentsApi.forceVerify(order.id || order.orderId);
+      const data = response.data;
+
+      if (
+        data.message?.includes("confirmed") ||
+        data.message?.includes("processed")
+      ) {
+        toast.success("Payment verified successfully!");
+        onRefetch?.();
+      } else {
+        toast.error("Payment not found. Please complete your payment first.");
+      }
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message;
+      if (
+        errorMsg.includes("already processed") ||
+        errorMsg.includes("Already")
+      ) {
+        toast.success("Order already processed!");
+        onRefetch?.();
+      } else if (errorMsg.includes("not completed")) {
+        toast.error("Payment not completed yet. Please complete your payment.");
+      } else {
+        toast.error(errorMsg || "Verification failed. Please try again.");
+      }
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   return (
     <Card className="p-5">
@@ -338,6 +399,34 @@ function OrderCard({ order, onCopy }) {
           {formatCurrency(order.pricePaid)}
         </p>
       </div>
+
+      {order.status === "pending" && (
+        <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+          <p className="text-sm text-yellow-800 mb-3">
+            If you've already paid, click the button below to verify your
+            payment.
+          </p>
+          <Button
+            variant="warning"
+            size="sm"
+            onClick={handleVerifyPayment}
+            disabled={isVerifying}
+            className="w-full gap-2"
+          >
+            {isVerifying ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Verify Payment
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {order.status === "completed" && (
         <p className="text-sm text-green-600 mt-3">

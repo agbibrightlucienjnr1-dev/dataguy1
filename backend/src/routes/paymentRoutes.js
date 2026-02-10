@@ -4,6 +4,8 @@ import {
   paymentCallback,
   verifyPaymentStatus,
   verifyAndProcessPayment,
+  checkPaymentStatusEndpoint,
+  forceVerifyPayment,
 } from "../controllers/paymentController.js";
 import {
   paymentRateLimiter,
@@ -22,11 +24,21 @@ router.get("/callback", publicRateLimiter, paymentCallback);
 // Verify payment status (public)
 router.get("/verify/:reference", publicRateLimiter, verifyPaymentStatus);
 
+// Check payment status for polling (public, higher rate limit for polling)
+router.get(
+  "/check-status/:reference",
+  publicRateLimiter,
+  checkPaymentStatusEndpoint,
+);
+
 // Verify and process payment (called after redirect)
 router.post(
   "/verify-and-process/:reference",
   paymentRateLimiter,
   verifyAndProcessPayment,
 );
+
+// Force verify payment (for manual retry)
+router.post("/force-verify/:reference", paymentRateLimiter, forceVerifyPayment);
 
 export default router;
