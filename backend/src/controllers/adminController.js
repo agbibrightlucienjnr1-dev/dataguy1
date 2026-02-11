@@ -277,6 +277,41 @@ export const getHubnetBalance = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get total wallet balance for all agents and sub-agents
+ * GET /api/admin/total-wallet-balance
+ */
+export const getTotalWalletBalance = asyncHandler(async (req, res) => {
+  const prisma = (await import("../config/database.js")).getPrisma();
+
+  try {
+    // Sum all wallet balances for agents and sub-agents
+    const result = await prisma.wallet.aggregate({
+      _sum: {
+        balance: true,
+      },
+      where: {
+        user: {
+          role: {
+            in: ["agent", "sub_agent"],
+          },
+        },
+      },
+    });
+
+    const totalBalance = result._sum.balance || 0;
+
+    res.status(200).json({
+      success: true,
+      totalBalance: totalBalance.toString(),
+      currency: "GHS",
+    });
+  } catch (error) {
+    logger.error("Error fetching total wallet balance", error);
+    throw error;
+  }
+});
+
+/**
  * Mark order as completed - manually confirm delivery
  * Used when webhook doesn't work (e.g., local development) or for manual verification
  * POST /api/admin/orders/:orderId/complete

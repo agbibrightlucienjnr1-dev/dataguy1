@@ -130,6 +130,11 @@ export const adminApi = {
    */
   getHubnetBalance: () => apiClient.get("/admin/hubnet-balance"),
 
+  /**
+   * Get total wallet balance for all agents and sub-agents
+   */
+  getTotalWalletBalance: () => apiClient.get("/admin/total-wallet-balance"),
+
   // ========== System Management ==========
 
   /**
@@ -146,8 +151,7 @@ export const adminApi = {
    * Run database cleanup
    * @param {Object} data - { archiveOrdersDays?, cleanupTransactionsDays?, hardDeleteOrders?, optimize? }
    */
-  runDatabaseCleanup: (data) =>
-    apiClient.post("/admin/database/cleanup", data),
+  runDatabaseCleanup: (data) => apiClient.post("/admin/database/cleanup", data),
 
   /**
    * Optimize database
