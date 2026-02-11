@@ -12,21 +12,47 @@ export const hubnetWebhook = async (req, res) => {
   try {
     logger.info("Hubnet webhook received", { body: req.body });
 
-    // Extract webhook data
+    // Extract webhook data - Hubnet sends data nested in 'data' object
+    const webhookData = req.body.data || req.body;
     const {
       reference,
       transaction_id,
-      status,
-      message,
-      phone,
+      status: deliveryStatus,
+      message: deliveryMessage,
+      msisdn: phone,
       volume,
       network,
       timestamp,
+    } = webhookData;
+
+    // Extract top-level fields
+    const {
+      event,
+      status: topLevelStatus,
+      message: topLevelMessage,
+      code,
     } = req.body;
+
+    // Use nested status if available, otherwise use top-level
+    const status = deliveryStatus || topLevelStatus;
+    const message = deliveryMessage || topLevelMessage;
+
+    logger.info("Parsed Hubnet webhook data", {
+      event,
+      reference,
+      transaction_id,
+      status,
+      phone,
+      volume,
+      network,
+    });
 
     // Validate required fields
     if (!reference && !transaction_id) {
-      logger.error("Hubnet webhook missing reference and transaction_id");
+      logger.error("Hubnet webhook missing reference and transaction_id", {
+        body: req.body,
+        parsedData: webhookData,
+      });
       return res.status(400).json({
         success: false,
         message: "Missing reference or transaction_id",
@@ -98,9 +124,12 @@ export const hubnetWebhook = async (req, res) => {
     if (volume) {
       const expectedVolume = extractVolumeInMB(order.bundle.volume);
       const receivedVolume = parseInt(volume);
-      if (expectedVolume !== receivedVolume) {
+      const volumeDiff = Math.abs(expectedVolume - receivedVolume);
+      const VOLUME_TOLERANCE_MB = 10; // Allow ±10MB difference for rounding
+
+      if (volumeDiff > VOLUME_TOLERANCE_MB) {
         verificationErrors.push(
-          `Volume mismatch: expected ${expectedVolume}MB, got ${receivedVolume}MB`,
+          `Volume mismatch: expected ${expectedVolume}MB, got ${receivedVolume}MB (diff: ${volumeDiff}MB)`,
         );
       }
     }
@@ -239,6 +268,7 @@ const mapNetworkToHubnet = (network) => {
 
 /**
  * Helper: Extract volume in MB from bundle volume string
+ * Note: Uses decimal conversion (1GB = 1000MB) to match Hubnet API
  */
 const extractVolumeInMB = (volumeString) => {
   const match = volumeString.match(/^(\d+(?:\.\d+)?)\s*(GB|MB)$/i);
@@ -251,7 +281,7 @@ const extractVolumeInMB = (volumeString) => {
   const unit = match[2].toUpperCase();
 
   if (unit === "GB") {
-    return Math.round(value * 1024);
+    return Math.round(value * 1000); // Decimal: 1GB = 1000MB (matches hubnetService)
   } else {
     return Math.round(value);
   }
