@@ -59,9 +59,9 @@ export const calculateCommission = async (order) => {
       throw new AppError("Agent pricing not found", 404);
     }
 
-      // Sub-agent commission = customer price - agent's sub-agent price
+    // Sub-agent commission = customer price - agent's sub-agent price
     commission = pricePaid - agentPrice.subAgentPrice;
-    
+
     // Validate sub-agent commission is non-negative
     if (parseFloat(commission.toString()) < 0) {
       throw new AppError(
@@ -69,12 +69,12 @@ export const calculateCommission = async (order) => {
         400,
       );
     }
-    
+
     description = `Sub-agent commission for order ${order.id}`;
 
     // Parent agent commission = agent's sub-agent price - admin price
     parentAgentCommission = agentPrice.subAgentPrice - adminPrice;
-    
+
     // Validate parent agent commission is non-negative
     if (parseFloat(parentAgentCommission.toString()) < 0) {
       logger.warn("Parent agent commission is negative", {
@@ -86,7 +86,7 @@ export const calculateCommission = async (order) => {
       // Set to null so it won't be processed (parent agent gets 0 commission)
       parentAgentCommission = null;
     }
-    
+
     parentAgentId = seller.parentAgentId;
     parentAgentDescription = `Parent agent commission from sub-agent order ${order.id}`;
   } else {
@@ -171,7 +171,11 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
   }
 
   // Calculate commission
-  let commission, description, parentAgentCommission, parentAgentId, parentAgentDescription;
+  let commission,
+    description,
+    parentAgentCommission,
+    parentAgentId,
+    parentAgentDescription;
   try {
     const commissionResult = await calculateCommission(order);
     commission = commissionResult.commission;
@@ -189,12 +193,27 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
     throw error;
   }
 
-  // Validate commission is positive before processing
-  if (parseFloat(commission.toString()) <= 0) {
-    throw new AppError(
-      "Commission must be greater than zero",
-      400,
-    );
+  // Validate commission is not negative
+  // Allow zero commission for special cases (e.g., promotional bundles or break-even pricing)
+  if (parseFloat(commission.toString()) < 0) {
+    logger.error("Negative commission calculated", {
+      orderId,
+      sellerType: order.sellerType,
+      sellerId: order.sellerId,
+      pricePaid: order.pricePaid.toString(),
+      commission: commission.toString(),
+    });
+    throw new AppError("Invalid pricing: commission cannot be negative", 400);
+  }
+
+  // Log warning for zero commission but allow processing
+  if (parseFloat(commission.toString()) === 0) {
+    logger.warn("Processing order with zero commission", {
+      orderId,
+      sellerType: order.sellerType,
+      sellerId: order.sellerId,
+      pricePaid: order.pricePaid.toString(),
+    });
   }
 
   // Get or create wallet first (outside transaction)
