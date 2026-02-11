@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,6 +53,7 @@ export default function BuyPage() {
   const { code } = useParams();
   const [selectedBundle, setSelectedBundle] = useState(null);
   const [networkFilter, setNetworkFilter] = useState("");
+  const formRef = useRef(null);
 
   // Fetch seller info
   const {
@@ -85,6 +86,23 @@ export default function BuyPage() {
   });
 
   const seller = sellerData?.seller;
+
+  // Auto-scroll to form on mobile when bundle is selected
+  useEffect(() => {
+    if (selectedBundle && formRef.current) {
+      // Only auto-scroll on smaller screens (mobile/tablet)
+      const isMobile = window.innerWidth < 1024; // lg breakpoint
+      if (isMobile) {
+        // Small delay to ensure UI updates first
+        setTimeout(() => {
+          formRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
+      }
+    }
+  }, [selectedBundle]);
 
   // Backend returns bundles grouped by network: { MTN: [...], AIRTELTIGO: [...] }
   // Flatten it to an array and memoize
@@ -326,7 +344,7 @@ export default function BuyPage() {
 
           {/* Order Form */}
           <div className="lg:col-span-1">
-            <Card className="p-6 sticky top-6">
+            <Card ref={formRef} className="p-6 sticky top-6">
               <h3 className="font-semibold text-slate-900 mb-4">
                 Complete Your Purchase
               </h3>

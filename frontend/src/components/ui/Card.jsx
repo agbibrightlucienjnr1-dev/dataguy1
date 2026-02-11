@@ -1,8 +1,10 @@
+import { forwardRef } from "react";
 import { cn } from "../../utils/helpers";
 
-export default function Card({ children, className, ...props }) {
+const Card = forwardRef(({ children, className, ...props }, ref) => {
   return (
     <div
+      ref={ref}
       className={cn(
         "rounded-xl border border-gray-200 bg-white shadow-sm",
         className,
@@ -12,7 +14,11 @@ export default function Card({ children, className, ...props }) {
       {children}
     </div>
   );
-}
+});
+
+Card.displayName = "Card";
+
+export default Card;
 
 export function CardHeader({ children, className, ...props }) {
   return (
