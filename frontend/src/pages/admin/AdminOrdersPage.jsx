@@ -18,7 +18,7 @@ import {
 import toast from "react-hot-toast";
 import { Card, Badge, Button, Modal } from "../../components/ui";
 import { adminApi } from "../../api";
-import { formatCurrency, formatDate } from "../../utils/formatters";
+import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
 
 export default function AdminOrdersPage() {
@@ -307,7 +307,7 @@ export default function AdminOrdersPage() {
                     <td className="p-4">{getStatusBadge(order.status)}</td>
                     <td className="p-4">
                       <span className="text-sm text-slate-500">
-                        {formatDate(order.createdAt)}
+                        {formatDateTime(order.createdAt)}
                       </span>
                     </td>
                     <td className="p-4 text-right">
@@ -417,7 +417,7 @@ export default function AdminOrdersPage() {
                     #{selectedOrder.id.slice(-8)}
                   </p>
                   <p className="text-sm text-slate-500">
-                    {formatDate(selectedOrder.createdAt)}
+                    {formatDateTime(selectedOrder.createdAt)}
                   </p>
                 </div>
               </div>

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Card, Button, Input, Badge, Modal } from "../../components/ui";
 import { ordersApi } from "../../api";
-import { formatCurrency, formatDate } from "../../utils/formatters";
+import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS, ORDER_STATUSES } from "../../utils/constants";
 
 export default function AgentOrdersPage() {
@@ -250,7 +250,7 @@ export default function AgentOrdersPage() {
                     </td>
                     <td className="p-4">
                       <p className="text-sm text-slate-600">
-                        {formatDate(order.createdAt)}
+                        {formatDateTime(order.createdAt)}
                       </p>
                     </td>
                     <td className="p-4">
@@ -343,7 +343,7 @@ export default function AgentOrdersPage() {
                   Date
                 </p>
                 <p className="text-sm mt-1">
-                  {formatDate(selectedOrder.createdAt, true)}
+                  {formatDateTime(selectedOrder.createdAt)}
                 </p>
               </div>
               <div>
