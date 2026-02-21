@@ -216,6 +216,8 @@ export const confirmPayment = async (orderId, paymentReference) => {
 export const initiateHubnetOrder = async (orderId) => {
   const prisma = getPrisma();
 
+  logger.info("=== initiateHubnetOrder START ===", { orderId });
+
   try {
     // Get order with bundle details
     const order = await prisma.order.findUnique({
@@ -236,12 +238,22 @@ export const initiateHubnetOrder = async (orderId) => {
       throw new AppError("Order not found", 404);
     }
 
+    logger.info("initiateHubnetOrder - Order loaded", {
+      orderId,
+      status: order.status,
+      hubnetOrderId: order.hubnetOrderId,
+      customerPhone: order.customerPhone,
+      network: order.bundle?.network,
+      volume: order.bundle?.volume,
+    });
+
     // CRITICAL: Prevent duplicate Hubnet orders
     // Order should be in payment_confirmed or failed status (allow retry for failed orders)
     if (order.status !== "payment_confirmed" && order.status !== "failed") {
-      logger.warn("Order cannot be fulfilled", {
+      logger.warn("Order cannot be fulfilled - invalid status", {
         orderId,
         status: order.status,
+        hubnetOrderId: order.hubnetOrderId,
       });
       // If already processing or completed, just return (already sent to Hubnet)
       if (order.status === "processing" || order.status === "completed") {
@@ -254,6 +266,10 @@ export const initiateHubnetOrder = async (orderId) => {
       }
       // If still pending, payment wasn't confirmed yet
       if (order.status === "pending") {
+        logger.error("Cannot send to Hubnet - payment not confirmed", {
+          orderId,
+          status: order.status,
+        });
         throw new AppError(
           "Payment must be confirmed before initiating Hubnet order",
           400,
@@ -264,7 +280,7 @@ export const initiateHubnetOrder = async (orderId) => {
 
     // Additional check: If hubnetOrderId already exists, order was already sent to Hubnet
     if (order.hubnetOrderId) {
-      logger.warn(
+      logger.info(
         "Order already has Hubnet transaction ID, skipping duplicate send",
         {
           orderId,
@@ -275,139 +291,170 @@ export const initiateHubnetOrder = async (orderId) => {
       return order;
     }
 
-    // Step 1: Check Hubnet balance
-    logger.info("Checking Hubnet balance before initiating order", { orderId });
-    const balanceCheck = await checkBalance();
+    // STEP 1: Generate a unique lock ID and ATOMICALLY claim this order BEFORE calling Hubnet
+    // This prevents duplicate Hubnet calls even if multiple requests come in simultaneously
+    const lockId = `LOCK-${orderId}-${Date.now()}`;
+    logger.info("Attempting to acquire lock", { orderId, lockId });
 
-    if (!balanceCheck.success) {
-      throw new AppError("Failed to check Hubnet balance", 500);
-    }
-
-    logger.info("Hubnet balance check successful", {
-      balance: balanceCheck.balance,
-      currency: balanceCheck.currency,
-    });
-
-    // Step 2: Initiate Hubnet data transaction
-    logger.info("Initiating Hubnet data transaction", {
-      orderId,
-      phone: order.customerPhone,
-      network: order.bundle.network,
-      volume: order.bundle.volume,
-    });
-
-    const hubnetTransaction = await initiateDataTransaction({
-      phone: order.customerPhone,
-      network: order.bundle.network,
-      volume: order.bundle.volume,
-      reference: order.id, // Use order ID as reference
-      referrer: order.seller?.phone, // Optional: seller's phone for alerts
-      webhookUrl: process.env.HUBNET_WEBHOOK_URL, // Optional: webhook for status updates
-    });
-
-    if (!hubnetTransaction.success) {
-      throw new AppError("Failed to initiate Hubnet transaction", 500);
-    }
-
-    logger.success("Hubnet transaction initiated successfully", {
-      orderId,
-      hubnetTransactionId: hubnetTransaction.transactionId,
-      hubnetPaymentId: hubnetTransaction.paymentId,
-      code: hubnetTransaction.code,
-    });
-
-    // Code "0000" means Hubnet has received the order and will process it
-    // Order stays as "processing" until we receive the delivery status via webhook
-    // Webhook endpoint: POST /api/hubnet/webhook
-
-    // Step 3: Atomically update order ONLY if status is still payment_confirmed or failed
-    // This prevents race conditions where multiple requests try to send the same order to Hubnet
-    const updateResult = await prisma.order.updateMany({
+    const lockResult = await prisma.order.updateMany({
       where: {
         id: orderId,
         status: {
           in: ["payment_confirmed", "failed"],
         },
-        hubnetOrderId: null, // Only update if not already sent to Hubnet
+        hubnetOrderId: null, // Only lock if not already locked/sent
       },
       data: {
+        hubnetOrderId: lockId, // Set lock ID immediately
         status: "processing",
-        hubnetOrderId: hubnetTransaction.transactionId,
-        hubnetResponse: JSON.stringify({
-          transactionId: hubnetTransaction.transactionId,
-          paymentId: hubnetTransaction.paymentId,
-          reference: hubnetTransaction.reference,
-          message: hubnetTransaction.message,
-          code: hubnetTransaction.code,
-          ipAddress: hubnetTransaction.ipAddress,
-          initiatedAt: new Date().toISOString(),
-        }),
       },
     });
 
-    // If no rows were updated, another request already processed this order
-    if (updateResult.count === 0) {
-      logger.warn("Order was already processed by another request", {
-        orderId,
-        hubnetTransactionId: hubnetTransaction.transactionId,
-      });
+    logger.info("Lock acquisition result", {
+      orderId,
+      lockId,
+      count: lockResult.count,
+    });
 
-      // Fetch current order state
+    // If no rows updated, another request already locked/processed this order
+    if (lockResult.count === 0) {
+      logger.warn(
+        "Order already locked by another request, skipping Hubnet call",
+        {
+          orderId,
+          attemptedLockId: lockId,
+        },
+      );
+
+      // Return current order state
       const currentOrder = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
           bundle: true,
           seller: {
-            select: {
-              id: true,
-              name: true,
-              phone: true,
-            },
+            select: { id: true, name: true, phone: true },
+          },
+        },
+      });
+      return currentOrder;
+    }
+
+    logger.info("Order locked for Hubnet processing", {
+      orderId,
+      lockId,
+    });
+
+    // Log that we're about to send to Hubnet
+    logger.info("SENDING ORDER TO HUBNET", {
+      orderId,
+      status: "processing",
+      customerPhone: order.customerPhone,
+      network: order.bundle.network,
+      volume: order.bundle.volume,
+    });
+
+    try {
+      // Step 2: Check Hubnet balance
+      logger.info("Checking Hubnet balance before initiating order", {
+        orderId,
+      });
+      const balanceCheck = await checkBalance();
+
+      if (!balanceCheck.success) {
+        throw new AppError("Failed to check Hubnet balance", 500);
+      }
+
+      logger.info("Hubnet balance check successful", {
+        balance: balanceCheck.balance,
+        currency: balanceCheck.currency,
+      });
+
+      // Step 3: Initiate Hubnet data transaction
+      logger.info("Initiating Hubnet data transaction", {
+        orderId,
+        phone: order.customerPhone,
+        network: order.bundle.network,
+        volume: order.bundle.volume,
+      });
+
+      const hubnetTransaction = await initiateDataTransaction({
+        phone: order.customerPhone,
+        network: order.bundle.network,
+        volume: order.bundle.volume,
+        reference: order.id, // Use order ID as reference
+        referrer: order.seller?.phone, // Optional: seller's phone for alerts
+        webhookUrl: process.env.HUBNET_WEBHOOK_URL, // Optional: webhook for status updates
+      });
+
+      if (!hubnetTransaction.success) {
+        throw new AppError("Failed to initiate Hubnet transaction", 500);
+      }
+
+      logger.success("Hubnet transaction initiated successfully", {
+        orderId,
+        hubnetTransactionId: hubnetTransaction.transactionId,
+        hubnetPaymentId: hubnetTransaction.paymentId,
+        code: hubnetTransaction.code,
+      });
+
+      // Step 4: Update order with actual Hubnet transaction ID
+      const updatedOrder = await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          hubnetOrderId: hubnetTransaction.transactionId || lockId, // Use Hubnet ID or keep lock ID
+          hubnetResponse: JSON.stringify({
+            transactionId: hubnetTransaction.transactionId,
+            paymentId: hubnetTransaction.paymentId,
+            reference: hubnetTransaction.reference,
+            message: hubnetTransaction.message,
+            code: hubnetTransaction.code,
+            ipAddress: hubnetTransaction.ipAddress,
+            initiatedAt: new Date().toISOString(),
+          }),
+        },
+        include: {
+          bundle: true,
+          seller: {
+            select: { id: true, name: true, phone: true },
           },
         },
       });
 
-      return currentOrder;
-    }
+      logger.info("Order awaiting Hubnet delivery confirmation", {
+        orderId,
+        hubnetCode: hubnetTransaction.code,
+        hubnetOrderId: updatedOrder.hubnetOrderId,
+        status: "processing",
+      });
 
-    // Fetch the updated order with full details
-    const updatedOrder = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: {
-        bundle: true,
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-          },
+      return updatedOrder;
+    } catch (hubnetError) {
+      // Hubnet call failed - mark order as failed but KEEP the lock ID to prevent retries
+      logger.error("Hubnet API call failed", {
+        orderId,
+        lockId,
+        error: hubnetError.message,
+      });
+
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          status: "failed",
+          hubnetOrderId: null, // Clear lock to allow retry
+          hubnetResponse: JSON.stringify({
+            error: hubnetError.message,
+            failedAt: new Date().toISOString(),
+            lockId: lockId,
+          }),
         },
-      },
-    });
+      });
 
-    logger.info("Order awaiting Hubnet delivery confirmation", {
-      orderId,
-      hubnetCode: hubnetTransaction.code,
-      status: "processing",
-    });
-
-    return updatedOrder;
+      throw hubnetError;
+    }
   } catch (error) {
     logger.error("Error initiating Hubnet order", {
       orderId,
       error: error.message,
-    });
-
-    // Update order with error information
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: "failed",
-        hubnetResponse: JSON.stringify({
-          error: error.message,
-          failedAt: new Date().toISOString(),
-        }),
-      },
     });
 
     throw error instanceof AppError

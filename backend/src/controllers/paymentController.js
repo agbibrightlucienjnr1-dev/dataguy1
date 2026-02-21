@@ -49,13 +49,20 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
     const orderId = event.reference; // We use orderId as reference
     const paymentReference = event.reference;
 
+    logger.info("=== PAYMENT WEBHOOK START ===", { orderId, paymentReference });
+
     try {
       // Get order first to check if it exists and its status
       const order = await getOrderById(orderId);
+      logger.info("Order found", {
+        orderId,
+        status: order.status,
+        hubnetOrderId: order.hubnetOrderId,
+      });
 
       // If order is already fully processed (processing/completed), just acknowledge
       if (order.status === "processing" || order.status === "completed") {
-        logger.info("Order already sent to Hubnet", {
+        logger.info("Order already sent to Hubnet - SKIPPING", {
           orderId,
           status: order.status,
           hubnetOrderId: order.hubnetOrderId,
@@ -133,41 +140,40 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       }
 
       // Process payment confirmation and credit wallet
+      logger.info("Calling confirmPayment", { orderId });
       const result = await confirmPayment(orderId, paymentReference);
+      logger.info("confirmPayment completed", {
+        orderId,
+        alreadyProcessed: result.alreadyProcessed,
+      });
 
       if (result.alreadyProcessed) {
         logger.info("Payment already processed", { orderId });
+      } else {
+        logger.success("Payment confirmed, commission credited", { orderId });
       }
 
       // Always attempt Hubnet fulfillment - the function has safeguards against duplicates
       // This handles cases where payment was processed but Hubnet failed
-      logger.info("Attempting Hubnet order fulfillment", { orderId });
+      logger.info("=== CALLING HUBNET ===", { orderId });
       try {
         const hubnetResult = await initiateHubnetOrder(orderId);
-        if (
-          hubnetResult.status === "processing" ||
-          hubnetResult.status === "completed"
-        ) {
-          logger.success("Hubnet order initiated/verified", {
-            orderId,
-            status: hubnetResult.status,
-            hubnetOrderId: hubnetResult.hubnetOrderId,
-          });
-        }
+        logger.success("=== HUBNET SUCCESS ===", {
+          orderId,
+          status: hubnetResult.status,
+          hubnetOrderId: hubnetResult.hubnetOrderId,
+        });
       } catch (hubnetError) {
         // Log error but don't fail the webhook - payment is already confirmed
-        logger.error(
-          "Failed to initiate Hubnet order (payment confirmed, will retry)",
-          {
-            orderId,
-            error: hubnetError.message,
-            stack: hubnetError.stack,
-          },
-        );
+        logger.error("=== HUBNET FAILED ===", {
+          orderId,
+          error: hubnetError.message,
+          stack: hubnetError.stack,
+        });
         // Order remains in payment_confirmed status for manual retry
       }
 
-      logger.success("Payment processed successfully via webhook", { orderId });
+      logger.success("=== PAYMENT WEBHOOK COMPLETE ===", { orderId });
 
       return res.status(200).json({
         success: true,
@@ -179,12 +185,52 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
         logger.warn("Order not found in webhook", { orderId });
         return res.status(200).json({ received: true });
       }
-      // If already processed, that's fine
+
+      // If already processed or cannot be confirmed, still try Hubnet
+      // The order might be in payment_confirmed status waiting for Hubnet
       if (
         error.message?.includes("already processed") ||
         error.message?.includes("Order cannot be confirmed")
       ) {
-        logger.info("Order already processed (webhook)", { orderId });
+        logger.info(
+          "Payment confirmation returned error, checking if Hubnet needed",
+          {
+            orderId,
+            error: error.message,
+          },
+        );
+
+        // Try to send to Hubnet anyway - it has safeguards
+        try {
+          const currentOrder = await getOrderById(orderId);
+          logger.info("Order status after confirmation error", {
+            orderId,
+            status: currentOrder.status,
+            hubnetOrderId: currentOrder.hubnetOrderId,
+          });
+
+          // If payment is confirmed but not sent to Hubnet, send it now
+          if (
+            currentOrder.status === "payment_confirmed" &&
+            !currentOrder.hubnetOrderId
+          ) {
+            logger.info("Attempting Hubnet after confirmation error", {
+              orderId,
+            });
+            const hubnetResult = await initiateHubnetOrder(orderId);
+            logger.success("Hubnet order initiated after confirmation error", {
+              orderId,
+              status: hubnetResult.status,
+              hubnetOrderId: hubnetResult.hubnetOrderId,
+            });
+          }
+        } catch (hubnetError) {
+          logger.error("Failed to initiate Hubnet after confirmation error", {
+            orderId,
+            error: hubnetError.message,
+          });
+        }
+
         return res.status(200).json({
           success: true,
           message: "Order already processed",

@@ -226,11 +226,45 @@ export const verifyOrderPayment = async (orderId) => {
       amount: paidAmount,
     };
   } catch (error) {
-    // Handle "already processed" errors gracefully
+    // Handle "already processed" errors - but still try Hubnet
     if (
       error.message?.includes("already processed") ||
       error.message?.includes("Order cannot be confirmed")
     ) {
+      logger.info("Payment confirmation error, checking if Hubnet needed", {
+        orderId,
+        error: error.message,
+      });
+
+      // Try to send to Hubnet anyway - it has safeguards
+      try {
+        const currentOrder = await prisma.order.findUnique({
+          where: { id: orderId },
+          select: { id: true, status: true, hubnetOrderId: true },
+        });
+
+        if (
+          currentOrder &&
+          currentOrder.status === "payment_confirmed" &&
+          !currentOrder.hubnetOrderId
+        ) {
+          logger.info("Attempting Hubnet after confirmation error", {
+            orderId,
+          });
+          const hubnetResult = await initiateHubnetOrder(orderId);
+          logger.success("Hubnet order initiated after confirmation error", {
+            orderId,
+            status: hubnetResult.status,
+            hubnetOrderId: hubnetResult.hubnetOrderId,
+          });
+        }
+      } catch (hubnetError) {
+        logger.error("Failed to initiate Hubnet after confirmation error", {
+          orderId,
+          error: hubnetError.message,
+        });
+      }
+
       return { success: true, reason: "Already processed" };
     }
 
