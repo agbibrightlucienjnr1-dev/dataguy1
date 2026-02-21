@@ -1,6 +1,6 @@
 import { getPrisma } from "../config/database.js";
 import { verifyTransaction } from "./paystackService.js";
-import { confirmPayment } from "./orderService.js";
+import { confirmPayment, initiateHubnetOrder } from "./orderService.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -124,12 +124,47 @@ export const verifyOrderPayment = async (orderId) => {
     }
 
     // Payment verified - confirm the order
-    await confirmPayment(orderId, orderId);
+    const result = await confirmPayment(orderId, orderId);
 
     logger.success("Payment verified and confirmed via verification service", {
       orderId,
       amount: paidAmount,
     });
+
+    // Check if payment was already processed
+    if (result.alreadyProcessed) {
+      logger.info("Payment already processed, skipping Hubnet initiation", {
+        orderId,
+      });
+      return {
+        success: true,
+        confirmed: true,
+        amount: paidAmount,
+        alreadyProcessed: true,
+      };
+    }
+
+    // Automatically initiate Hubnet order fulfillment
+    logger.info("Automatically initiating Hubnet order fulfillment", {
+      orderId,
+    });
+    try {
+      await initiateHubnetOrder(orderId);
+      logger.success(
+        "Hubnet order initiated automatically after verification",
+        { orderId },
+      );
+    } catch (hubnetError) {
+      // Log error but don't fail the verification - payment is already confirmed
+      logger.error(
+        "Failed to auto-initiate Hubnet order (payment confirmed, will retry)",
+        {
+          orderId,
+          error: hubnetError.message,
+        },
+      );
+      // Order remains in payment_confirmed status for manual retry
+    }
 
     return {
       success: true,

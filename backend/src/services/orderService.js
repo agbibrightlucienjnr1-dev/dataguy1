@@ -236,14 +236,20 @@ export const initiateHubnetOrder = async (orderId) => {
       throw new AppError("Order not found", 404);
     }
 
+    // CRITICAL: Prevent duplicate Hubnet orders
     // Order should be in payment_confirmed or failed status (allow retry for failed orders)
     if (order.status !== "payment_confirmed" && order.status !== "failed") {
       logger.warn("Order cannot be fulfilled", {
         orderId,
         status: order.status,
       });
-      // If already processing or completed, just return
+      // If already processing or completed, just return (already sent to Hubnet)
       if (order.status === "processing" || order.status === "completed") {
+        logger.info("Order already sent to Hubnet, skipping", {
+          orderId,
+          status: order.status,
+          hubnetOrderId: order.hubnetOrderId,
+        });
         return order;
       }
       // If still pending, payment wasn't confirmed yet
@@ -253,6 +259,19 @@ export const initiateHubnetOrder = async (orderId) => {
           400,
         );
       }
+      return order;
+    }
+
+    // Additional check: If hubnetOrderId already exists, order was already sent to Hubnet
+    if (order.hubnetOrderId) {
+      logger.warn(
+        "Order already has Hubnet transaction ID, skipping duplicate send",
+        {
+          orderId,
+          status: order.status,
+          hubnetOrderId: order.hubnetOrderId,
+        },
+      );
       return order;
     }
 
@@ -301,9 +320,16 @@ export const initiateHubnetOrder = async (orderId) => {
     // Order stays as "processing" until we receive the delivery status via webhook
     // Webhook endpoint: POST /api/hubnet/webhook
 
-    // Step 3: Store Hubnet reference and keep as processing
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
+    // Step 3: Atomically update order ONLY if status is still payment_confirmed or failed
+    // This prevents race conditions where multiple requests try to send the same order to Hubnet
+    const updateResult = await prisma.order.updateMany({
+      where: {
+        id: orderId,
+        status: {
+          in: ["payment_confirmed", "failed"],
+        },
+        hubnetOrderId: null, // Only update if not already sent to Hubnet
+      },
       data: {
         status: "processing",
         hubnetOrderId: hubnetTransaction.transactionId,
@@ -317,6 +343,36 @@ export const initiateHubnetOrder = async (orderId) => {
           initiatedAt: new Date().toISOString(),
         }),
       },
+    });
+
+    // If no rows were updated, another request already processed this order
+    if (updateResult.count === 0) {
+      logger.warn("Order was already processed by another request", {
+        orderId,
+        hubnetTransactionId: hubnetTransaction.transactionId,
+      });
+
+      // Fetch current order state
+      const currentOrder = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          bundle: true,
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+            },
+          },
+        },
+      });
+
+      return currentOrder;
+    }
+
+    // Fetch the updated order with full details
+    const updatedOrder = await prisma.order.findUnique({
+      where: { id: orderId },
       include: {
         bundle: true,
         seller: {

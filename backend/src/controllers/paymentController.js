@@ -1,5 +1,9 @@
 import { asyncHandler } from "../middlewares/errorHandler.js";
-import { confirmPayment, getOrderById } from "../services/orderService.js";
+import {
+  confirmPayment,
+  getOrderById,
+  initiateHubnetOrder,
+} from "../services/orderService.js";
 import {
   verifyTransaction,
   verifyWebhookSignature,
@@ -90,7 +94,38 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       // Process payment confirmation and credit wallet
       const result = await confirmPayment(orderId, paymentReference);
 
-      // Note: Hubnet order is now triggered manually by admin via admin panel
+      // Check if payment was already processed (duplicate webhook)
+      if (result.alreadyProcessed) {
+        logger.info("Payment already processed, webhook acknowledged", {
+          orderId,
+        });
+        return res.status(200).json({
+          success: true,
+          message: "Order already processed",
+        });
+      }
+
+      // Automatically initiate Hubnet order fulfillment
+      logger.info("Automatically initiating Hubnet order fulfillment", {
+        orderId,
+      });
+      try {
+        await initiateHubnetOrder(orderId);
+        logger.success("Hubnet order initiated automatically after payment", {
+          orderId,
+        });
+      } catch (hubnetError) {
+        // Log error but don't fail the webhook - payment is already confirmed
+        logger.error(
+          "Failed to auto-initiate Hubnet order (payment confirmed, will retry)",
+          {
+            orderId,
+            error: hubnetError.message,
+            stack: hubnetError.stack,
+          },
+        );
+        // Order remains in payment_confirmed status for manual retry
+      }
 
       logger.success("Payment processed successfully via webhook", { orderId });
 
