@@ -53,16 +53,57 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       // Get order first to check if it exists and its status
       const order = await getOrderById(orderId);
 
-      // If order is already processed, just acknowledge the webhook
-      if (order.status !== "pending") {
-        logger.info("Order already processed via webhook", {
+      // If order is already fully processed (processing/completed), just acknowledge
+      if (order.status === "processing" || order.status === "completed") {
+        logger.info("Order already sent to Hubnet", {
           orderId,
           status: order.status,
+          hubnetOrderId: order.hubnetOrderId,
         });
         return res.status(200).json({
           success: true,
           message: "Order already processed",
         });
+      }
+
+      // If order is payment_confirmed but not sent to Hubnet, we need to retry Hubnet
+      if (order.status === "payment_confirmed") {
+        logger.info(
+          "Order payment confirmed but not sent to Hubnet, retrying",
+          {
+            orderId,
+            status: order.status,
+          },
+        );
+
+        // Try to send to Hubnet
+        try {
+          const hubnetResult = await initiateHubnetOrder(orderId);
+          logger.success("Hubnet order initiated on retry", {
+            orderId,
+            status: hubnetResult.status,
+            hubnetOrderId: hubnetResult.hubnetOrderId,
+          });
+        } catch (hubnetError) {
+          logger.error("Failed to initiate Hubnet order on retry", {
+            orderId,
+            error: hubnetError.message,
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: "Order processed",
+        });
+      }
+
+      // Order should be pending at this point
+      if (order.status !== "pending") {
+        logger.warn("Unexpected order status in webhook", {
+          orderId,
+          status: order.status,
+        });
+        return res.status(200).json({ received: true });
       }
 
       // Verify the transaction with Paystack
@@ -94,30 +135,29 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       // Process payment confirmation and credit wallet
       const result = await confirmPayment(orderId, paymentReference);
 
-      // Check if payment was already processed (duplicate webhook)
       if (result.alreadyProcessed) {
-        logger.info("Payment already processed, webhook acknowledged", {
-          orderId,
-        });
-        return res.status(200).json({
-          success: true,
-          message: "Order already processed",
-        });
+        logger.info("Payment already processed", { orderId });
       }
 
-      // Automatically initiate Hubnet order fulfillment
-      logger.info("Automatically initiating Hubnet order fulfillment", {
-        orderId,
-      });
+      // Always attempt Hubnet fulfillment - the function has safeguards against duplicates
+      // This handles cases where payment was processed but Hubnet failed
+      logger.info("Attempting Hubnet order fulfillment", { orderId });
       try {
-        await initiateHubnetOrder(orderId);
-        logger.success("Hubnet order initiated automatically after payment", {
-          orderId,
-        });
+        const hubnetResult = await initiateHubnetOrder(orderId);
+        if (
+          hubnetResult.status === "processing" ||
+          hubnetResult.status === "completed"
+        ) {
+          logger.success("Hubnet order initiated/verified", {
+            orderId,
+            status: hubnetResult.status,
+            hubnetOrderId: hubnetResult.hubnetOrderId,
+          });
+        }
       } catch (hubnetError) {
         // Log error but don't fail the webhook - payment is already confirmed
         logger.error(
-          "Failed to auto-initiate Hubnet order (payment confirmed, will retry)",
+          "Failed to initiate Hubnet order (payment confirmed, will retry)",
           {
             orderId,
             error: hubnetError.message,

@@ -29,13 +29,30 @@ export const getPendingOrdersForVerification = async (options = {}) => {
   const minCreatedAt = new Date(now.getTime() - maxAgeHours * 60 * 60 * 1000);
   const maxCreatedAt = new Date(now.getTime() - minAgeMinutes * 60 * 1000);
 
+  // Find orders that need attention:
+  // 1. Pending orders (need payment verification)
+  // 2. Payment confirmed but not sent to Hubnet (need Hubnet retry)
   const pendingOrders = await prisma.order.findMany({
     where: {
-      status: "pending",
-      createdAt: {
-        gte: minCreatedAt,
-        lte: maxCreatedAt,
-      },
+      OR: [
+        // Pending orders that need payment verification
+        {
+          status: "pending",
+          createdAt: {
+            gte: minCreatedAt,
+            lte: maxCreatedAt,
+          },
+        },
+        // Payment confirmed but Hubnet failed - need retry
+        {
+          status: "payment_confirmed",
+          hubnetOrderId: null,
+          createdAt: {
+            gte: minCreatedAt,
+            lte: maxCreatedAt,
+          },
+        },
+      ],
     },
     orderBy: {
       createdAt: "asc", // Process oldest first
@@ -43,10 +60,12 @@ export const getPendingOrdersForVerification = async (options = {}) => {
     take: limit,
     select: {
       id: true,
+      status: true,
       pricePaid: true,
       transactionFee: true,
       customerPhone: true,
       createdAt: true,
+      hubnetOrderId: true,
       bundle: {
         select: {
           network: true,
@@ -76,6 +95,7 @@ export const verifyOrderPayment = async (orderId) => {
         status: true,
         pricePaid: true,
         transactionFee: true,
+        hubnetOrderId: true,
       },
     });
 
@@ -83,7 +103,48 @@ export const verifyOrderPayment = async (orderId) => {
       return { success: false, reason: "Order not found" };
     }
 
-    // Skip if already processed
+    // If already fully processed (processing/completed), skip
+    if (order.status === "processing" || order.status === "completed") {
+      return {
+        success: true,
+        reason: "Already processed",
+        status: order.status,
+      };
+    }
+
+    // If payment_confirmed but Hubnet not sent, try to send to Hubnet
+    if (order.status === "payment_confirmed") {
+      logger.info("Order payment confirmed but not sent to Hubnet, retrying", {
+        orderId,
+        status: order.status,
+      });
+
+      try {
+        const hubnetResult = await initiateHubnetOrder(orderId);
+        logger.success("Hubnet order initiated on verification retry", {
+          orderId,
+          status: hubnetResult.status,
+          hubnetOrderId: hubnetResult.hubnetOrderId,
+        });
+        return {
+          success: true,
+          reason: "Hubnet initiated on retry",
+          status: hubnetResult.status,
+        };
+      } catch (hubnetError) {
+        logger.error("Failed to initiate Hubnet order on verification retry", {
+          orderId,
+          error: hubnetError.message,
+        });
+        return {
+          success: false,
+          reason: "Hubnet initiation failed",
+          error: hubnetError.message,
+        };
+      }
+    }
+
+    // Order should be pending at this point - verify and process
     if (order.status !== "pending") {
       return {
         success: true,
@@ -129,35 +190,28 @@ export const verifyOrderPayment = async (orderId) => {
     logger.success("Payment verified and confirmed via verification service", {
       orderId,
       amount: paidAmount,
+      alreadyProcessed: result.alreadyProcessed,
     });
 
-    // Check if payment was already processed
-    if (result.alreadyProcessed) {
-      logger.info("Payment already processed, skipping Hubnet initiation", {
-        orderId,
-      });
-      return {
-        success: true,
-        confirmed: true,
-        amount: paidAmount,
-        alreadyProcessed: true,
-      };
-    }
-
-    // Automatically initiate Hubnet order fulfillment
-    logger.info("Automatically initiating Hubnet order fulfillment", {
-      orderId,
-    });
+    // Always attempt Hubnet fulfillment - the function has safeguards against duplicates
+    // This handles cases where payment was processed but Hubnet failed
+    logger.info("Attempting Hubnet order fulfillment", { orderId });
     try {
-      await initiateHubnetOrder(orderId);
-      logger.success(
-        "Hubnet order initiated automatically after verification",
-        { orderId },
-      );
+      const hubnetResult = await initiateHubnetOrder(orderId);
+      if (
+        hubnetResult.status === "processing" ||
+        hubnetResult.status === "completed"
+      ) {
+        logger.success("Hubnet order initiated/verified", {
+          orderId,
+          status: hubnetResult.status,
+          hubnetOrderId: hubnetResult.hubnetOrderId,
+        });
+      }
     } catch (hubnetError) {
       // Log error but don't fail the verification - payment is already confirmed
       logger.error(
-        "Failed to auto-initiate Hubnet order (payment confirmed, will retry)",
+        "Failed to initiate Hubnet order (payment confirmed, will retry)",
         {
           orderId,
           error: hubnetError.message,
