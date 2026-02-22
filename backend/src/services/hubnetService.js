@@ -199,6 +199,12 @@ export const initiateDataTransaction = async (transactionData) => {
 
     const data = await response.json();
 
+    // Log the FULL response to debug field mapping
+    logger.info("Hubnet API FULL response", {
+      httpStatus: response.status,
+      rawResponse: JSON.stringify(data),
+    });
+
     if (!response.ok || !data.status) {
       logger.error("Hubnet transaction failed", {
         code: data.code,
