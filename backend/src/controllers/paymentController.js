@@ -104,6 +104,34 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
         });
       }
 
+      // If order failed (Hubnet failed previously), retry Hubnet
+      if (order.status === "failed" && !order.hubnetOrderId) {
+        logger.info("Order failed previously, retrying Hubnet", {
+          orderId,
+          status: order.status,
+        });
+
+        // Try to send to Hubnet
+        try {
+          const hubnetResult = await initiateHubnetOrder(orderId);
+          logger.success("Hubnet order initiated on failed order retry", {
+            orderId,
+            status: hubnetResult.status,
+            hubnetOrderId: hubnetResult.hubnetOrderId,
+          });
+        } catch (hubnetError) {
+          logger.error("Failed to initiate Hubnet order on failed retry", {
+            orderId,
+            error: hubnetError.message,
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: "Order retry processed",
+        });
+      }
+
       // Order should be pending at this point
       if (order.status !== "pending") {
         logger.warn("Unexpected order status in webhook", {
@@ -362,9 +390,26 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
     // This function has built-in duplicate prevention
     const result = await confirmPayment(orderId, reference);
 
-    // Note: Hubnet order is now triggered manually by admin via admin panel
-
     logger.success("Payment verified and processed (callback)", { orderId });
+
+    // Automatically send to Hubnet after payment confirmation
+    logger.info("=== CALLBACK: CALLING HUBNET ===", { orderId });
+    try {
+      const hubnetResult = await initiateHubnetOrder(orderId);
+      logger.success("=== CALLBACK: HUBNET SUCCESS ===", {
+        orderId,
+        status: hubnetResult.status,
+        hubnetOrderId: hubnetResult.hubnetOrderId,
+      });
+    } catch (hubnetError) {
+      // Log error but don't fail - payment is already confirmed
+      logger.error("=== CALLBACK: HUBNET FAILED ===", {
+        orderId,
+        error: hubnetError.message,
+        stack: hubnetError.stack,
+      });
+      // Order remains in payment_confirmed status for retry
+    }
 
     res.status(200).json({
       success: true,
@@ -372,18 +417,44 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
       data: { order: result.order },
     });
   } catch (error) {
-    // If already processed by webhook, that's fine - return success
+    // If already processed by webhook, that's fine - but still try Hubnet
     if (
       error.message?.includes("already processed") ||
       error.message?.includes("Order cannot be confirmed") ||
       error.statusCode === 400
     ) {
-      // Try to get the current order state
+      // Try to get the current order state and possibly send to Hubnet
       try {
         const currentOrder = await getOrderById(orderId);
-        logger.info("Order already processed, returning current state", {
+        logger.info("Order already processed, checking if Hubnet needed", {
           orderId,
+          status: currentOrder.status,
+          hubnetOrderId: currentOrder.hubnetOrderId,
         });
+
+        // If payment is confirmed but not sent to Hubnet, send it now
+        if (
+          currentOrder.status === "payment_confirmed" &&
+          !currentOrder.hubnetOrderId
+        ) {
+          logger.info("=== CALLBACK ERROR HANDLER: CALLING HUBNET ===", {
+            orderId,
+          });
+          try {
+            const hubnetResult = await initiateHubnetOrder(orderId);
+            logger.success("=== CALLBACK ERROR HANDLER: HUBNET SUCCESS ===", {
+              orderId,
+              status: hubnetResult.status,
+              hubnetOrderId: hubnetResult.hubnetOrderId,
+            });
+          } catch (hubnetError) {
+            logger.error("=== CALLBACK ERROR HANDLER: HUBNET FAILED ===", {
+              orderId,
+              error: hubnetError.message,
+            });
+          }
+        }
+
         return res.status(200).json({
           success: true,
           message: "Order already processed",

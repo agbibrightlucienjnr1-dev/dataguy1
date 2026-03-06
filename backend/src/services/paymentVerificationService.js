@@ -32,6 +32,7 @@ export const getPendingOrdersForVerification = async (options = {}) => {
   // Find orders that need attention:
   // 1. Pending orders (need payment verification)
   // 2. Payment confirmed but not sent to Hubnet (need Hubnet retry)
+  // 3. Failed orders (Hubnet failed, need retry)
   const pendingOrders = await prisma.order.findMany({
     where: {
       OR: [
@@ -46,6 +47,15 @@ export const getPendingOrdersForVerification = async (options = {}) => {
         // Payment confirmed but Hubnet failed - need retry
         {
           status: "payment_confirmed",
+          hubnetOrderId: null,
+          createdAt: {
+            gte: minCreatedAt,
+            lte: maxCreatedAt,
+          },
+        },
+        // Failed orders (Hubnet failed) - need retry
+        {
+          status: "failed",
           hubnetOrderId: null,
           createdAt: {
             gte: minCreatedAt,
@@ -139,6 +149,38 @@ export const verifyOrderPayment = async (orderId) => {
         return {
           success: false,
           reason: "Hubnet initiation failed",
+          error: hubnetError.message,
+        };
+      }
+    }
+
+    // If failed but payment was made, try to resend to Hubnet
+    if (order.status === "failed" && !order.hubnetOrderId) {
+      logger.info("Order failed but Hubnet not sent, retrying", {
+        orderId,
+        status: order.status,
+      });
+
+      try {
+        const hubnetResult = await initiateHubnetOrder(orderId);
+        logger.success("Hubnet order initiated on failed order retry", {
+          orderId,
+          status: hubnetResult.status,
+          hubnetOrderId: hubnetResult.hubnetOrderId,
+        });
+        return {
+          success: true,
+          reason: "Hubnet initiated on failed order retry",
+          status: hubnetResult.status,
+        };
+      } catch (hubnetError) {
+        logger.error("Failed to initiate Hubnet order on failed order retry", {
+          orderId,
+          error: hubnetError.message,
+        });
+        return {
+          success: false,
+          reason: "Hubnet retry failed",
           error: hubnetError.message,
         };
       }
