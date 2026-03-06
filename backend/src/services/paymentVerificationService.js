@@ -207,16 +207,23 @@ export const verifyOrderPayment = async (orderId) => {
     }
 
     // Verify amount matches
-    const expectedAmount = parseFloat(
-      order.pricePaid.add(order.transactionFee || 0).toString(),
-    );
+    const pricePaidNum = parseFloat(order.pricePaid.toString());
+    const transactionFeeNum = order.transactionFee
+      ? parseFloat(order.transactionFee.toString())
+      : 0;
+    const expectedAmount = pricePaidNum + transactionFeeNum;
     const paidAmount = verification.amount;
 
-    if (Math.abs(paidAmount - expectedAmount) > 0.01) {
+    // Allow 1% tolerance OR 0.50 GHS tolerance (whichever is greater) for rounding differences
+    const tolerancePercent = expectedAmount * 0.01;
+    const tolerance = Math.max(tolerancePercent, 0.5);
+
+    if (Math.abs(paidAmount - expectedAmount) > tolerance) {
       logger.error("Payment amount mismatch during verification", {
         orderId,
         expected: expectedAmount,
         paid: paidAmount,
+        tolerance,
       });
       return {
         success: false,
@@ -225,6 +232,12 @@ export const verifyOrderPayment = async (orderId) => {
         paid: paidAmount,
       };
     }
+
+    logger.info("Amount verification passed", {
+      orderId,
+      expected: expectedAmount,
+      paid: paidAmount,
+    });
 
     // Payment verified - confirm the order
     const result = await confirmPayment(orderId, orderId);

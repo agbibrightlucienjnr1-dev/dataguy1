@@ -152,20 +152,33 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       }
 
       // Verify amount matches (should be pricePaid + transactionFee)
-      const expectedAmount = parseFloat(
-        order.pricePaid.add(order.transactionFee || 0).toString(),
-      );
+      const pricePaidNum = parseFloat(order.pricePaid.toString());
+      const transactionFeeNum = order.transactionFee
+        ? parseFloat(order.transactionFee.toString())
+        : 0;
+      const expectedAmount = pricePaidNum + transactionFeeNum;
       const paidAmount = verification.amount;
 
-      if (Math.abs(paidAmount - expectedAmount) > 0.01) {
-        // Allow small floating point differences (0.01 GHS)
+      // Allow 1% tolerance OR 0.50 GHS tolerance (whichever is greater) for rounding differences
+      const tolerancePercent = expectedAmount * 0.01;
+      const tolerance = Math.max(tolerancePercent, 0.5);
+
+      if (Math.abs(paidAmount - expectedAmount) > tolerance) {
         logger.error("Amount mismatch", {
           expected: expectedAmount,
           paid: paidAmount,
+          tolerance,
           orderId,
         });
         throw new AppError("Payment amount mismatch", 400);
       }
+
+      logger.info("Amount verification passed", {
+        orderId,
+        expected: expectedAmount,
+        paid: paidAmount,
+        diff: Math.abs(paidAmount - expectedAmount),
+      });
 
       // Process payment confirmation and credit wallet
       logger.info("Calling confirmPayment", { orderId });
@@ -371,20 +384,32 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
     }
 
     // Verify amount matches (should be pricePaid + transactionFee)
-    const expectedAmount = parseFloat(
-      order.pricePaid.add(order.transactionFee || 0).toString(),
-    );
+    const pricePaidNum = parseFloat(order.pricePaid.toString());
+    const transactionFeeNum = order.transactionFee
+      ? parseFloat(order.transactionFee.toString())
+      : 0;
+    const expectedAmount = pricePaidNum + transactionFeeNum;
     const paidAmount = verification.amount;
 
-    if (Math.abs(paidAmount - expectedAmount) > 0.01) {
-      // Allow small floating point differences (0.01 GHS)
+    // Allow 1% tolerance OR 0.50 GHS tolerance (whichever is greater) for rounding differences
+    const tolerancePercent = expectedAmount * 0.01;
+    const tolerance = Math.max(tolerancePercent, 0.5);
+
+    if (Math.abs(paidAmount - expectedAmount) > tolerance) {
       logger.error("Amount mismatch", {
         expected: expectedAmount,
         paid: paidAmount,
+        tolerance,
         orderId,
       });
       throw new AppError("Payment amount mismatch", 400);
     }
+
+    logger.info("Amount verification passed (callback)", {
+      orderId,
+      expected: expectedAmount,
+      paid: paidAmount,
+    });
 
     // Process payment confirmation and credit wallet
     // This function has built-in duplicate prevention

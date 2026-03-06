@@ -110,12 +110,27 @@ export const verifyTransaction = async (reference) => {
 
     const data = await response.json();
 
+    // Log full response for debugging
+    logger.info("Paystack verification response", {
+      reference,
+      httpStatus: response.status,
+      status: data.status,
+      message: data.message,
+    });
+
+    // If transaction not found or API error, return failure (don't throw)
     if (!response.ok || !data.status) {
-      logger.error("Paystack verification failed", data);
-      throw new AppError(
-        data.message || "Failed to verify payment",
-        response.status,
-      );
+      logger.warn("Paystack verification returned non-success", {
+        reference,
+        httpStatus: response.status,
+        message: data.message,
+      });
+      return {
+        success: false,
+        reference,
+        status: "not_found",
+        message: data.message || "Transaction not found or verification failed",
+      };
     }
 
     const transaction = data.data;
@@ -142,10 +157,17 @@ export const verifyTransaction = async (reference) => {
       metadata: transaction.metadata,
     };
   } catch (error) {
-    logger.error("Error verifying Paystack transaction", error);
-    throw error instanceof AppError
-      ? error
-      : new AppError("Payment verification failed", 500);
+    logger.error("Error verifying Paystack transaction", {
+      reference,
+      error: error.message,
+    });
+    // Return failure instead of throwing - allows graceful handling
+    return {
+      success: false,
+      reference,
+      status: "error",
+      message: error.message || "Payment verification failed",
+    };
   }
 };
 
