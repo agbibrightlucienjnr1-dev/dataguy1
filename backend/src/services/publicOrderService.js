@@ -3,6 +3,7 @@ import { AppError } from "../middlewares/errorHandler.js";
 import { initializeTransaction } from "./paystackService.js";
 import { logger } from "../utils/logger.js";
 import { Prisma } from "@prisma/client";
+import { upsertCustomerOnOrderPlacement } from "./customerService.js";
 
 /**
  * Get seller by payment link code
@@ -252,6 +253,13 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
   const transactionFee =
     priceAsNumber < 20 ? new Prisma.Decimal(0.5) : pricePaid.mul(0.04);
   const totalAmount = pricePaid.add(transactionFee); // Total amount to charge
+
+  // Upsert customer record each time an order is created
+  await upsertCustomerOnOrderPlacement({
+    customerPhone,
+    customerName,
+    orderCreatedAt: new Date(),
+  });
 
   // Create order
   const order = await prisma.order.create({

@@ -35,12 +35,14 @@ const agentNavItems = [
   { to: "/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
   { to: "/pricing", icon: Tag, label: "My Pricing" },
   { to: "/sub-agents", icon: Users, label: "My Sub-Agents" },
+  { to: "/customers", icon: Users, label: "My Customers" },
 ];
 
 const adminNavItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/admin/orders", icon: ShoppingCart, label: "All Orders" },
   { to: "/admin/users", icon: Users, label: "Users" },
+  { to: "/admin/customers", icon: Users, label: "Customers" },
   { to: "/admin/bundles", icon: Package, label: "Bundles" },
   { to: "/admin/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
   { to: "/admin/system", icon: Server, label: "System" },

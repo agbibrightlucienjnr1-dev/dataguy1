@@ -28,6 +28,7 @@ import {
   AgentWithdrawalsPage,
   AgentPricingPage,
   AgentSubAgentsPage,
+  AgentCustomersPage,
 } from "./pages/agent";
 
 // Admin Pages
@@ -36,6 +37,7 @@ import {
   AdminUsersPage,
   AdminOrdersPage,
   AdminBundlesPage,
+  AdminCustomersPage,
   AdminWithdrawalsPage,
   AdminSystemPage,
 } from "./pages/admin";
@@ -69,6 +71,7 @@ function App() {
             <Route path="/withdrawals" element={<AgentWithdrawalsPage />} />
             <Route path="/pricing" element={<AgentPricingPage />} />
             <Route path="/sub-agents" element={<AgentSubAgentsPage />} />
+            <Route path="/customers" element={<AgentCustomersPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
@@ -80,6 +83,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/orders" element={<AdminOrdersPage />} />
             <Route path="/admin/bundles" element={<AdminBundlesPage />} />
+            <Route path="/admin/customers" element={<AdminCustomersPage />} />
             <Route
               path="/admin/withdrawals"
               element={<AdminWithdrawalsPage />}

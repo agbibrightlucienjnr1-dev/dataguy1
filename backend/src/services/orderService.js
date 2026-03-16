@@ -6,6 +6,7 @@ import {
   markOrderAsProcessing,
 } from "./commissionService.js";
 import { checkBalance, initiateDataTransaction } from "./hubnetService.js";
+import { upsertCustomerOnOrderPlacement } from "./customerService.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -75,6 +76,13 @@ export const createOrder = async (orderData) => {
 
     pricePaid = subAgentPrice.customerPrice;
   }
+
+  // Upsert customer record for this phone (prevents duplicates and tracks orders)
+  await upsertCustomerOnOrderPlacement({
+    customerPhone,
+    customerName,
+    orderCreatedAt: new Date(),
+  });
 
   // Create order
   const order = await prisma.order.create({

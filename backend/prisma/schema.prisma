@@ -138,6 +138,20 @@ model SubAgentPrice {
   @@map("sub_agent_prices")
 }
 
+model Customer {
+  id                     String   @id @default(uuid())
+  phone                  String   @unique @map("phone")
+  name                   String?  @map("name")
+  totalOrdersCount       Int      @default(0) @map("total_orders_count")
+  successfulOrdersCount  Int      @default(0) @map("successful_orders_count")
+  firstOrderAt           DateTime? @map("first_order_at")
+  lastOrderAt            DateTime? @map("last_order_at")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
 model Order {
   id                  String      @id @default(uuid())
   

@@ -1,6 +1,7 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
+import { incrementCustomerSuccessfulOrders } from "../services/customerService.js";
 
 /**
  * Hubnet webhook handler - ONLY source of truth for delivery status
@@ -224,6 +225,14 @@ export const hubnetWebhook = async (req, res) => {
         },
       },
     });
+
+    // Track successful customer deliveries in customer table to avoid duplicates
+    if (newStatus === "completed" && order.status !== "completed") {
+      await incrementCustomerSuccessfulOrders({
+        customerPhone: updatedOrder.customerPhone,
+        customerName: updatedOrder.customerName,
+      });
+    }
 
     logger.success("Order status updated from Hubnet webhook", {
       orderId: updatedOrder.id,

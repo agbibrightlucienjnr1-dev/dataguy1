@@ -95,4 +95,7 @@ export const queryKeys = {
       list: (params) => ["admin", "withdrawals", "list", params],
     },
   },
+  customers: {
+    list: ["customers"],
+  },
 };

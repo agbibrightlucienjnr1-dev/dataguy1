@@ -8,4 +8,5 @@ export { withdrawalsApi } from "./withdrawals";
 export { pricingApi } from "./pricing";
 export { adminApi } from "./admin";
 export { paymentsApi } from "./payments";
+export { customersApi } from "./customers";
 export { agentApi } from "./agent";
