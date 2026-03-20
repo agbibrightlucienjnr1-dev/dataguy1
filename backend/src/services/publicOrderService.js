@@ -250,9 +250,8 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
   // If amount < 20: flat fee of 0.5
   // If amount >= 20: 4% of amount
   const priceAsNumber = parseFloat(pricePaid.toString());
-  const transactionFee =
-    priceAsNumber < 20 ? new Prisma.Decimal(0.5) : pricePaid.mul(0.04);
-  const totalAmount = pricePaid.add(transactionFee); // Total amount to charge
+  const transactionFee = new Prisma.Decimal(0);
+  const totalAmount = pricePaid;
 
   // Upsert customer record each time an order is created
   await upsertCustomerOnOrderPlacement({
