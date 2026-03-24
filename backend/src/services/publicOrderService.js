@@ -248,10 +248,10 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
 
   // Calculate transaction fee (hidden from customer)
   // If amount < 20: flat fee of 0.5
-  // If amount >= 20: 4% of amount
+  // If amount >= 20: 5% of amount
   const priceAsNumber = parseFloat(pricePaid.toString());
   const transactionFee =
-    priceAsNumber < 20 ? new Prisma.Decimal(0.5) : pricePaid.mul(0.04);
+    priceAsNumber < 20 ? new Prisma.Decimal(0.5) : pricePaid.mul(0.05);
   const totalAmount = pricePaid.add(transactionFee); // Total amount to charge
 
   // Upsert customer record each time an order is created
