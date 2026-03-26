@@ -18,6 +18,7 @@ import { Card, Button, Input, Badge } from "../../components/ui";
 import { useSellerInfo, usePaymentLinkBundles } from "../../hooks";
 import { useCreateOrder } from "../../hooks";
 import { formatCurrency } from "../../utils/formatters";
+import { NETWORK_PHONE_PREFIXES } from "../../utils/constants";
 import toast from "react-hot-toast";
 
 // Validation schema
@@ -26,11 +27,29 @@ const purchaseSchema = z.object({
     .string()
     .min(1, "Phone number is required")
     .regex(
-      /^0[235]\d{8}$/,
-      "Enter a valid Ghana phone number (e.g., 0241234567)",
+      /^0\d{9}$/,
+      "Enter a valid 10-digit phone number (e.g., 0241234567)",
     ),
   customerName: z.string().optional(),
 });
+
+// Normalize and detect network from phone prefix
+const normalizePhone = (phone) => phone.trim().replace(/^\+233/, "0");
+
+const getNetworkFromPhone = (phone) => {
+  const normalized = normalizePhone(phone).replace(/\D/g, "");
+  if (!normalized.startsWith("0") || normalized.length !== 10) {
+    return null;
+  }
+  const prefix = normalized.slice(0, 3);
+
+  for (const [network, prefixes] of Object.entries(NETWORK_PHONE_PREFIXES)) {
+    if (prefixes.includes(prefix)) {
+      return network;
+    }
+  }
+  return null;
+};
 
 const NETWORK_STYLES = {
   MTN: {
@@ -165,11 +184,26 @@ export default function BuyPage() {
       return;
     }
 
+    const phoneNetwork = getNetworkFromPhone(data.customerPhone);
+    if (!phoneNetwork) {
+      toast.error(
+        "Could not detect network from the phone number. Please enter a valid Ghana number (e.g., 0241234567)",
+      );
+      return;
+    }
+
+    if (phoneNetwork !== selectedBundle.network) {
+      toast.error(
+        `This phone number is ${phoneNetwork} but the selected bundle is for ${selectedBundle.network}. Please use a matching phone number or choose a different bundle.`,
+      );
+      return;
+    }
+
     createOrder.mutate({
       code,
       data: {
         bundleId: selectedBundle.id,
-        customerPhone: data.customerPhone,
+        customerPhone: normalizePhone(data.customerPhone),
         customerName: data.customerName || undefined,
       },
     });

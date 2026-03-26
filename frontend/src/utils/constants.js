@@ -16,6 +16,12 @@ export const NETWORKS = [
 
 export const MOBILE_MONEY_NETWORKS = ["MTN", "VODAFONE", "AIRTELTIGO"];
 
+export const NETWORK_PHONE_PREFIXES = {
+  MTN: ["024", "054", "055", "059", "025", "053"],
+  VODAFONE: ["020", "050"],
+  AIRTELTIGO: ["027", "057"],
+};
+
 // ========== Order Statuses ==========
 export const ORDER_STATUSES = {
   pending: {
