@@ -12,6 +12,9 @@ import {
   ExternalLink,
   Users,
   MessageCircle,
+  Sparkles,
+  Tag,
+  ChevronRight,
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { useAuthStore } from "../../stores";
@@ -23,7 +26,7 @@ import toast from "react-hot-toast";
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: ordersData, isLoading } = useOrders({ limit: 5 });
-  const { data: statsData } = useOrderStats();
+  const { data: statsData, isLoading: statsLoading } = useOrderStats();
   const { balance: walletBalance } = useWallet();
 
   const orders = ordersData?.orders || [];
@@ -78,12 +81,71 @@ export default function DashboardPage() {
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
-          Welcome back, {user?.name?.split(" ")[0]}!
+          {stats.totalOrders === 0
+            ? `Welcome${user?.name ? `, ${user.name.split(" ")[0]}` : ""}! Let's get you set up.`
+            : `Welcome back, ${user?.name?.split(" ")[0]}!`
+          }
         </h1>
         <p className="text-slate-600 mt-1">
-          Here's what's happening with your sales today.
+          {stats.totalOrders === 0
+            ? "Complete these quick steps to start making sales and earning commissions."
+            : "Here's what's happening with your sales today."
+          }
         </p>
       </div>
+
+      {/* Getting Started Guide for New Users */}
+      {!statsLoading && stats.totalOrders === 0 && (
+        <Card className="border border-indigo-100 overflow-hidden p-0 mb-6 bg-white shadow-sm">
+          <div className="bg-linear-to-r from-indigo-600 to-blue-600 p-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-indigo-50" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">Getting Started Guide</h2>
+                <p className="text-indigo-100 text-sm">Complete these steps to start earning</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-0 divide-y divide-slate-100">
+            <div className="p-4 sm:p-5 flex items-start gap-4 hover:bg-slate-50 transition-colors">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mt-0.5">1</div>
+              <div className="flex-grow">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">Copy & Share Your Link <Copy className="w-4 h-4 text-slate-400" /></h3>
+                <p className="text-sm text-slate-600 mt-1">Copy your unique customer payment link below and share it with friends and customers.</p>
+                <div className="mt-3 flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <div className="bg-slate-100 text-slate-800 rounded px-3 py-1.5 text-xs sm:text-sm font-mono truncate max-w-[200px] sm:max-w-xs border border-slate-200">
+                    {paymentLink}
+                  </div>
+                  <button onClick={copyPaymentLink} className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs">
+                    <Copy className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Copy Link</span><span className="sm:hidden">Copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 flex items-start gap-4 hover:bg-slate-50 transition-colors">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm mt-0.5">2</div>
+              <div className="flex-grow">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">Set Your Custom Prices <Tag className="w-4 h-4 text-slate-400" /></h3>
+                <p className="text-sm text-slate-600 mt-1">Visit the pricing page to configure your selling prices and maximize your commission.</p>
+                <Link to="/pricing" className="mt-3 inline-flex items-center gap-1.5 text-sm bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-lg transition-colors shadow-xs">
+                  Go to Pricing <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 flex items-start gap-4 bg-slate-50/50">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-dashed border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm mt-0.5">3</div>
+              <div className="flex-grow">
+                <h3 className="font-semibold text-slate-500">Wait For Your First Sale</h3>
+                <p className="text-sm text-slate-400 mt-1">Once a customer clicks your link and pays, this guide will disappear and your dashboard will come alive!</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* WhatsApp Channel Banner */}
       <Card className="bg-linear-to-r from-green-600 to-green-500 text-white p-4 sm:p-6 border-0 shadow-lg">
@@ -339,12 +401,22 @@ export default function DashboardPage() {
             Loading orders...
           </div>
         ) : orders.length === 0 ? (
-          <div className="p-8 text-center">
-            <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500">No orders yet</p>
-            <p className="text-sm text-slate-400 mt-1">
-              Orders from your payment link will appear here
+          <div className="p-10 text-center">
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-blue-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900">No orders yet</h3>
+            <p className="text-slate-500 mt-1 max-w-sm mx-auto">
+              Share your payment link with customers to get your first order! It will automatically appear here.
             </p>
+            {paymentLink && (
+              <button
+                onClick={copyPaymentLink}
+                className="mt-6 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm hover:shadow-md cursor-pointer"
+              >
+                <Copy className="w-4 h-4" /> Copy My Link
+              </button>
+            )}
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -371,9 +443,8 @@ export default function DashboardPage() {
                     {formatCurrency(order.pricePaid)}
                   </p>
                   <p
-                    className={`text-xs capitalize ${
-                      ORDER_STATUSES[order.status]?.color || "text-slate-500"
-                    }`}
+                    className={`text-xs capitalize ${ORDER_STATUSES[order.status]?.color || "text-slate-500"
+                      }`}
                   >
                     {order.status}
                   </p>
