@@ -11,9 +11,10 @@ import { logger } from "../utils/logger.js";
  * Moves them to an archived state or deletes them
  * @param {number} daysOld - Archive orders older than this many days (default: 90)
  * @param {boolean} hardDelete - If true, permanently delete instead of soft delete
+ * @param {Array<string>} statuses - The exact statuses of orders to delete
  * @returns {Promise<Object>} Cleanup statistics
  */
-export const archiveOldOrders = async (daysOld = 90, hardDelete = false) => {
+export const archiveOldOrders = async (daysOld = 90, hardDelete = false, statuses = ["failed", "cancelled"]) => {
   const prisma = getPrisma();
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysOld);
@@ -25,9 +26,19 @@ export const archiveOldOrders = async (daysOld = 90, hardDelete = false) => {
       hardDelete,
     });
 
+    // Fail-safe to avoid accidentally wiping everything if empty array passes
+    if (!statuses || statuses.length === 0) {
+      return {
+        success: false,
+        archived: 0,
+        deleted: 0,
+        message: "No statuses selected for order cleanup",
+      };
+    }
+
     const where = {
       status: {
-        in: ["completed", "failed", "cancelled"],
+        in: statuses,
       },
       createdAt: {
         lt: cutoffDate,
@@ -279,6 +290,7 @@ export const runFullCleanup = async (options = {}) => {
     cleanupTransactionsDays = 180,
     hardDeleteOrders = false,
     optimize = true,
+    statusesToCleanup = ["failed", "cancelled"],
   } = options;
 
   try {
@@ -291,7 +303,7 @@ export const runFullCleanup = async (options = {}) => {
     };
 
     // Archive old orders
-    results.orders = await archiveOldOrders(archiveOrdersDays, hardDeleteOrders);
+    results.orders = await archiveOldOrders(archiveOrdersDays, hardDeleteOrders, statusesToCleanup);
 
     // Clean up old transactions
     results.transactions = await cleanupOldWalletTransactions(

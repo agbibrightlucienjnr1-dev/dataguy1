@@ -21,10 +21,11 @@ import toast from "react-hot-toast";
 export default function AdminSystemPage() {
   const queryClient = useQueryClient();
   const [cleanupConfig, setCleanupConfig] = useState({
-    archiveOrdersDays: 90,
-    cleanupTransactionsDays: 180,
-    hardDeleteOrders: false,
+    archiveOrdersDays: 30,
+    cleanupTransactionsDays: 30,
+    hardDeleteOrders: true,
     optimize: true,
+    statusesToCleanup: ["failed", "cancelled"], // Default safe statuses
   });
 
   // Fetch database stats
@@ -129,8 +130,8 @@ export default function AdminSystemPage() {
     optimizeMutation.mutate();
   };
 
-  const dbData = dbStats?.data || {};
-  const memoryData = memoryStats?.data || {};
+  const dbData = dbStats || {};
+  const memoryData = memoryStats || {};
   const memoryStatus = memoryStats?.status || {};
 
   return (
@@ -381,25 +382,25 @@ export default function AdminSystemPage() {
               <div className="p-3 bg-slate-50 rounded-lg text-center">
                 <div className="text-xs text-slate-500 mb-1">Total Entries</div>
                 <div className="text-lg font-bold text-slate-900">
-                  {cacheStatsData?.data?.total || 0}
+                  {cacheStatsData?.total || 0}
                 </div>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg text-center">
                 <div className="text-xs text-slate-500 mb-1">Active</div>
                 <div className="text-lg font-bold text-green-600">
-                  {cacheStatsData?.data?.active || 0}
+                  {cacheStatsData?.active || 0}
                 </div>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg text-center">
                 <div className="text-xs text-slate-500 mb-1">Expired</div>
                 <div className="text-lg font-bold text-slate-600">
-                  {cacheStatsData?.data?.expired || 0}
+                  {cacheStatsData?.expired || 0}
                 </div>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg text-center">
                 <div className="text-xs text-slate-500 mb-1">Memory Usage</div>
                 <div className="text-lg font-bold text-slate-900">
-                  {cacheStatsData?.data?.memoryUsage || "0 MB"}
+                  {cacheStatsData?.memoryUsage || "0 MB"}
                 </div>
               </div>
             </div>
@@ -451,17 +452,16 @@ export default function AdminSystemPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Archive Orders Older Than (days)
+                Clean Orders Older Than (days)
               </label>
               <input
                 type="number"
-                min="30"
-                max="365"
+                min="0"
                 value={cleanupConfig.archiveOrdersDays}
                 onChange={(e) =>
                   setCleanupConfig({
                     ...cleanupConfig,
-                    archiveOrdersDays: parseInt(e.target.value) || 90,
+                    archiveOrdersDays: parseInt(e.target.value) || 0,
                   })
                 }
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
@@ -474,36 +474,67 @@ export default function AdminSystemPage() {
               </label>
               <input
                 type="number"
-                min="60"
-                max="730"
+                min="0"
                 value={cleanupConfig.cleanupTransactionsDays}
                 onChange={(e) =>
                   setCleanupConfig({
                     ...cleanupConfig,
-                    cleanupTransactionsDays: parseInt(e.target.value) || 180,
+                    cleanupTransactionsDays: parseInt(e.target.value) || 0,
                   })
                 }
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="hardDelete"
-                checked={cleanupConfig.hardDeleteOrders}
-                onChange={(e) =>
-                  setCleanupConfig({
-                    ...cleanupConfig,
-                    hardDeleteOrders: e.target.checked,
-                  })
-                }
-                className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900/10"
-              />
-              <label htmlFor="hardDelete" className="text-sm text-slate-700">
-                Permanently delete orders (not recommended)
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Order Statuses to Cleanup
               </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                {[
+                  { id: "pending", label: "Pending" },
+                  { id: "payment_confirmed", label: "Payment Confirmed" },
+                  { id: "processing", label: "Processing" },
+                  { id: "completed", label: "Completed" },
+                  { id: "failed", label: "Failed" },
+                  { id: "cancelled", label: "Cancelled" },
+                ].map((status) => (
+                  <label
+                    key={status.id}
+                    className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={cleanupConfig.statusesToCleanup.includes(
+                        status.id
+                      )}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCleanupConfig({
+                            ...cleanupConfig,
+                            statusesToCleanup: [
+                              ...cleanupConfig.statusesToCleanup,
+                              status.id,
+                            ],
+                          });
+                        } else {
+                          setCleanupConfig({
+                            ...cleanupConfig,
+                            statusesToCleanup: cleanupConfig.statusesToCleanup.filter(
+                              (s) => s !== status.id
+                            ),
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900/10"
+                    />
+                    {status.label}
+                  </label>
+                ))}
+              </div>
             </div>
+
+
 
             <div className="flex items-center gap-2">
               <input

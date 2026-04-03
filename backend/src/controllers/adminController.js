@@ -455,6 +455,7 @@ export const runDatabaseCleanup = asyncHandler(async (req, res) => {
       cleanupTransactionsDays = 180,
       hardDeleteOrders = false,
       optimize = true,
+      statusesToCleanup = ["failed", "cancelled"],
     } = req.body;
 
     const result = await runFullCleanup({
@@ -462,6 +463,7 @@ export const runDatabaseCleanup = asyncHandler(async (req, res) => {
       cleanupTransactionsDays,
       hardDeleteOrders,
       optimize,
+      statusesToCleanup,
     });
 
     // Invalidate database stats cache after cleanup
