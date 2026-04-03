@@ -13,7 +13,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
-import { Card, Badge, Button, Modal, Input } from "../../components/ui";
+import { Card, Badge, Button, Modal, Input, EmptyState, SkeletonCard } from "../../components/ui";
 import { bundlesApi, adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -280,26 +280,43 @@ export default function AdminBundlesPage() {
 
       {/* Bundles Grid */}
       {isLoading ? (
-        <div className="text-center py-12 text-slate-500">
-          Loading bundles...
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <SkeletonCard key={i} className="h-[250px]" />
+          ))}
         </div>
       ) : bundles.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500 mb-4">No bundles found</p>
-          <Button onClick={() => setShowAddModal(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Your First Bundle
-          </Button>
+        <Card className="p-8">
+          <EmptyState
+            icon="package"
+            title="No bundles found"
+            description="You haven't added any data bundles yet."
+            action={{
+              label: "Add Your First Bundle",
+              onClick: () => setShowAddModal(true),
+            }}
+          />
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedBundles.map((bundle) => (
             <Card
               key={bundle.id}
-              className={`p-4 ${!bundle.isActive ? "opacity-60" : ""}`}
+              className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div
+                className={`h-2 w-full ${
+                  bundle.network === "MTN"
+                    ? "bg-yellow-400"
+                    : bundle.network === "Telecel" || bundle.network === "Vodafone"
+                    ? "bg-red-500"
+                    : bundle.network === "AirtelTigo"
+                    ? "bg-blue-600"
+                    : "bg-slate-300"
+                }`}
+              />
+              <div className="p-5 flex flex-col flex-grow">
+                <div className="flex items-start justify-between mb-3">
                 {getNetworkBadge(bundle.network)}
                 <div className="flex items-center gap-1">
                   {bundle.isActive ? (
@@ -330,9 +347,9 @@ export default function AdminBundlesPage() {
                     {formatCurrency(bundle.adminPrice)}
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-slate-100 pt-2 mt-2">
-                  <span className="text-slate-500">Profit Margin:</span>
-                  <span className="font-medium text-blue-600">
+                <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
+                  <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
+                  <span className="font-bold text-indigo-600 text-lg">
                     {formatCurrency(
                       parseFloat(bundle.adminPrice || 0) -
                         parseFloat(bundle.hubnetCost || 0),
@@ -341,7 +358,7 @@ export default function AdminBundlesPage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+              <div className="mt-auto pt-4 border-t border-slate-100 space-y-2">
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -386,6 +403,7 @@ export default function AdminBundlesPage() {
                     </>
                   )}
                 </Button>
+              </div>
               </div>
             </Card>
           ))}

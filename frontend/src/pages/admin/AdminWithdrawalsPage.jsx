@@ -10,7 +10,7 @@ import {
   XCircle,
   Filter,
 } from "lucide-react";
-import { Card, Badge, Button, Modal } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { getErrorMessage } from "../../utils/helpers";
@@ -214,51 +214,37 @@ export default function AdminWithdrawalsPage() {
       </Card>
 
       {/* Withdrawals Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  User
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Amount
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Account Details
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Status
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Date
-                </th>
-                <th className="text-right p-4 text-sm font-medium text-slate-500">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
+      <Card className="overflow-hidden">
+        {isLoading ? (
+          <div className="p-6">
+            <SkeletonTable rows={5} columns={6} />
+          </div>
+        ) : withdrawals.length === 0 ? (
+          <EmptyState
+            icon="empty"
+            title="No withdrawals found"
+            description="There are currently no withdrawal requests matching your filters."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500">
-                    Loading withdrawals...
-                  </td>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Amount</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Account Details</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Status</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
                 </tr>
-              ) : withdrawals.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500">
-                    No withdrawals found
-                  </td>
-                </tr>
-              ) : (
-                withdrawals.map((withdrawal) => (
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {withdrawals.map((withdrawal) => (
                   <tr
                     key={withdrawal.id}
                     className="border-b border-slate-50 hover:bg-slate-50"
                   >
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium text-white">
@@ -275,12 +261,12 @@ export default function AdminWithdrawalsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <span className="text-lg font-bold text-slate-900">
                         {formatCurrency(withdrawal.amount)}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <p className="text-sm text-slate-900">
                         {withdrawal.accountName}
                       </p>
@@ -288,18 +274,18 @@ export default function AdminWithdrawalsPage() {
                         {withdrawal.accountNumber} • {withdrawal.provider}
                       </p>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(withdrawal.status)}
                         {getStatusBadge(withdrawal.status)}
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <span className="text-sm text-slate-500">
                         {formatDate(withdrawal.createdAt)}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-6 py-4 text-right">
                       {withdrawal.status === "pending" ? (
                         <div className="flex items-center justify-end gap-2">
                           <Button
@@ -330,11 +316,11 @@ export default function AdminWithdrawalsPage() {
                       )}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

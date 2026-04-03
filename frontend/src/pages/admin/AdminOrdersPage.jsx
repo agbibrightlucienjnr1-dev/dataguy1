@@ -16,7 +16,7 @@ import {
   Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Card, Badge, Button, Modal } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -223,62 +223,44 @@ export default function AdminOrdersPage() {
       </Card>
 
       {/* Orders Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Order
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Bundle
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Recipient
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Seller
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Amount
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Status
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Date
-                </th>
-                <th className="text-right p-4 text-sm font-medium text-slate-500">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
+      <Card className="overflow-hidden">
+        {isLoading ? (
+          <div className="p-6">
+            <SkeletonTable rows={5} columns={8} />
+          </div>
+        ) : orders.length === 0 ? (
+          <EmptyState
+            icon="empty"
+            title="No orders found"
+            description="There are no orders matching your current filters."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-500">
-                    Loading orders...
-                  </td>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Order</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Bundle</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Recipient</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Seller</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Amount</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Status</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
                 </tr>
-              ) : orders.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-500">
-                    No orders found
-                  </td>
-                </tr>
-              ) : (
-                orders.map((order) => (
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {orders.map((order) => (
                   <tr
                     key={order.id}
                     className="border-b border-slate-50 hover:bg-slate-50"
                   >
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <p className="font-mono text-sm text-slate-900">
                         #{order.id.slice(-8)}
                       </p>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {getNetworkBadge(order.bundle?.network)}
                         <span className="text-sm text-slate-900">
@@ -286,12 +268,12 @@ export default function AdminOrdersPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <p className="text-sm text-slate-900">
                         {order.customerPhone}
                       </p>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <p className="text-sm text-slate-900">
                         {order.seller?.name}
                       </p>
@@ -299,18 +281,18 @@ export default function AdminOrdersPage() {
                         {order.seller?.phone}
                       </p>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <span className="font-medium text-slate-900">
                         {formatCurrency(order.pricePaid)}
                       </span>
                     </td>
-                    <td className="p-4">{getStatusBadge(order.status)}</td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
+                    <td className="px-6 py-4">
                       <span className="text-sm text-slate-500">
                         {formatDateTime(order.createdAt)}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {/* Fulfill button - show for payment_confirmed and failed orders */}
                         {(order.status === "payment_confirmed" ||
@@ -364,11 +346,11 @@ export default function AdminOrdersPage() {
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

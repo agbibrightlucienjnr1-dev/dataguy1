@@ -129,14 +129,6 @@ export default function AdminSystemPage() {
     optimizeMutation.mutate();
   };
 
-  const formatBytes = (bytes) => {
-    if (!bytes) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  };
-
   const dbData = dbStats?.data || {};
   const memoryData = memoryStats?.data || {};
   const memoryStatus = memoryStats?.status || {};
@@ -199,17 +191,31 @@ export default function AdminSystemPage() {
                 {memoryData.formatted?.heapTotal || "N/A"}
               </div>
             </div>
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <div className="text-sm text-slate-500 mb-1">System Usage</div>
-              <div className="text-xl font-bold text-slate-900">
-                {memoryData.formatted?.systemUsagePercent || "N/A"}
-              </div>
-              {memoryStatus.isHigh?.system && (
-                <div className="mt-2 flex items-center gap-1 text-red-600 text-xs">
-                  <AlertTriangle className="w-3 h-3" />
-                  High usage
+            <div className="p-4 bg-slate-50 rounded-lg flex flex-col justify-between">
+              <div>
+                <div className="text-sm text-slate-500 mb-1">System Usage</div>
+                <div className="text-xl font-bold text-slate-900 mb-2">
+                  {memoryData.formatted?.systemUsagePercent || "N/A"}
                 </div>
-              )}
+              </div>
+              <div>
+                <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      memoryStatus.isHigh?.system ? "bg-red-500" : "bg-emerald-500"
+                    }`}
+                    style={{
+                      width: `${parseFloat(memoryData.formatted?.systemUsagePercent || "0")}%`,
+                    }}
+                  />
+                </div>
+                {memoryStatus.isHigh?.system && (
+                  <div className="mt-1 flex items-center gap-1 text-red-600 text-xs font-medium">
+                    <AlertTriangle className="w-3 h-3" />
+                    High Usage Alert
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

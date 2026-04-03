@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   Wallet,
 } from "lucide-react";
-import { Card, Badge, Button, Modal } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -114,54 +114,38 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  User
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Contact
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Role
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Orders
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Wallet
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Joined
-                </th>
-                <th className="text-right p-4 text-sm font-medium text-slate-500">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
+      <Card className="overflow-hidden">
+        {isLoading ? (
+          <div className="p-6">
+            <SkeletonTable rows={5} columns={7} />
+          </div>
+        ) : users.length === 0 ? (
+          <EmptyState
+            icon="users"
+            title="No users found"
+            description="There are currently no users matching your criteria."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
-                    Loading users...
-                  </td>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Contact</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Role</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Orders</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Wallet</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Joined</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
                 </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                users.map((user) => (
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {users.map((user) => (
                   <tr
                     key={user.id}
                     className="border-b border-slate-50 hover:bg-slate-50"
                   >
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium text-white">
@@ -178,27 +162,27 @@ export default function AdminUsersPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <p className="text-sm text-slate-900">{user.phone}</p>
                       <p className="text-xs text-slate-500">{user.email}</p>
                     </td>
-                    <td className="p-4">{getRoleBadge(user.role)}</td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
+                    <td className="px-6 py-4">
                       <span className="text-sm text-slate-900">
                         {user.totalOrders || 0}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <span className="text-sm font-medium text-slate-900">
                         {formatCurrency(user.walletBalance || 0)}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-4">
                       <span className="text-sm text-slate-500">
                         {formatDate(user.createdAt)}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-6 py-4 text-right">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -208,11 +192,11 @@ export default function AdminUsersPage() {
                       </Button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
@@ -253,64 +237,79 @@ export default function AdminUsersPage() {
         {selectedUser && (
           <div className="space-y-6">
             {/* User Header */}
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
+              <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-indigo-400 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200">
                 <span className="text-2xl font-bold text-white">
                   {selectedUser.name?.charAt(0)?.toUpperCase()}
                 </span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {selectedUser.name}
-                </h3>
-                {getRoleBadge(selectedUser.role)}
-              </div>
-            </div>
-
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-slate-600">
-                <Phone className="w-4 h-4" />
-                <span>{selectedUser.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <Mail className="w-4 h-4" />
-                <span>{selectedUser.email}</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <Calendar className="w-4 h-4" />
-                <span>Joined {formatDate(selectedUser.createdAt)}</span>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
-                  <ShoppingCart className="w-4 h-4" />
-                  Total Orders
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {selectedUser.name}
+                  </h3>
+                  {getRoleBadge(selectedUser.role)}
                 </div>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
-                  {selectedUser.totalOrders || 0}
-                </p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
-                  <Wallet className="w-4 h-4" />
-                  Wallet Balance
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <Calendar className="w-4 h-4" />
+                  <span>Joined {formatDate(selectedUser.createdAt)}</span>
                 </div>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
-                  {formatCurrency(selectedUser.walletBalance || 0)}
-                </p>
               </div>
             </div>
 
-            {/* Payment Link */}
-            <div className="p-4 bg-slate-900 rounded-lg text-white">
-              <p className="text-sm text-slate-300 mb-1">Payment Link Code</p>
-              <p className="font-mono text-sm">
-                {selectedUser.paymentLinkCode}
-              </p>
+            <div className="space-y-6">
+              {/* Contact Information */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Contact Information</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg text-slate-700">
+                    <Phone className="w-4 h-4 text-slate-400" />
+                    <span className="font-medium">{selectedUser.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg text-slate-700">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                    <span className="font-medium">{selectedUser.email}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Activity & Earnings</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                    <div className="flex items-center gap-2 text-blue-600 text-sm font-medium mb-1">
+                      <ShoppingCart className="w-4 h-4" />
+                      Total Orders
+                    </div>
+                    <p className="text-3xl font-bold text-slate-900">
+                      {selectedUser.totalOrders || 0}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                    <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium mb-1">
+                      <Wallet className="w-4 h-4" />
+                      Wallet Balance
+                    </div>
+                    <p className="text-3xl font-bold text-slate-900">
+                      {formatCurrency(selectedUser.walletBalance || 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Link */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">System Identity</h4>
+                <div className="p-4 bg-slate-900 rounded-xl text-white flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1 uppercase font-semibold">Payment Link Code</p>
+                    <p className="font-mono text-lg font-medium text-indigo-400">
+                      {selectedUser.paymentLinkCode}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

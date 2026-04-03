@@ -11,7 +11,7 @@ import {
   AlertCircle,
   MessageCircle,
 } from "lucide-react";
-import { Card } from "../../components/ui";
+import { Card, EmptyState, SkeletonTable } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { Link } from "react-router-dom";
@@ -212,9 +212,15 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           {ordersLoading ? (
-            <div className="p-8 text-center text-slate-500">Loading...</div>
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={2} />
+            </div>
           ) : recentOrders.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">No orders yet</div>
+            <EmptyState
+              icon="empty"
+              title="No recent orders"
+              description="New orders will appear here automatically."
+            />
           ) : (
             <div className="divide-y divide-slate-100">
               {recentOrders.map((order) => (
@@ -263,11 +269,15 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           {withdrawalsLoading ? (
-            <div className="p-8 text-center text-slate-500">Loading...</div>
-          ) : pendingWithdrawals.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
-              No pending withdrawals
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={2} />
             </div>
+          ) : pendingWithdrawals.length === 0 ? (
+            <EmptyState
+              icon="empty"
+              title="No pending withdrawals"
+              description="You are fully caught up on payouts."
+            />
           ) : (
             <div className="divide-y divide-slate-100">
               {pendingWithdrawals.map((withdrawal) => (
