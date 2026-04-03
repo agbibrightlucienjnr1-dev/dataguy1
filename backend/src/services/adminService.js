@@ -177,6 +177,11 @@ export const getPlatformStatistics = async (filters = {}) => {
     }
   }
 
+  // Define today for specific metrics
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayFilter = { createdAt: { gte: today } };
+
   // Get order statistics
   const [
     totalOrders,
@@ -189,6 +194,11 @@ export const getPlatformStatistics = async (filters = {}) => {
     agentCount,
     subAgentCount,
     totalWalletBalance,
+    todayOrdersCount,
+    todayRevenueAgg,
+    pendingWithdrawalsCount,
+    pendingWithdrawalAmountAgg,
+    activeSellersGroups
   ] = await Promise.all([
     prisma.order.count({ where: dateFilter }),
     prisma.order.count({ where: { ...dateFilter, status: "completed" } }),
@@ -212,9 +222,24 @@ export const getPlatformStatistics = async (filters = {}) => {
     prisma.wallet.aggregate({
       _sum: { balance: true },
     }),
+    // Additional metrics for UI
+    prisma.order.count({ where: { ...todayFilter } }),
+    prisma.order.aggregate({
+      where: { ...todayFilter, status: { in: ["completed", "processing"] } },
+      _sum: { pricePaid: true },
+    }),
+    prisma.withdrawal.count({ where: { status: "pending" } }),
+    prisma.withdrawal.aggregate({
+      where: { status: "pending" },
+      _sum: { amount: true },
+    }),
+    prisma.order.groupBy({
+      by: ["sellerId"],
+      where: { ...dateFilter },
+    })
   ]);
 
-  // Get revenue breakdown by network
+  // Get revenue breakdown by network (used for platformProfit too)
   const revenueByNetwork = await prisma.order.groupBy({
     by: ["bundleId"],
     where: { ...dateFilter, status: { in: ["completed", "processing"] } },
@@ -224,17 +249,22 @@ export const getPlatformStatistics = async (filters = {}) => {
     _count: true,
   });
 
-  // Get bundle info for revenue breakdown
+  // Get bundle info for revenue breakdown and hubnetCost
   const bundleIds = revenueByNetwork.map((r) => r.bundleId);
   const bundles = await prisma.dataBundle.findMany({
     where: { id: { in: bundleIds } },
-    select: { id: true, network: true, volume: true },
+    select: { id: true, network: true, volume: true, hubnetCost: true },
   });
 
+  let totalHubnetCost = 0;
   const networkRevenue = {};
+  
   revenueByNetwork.forEach((rev) => {
     const bundle = bundles.find((b) => b.id === rev.bundleId);
     if (bundle) {
+      // Add up wholesale hubnet costs
+      totalHubnetCost += parseFloat(bundle.hubnetCost || 0) * rev._count;
+      
       const network = bundle.network;
       if (!networkRevenue[network]) {
         networkRevenue[network] = {
@@ -283,6 +313,8 @@ export const getPlatformStatistics = async (filters = {}) => {
     };
   });
 
+  const successRate = totalOrders > 0 ? ((completedOrders / totalOrders) * 100).toFixed(1) : 0;
+
   return {
     overview: {
       totalOrders,
@@ -294,11 +326,19 @@ export const getPlatformStatistics = async (filters = {}) => {
       totalCommissionsPaid:
         totalCommissionsPaid._sum.commissionAmount || "0.00",
       platformProfit:
-        parseFloat(totalRevenue._sum.pricePaid || 0) -
-        parseFloat(totalCommissionsPaid._sum.commissionAmount || 0),
+        (parseFloat(totalRevenue._sum.pricePaid || 0) -
+        parseFloat(totalCommissionsPaid._sum.commissionAmount || 0) -
+        totalHubnetCost).toFixed(2),
       agentCount,
       subAgentCount,
+      totalUsers: agentCount + subAgentCount,
       totalWalletBalance: totalWalletBalance._sum.balance || "0.00",
+      todayOrders: todayOrdersCount,
+      todayRevenue: todayRevenueAgg._sum.pricePaid || "0.00",
+      pendingWithdrawals: pendingWithdrawalsCount,
+      pendingWithdrawalAmount: pendingWithdrawalAmountAgg._sum.amount || "0.00",
+      activeAgents: activeSellersGroups.length,
+      successRate: parseFloat(successRate)
     },
     revenueByNetwork: Object.entries(networkRevenue).map(([network, data]) => ({
       network,
