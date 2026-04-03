@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -164,7 +164,24 @@ export default function AdminDashboardPage() {
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Pending Withdrawals</p>
+              <p className="text-sm text-slate-500">Platform Profit</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">
+                {statsLoading ? "..." : formatCurrency(stats.platformProfit || 0)}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-emerald-600" />
+            </div>
+          </div>
+          <div className="mt-3 text-xs text-slate-500">
+            Net profit over all orders
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500">Pending WDs</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
                 {statsLoading ? "..." : stats.pendingWithdrawals || 0}
               </p>
@@ -173,8 +190,8 @@ export default function AdminDashboardPage() {
               <ArrowDownToLine className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
-          <div className="mt-3 text-xs text-slate-500">
-            {formatCurrency(stats.pendingWithdrawalAmount || 0)} to process
+          <div className="mt-3 text-xs text-slate-500 truncate">
+            {formatCurrency(stats.pendingWithdrawalAmount || 0)} pending
           </div>
         </Card>
       </div>
