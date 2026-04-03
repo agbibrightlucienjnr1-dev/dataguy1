@@ -153,60 +153,7 @@ export default function DashboardLayout() {
 
           {/* User section at bottom */}
           <div className="p-3 border-t border-slate-800 space-y-1">
-            {/* Tutorial Videos (Agent only) */}
-            {!isAdmin() && (
-              <>
-                <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Tutorial Videos
-                </div>
-                <a
-                  href="https://youtube.com/shorts/p7If9mzBYsA?feature=share"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <PlayCircle className="w-5 h-5" />
-                  <span className="flex-1">Quick Start Guide</span>
-                  <svg
-                    className="w-4 h-4 opacity-75"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-                <a
-                  href="https://youtu.be/v4sQE7X9PKs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <PlayCircle className="w-5 h-5" />
-                  <span className="flex-1">Full Tutorial</span>
-                  <svg
-                    className="w-4 h-4 opacity-75"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              </>
-            )}
+
 
             {/* WhatsApp Channel Link */}
             <a
