@@ -10,7 +10,8 @@ import {
   Users,
   ShoppingCart,
 } from "lucide-react";
-import { Card, Button, Input, Badge } from "../../components/ui";
+import { Card, Button, Input, Badge, EmptyState } from "../../components/ui";
+import { useNavigate } from "react-router-dom";
 import { pricingApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -18,6 +19,7 @@ import { useAuthStore } from "../../stores";
 import toast from "react-hot-toast";
 
 export default function AgentBundlesPage() {
+  const navigate = useNavigate();
   const [networkFilter, setNetworkFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuthStore();
@@ -223,14 +225,24 @@ export default function AgentBundlesPage() {
 
       {/* Bundles Display */}
       {isLoading ? (
-        <div className="text-center py-12 text-slate-500">
-          Loading bundles...
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+           {[...Array(10)].map((_, i) => (
+             <Card key={i} className="p-4 h-32 animate-pulse bg-slate-100 flex flex-col justify-center items-center">
+                <div className="w-16 h-6 bg-slate-200 rounded mb-2"></div>
+                <div className="w-20 h-5 bg-slate-200 rounded"></div>
+             </Card>
+           ))}
         </div>
       ) : Object.keys(bundlesByNetwork).length === 0 ? (
-        <Card className="p-12 text-center">
-          <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500">No bundles available</p>
-        </Card>
+        <EmptyState
+           icon={Package}
+           title="No bundles available"
+           description="There are currently no active data bundles matching your criteria."
+           action={{
+             label: "Change Pricing",
+             onClick: () => navigate("/pricing"),
+           }}
+        />
       ) : (
         <div className="space-y-8">
           {Object.entries(bundlesByNetwork).map(([network, networkBundles]) => {
