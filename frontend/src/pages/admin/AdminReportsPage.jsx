@@ -24,7 +24,26 @@ import { adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import toast from "react-hot-toast";
 
-const COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#6366f1', '#8b5cf6'];
+const COLORS = [
+  '#0f172a', // Slate 900 (Navy)
+  '#2563eb', // Blue 600
+  '#16a34a', // Green 600
+  '#dc2626', // Red 600
+  '#d97706', // Amber 600
+  '#7c3aed', // Violet 600
+  '#0891b2', // Cyan 600
+  '#9333ea', // Purple 600
+  '#be123c', // Rose 700
+  '#4d7c0f', // Lime 700
+  '#c2410c', // Orange 700
+  '#0369a1', // Sky 700
+  '#c026d3', // Fuchsia 600
+  '#db2777', // Pink 600
+  '#0d9488', // Teal 600
+  '#059669', // Emerald 600
+  '#475569', // Slate 600
+  '#ca8a04', // Yellow 600
+];
 
 export default function AdminReportsPage() {
   const { data: response, isLoading, refetch } = useQuery({
