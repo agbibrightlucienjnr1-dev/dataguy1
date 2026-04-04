@@ -12,7 +12,7 @@ import {
   User,
   RefreshCw,
 } from "lucide-react";
-import { Card, Input, Badge } from "../../components/ui";
+import { Card, Input, Badge, EmptyState } from "../../components/ui";
 import { agentApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -151,20 +151,45 @@ export default function AgentSubAgentsPage() {
 
       {/* Sub-Agents List */}
       {isLoading ? (
-        <Card className="p-8 text-center">
-          <div className="flex items-center justify-center gap-2 text-slate-500">
-            <RefreshCw className="w-5 h-5 animate-spin" />
-            Loading sub-agents...
-          </div>
-        </Card>
+        <div className="grid grid-cols-1 gap-4">
+           {[...Array(3)].map((_, i) => (
+             <Card key={i} className="p-6">
+               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                 <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-3">
+                     <div className="w-10 h-10 bg-slate-200 animate-pulse rounded-full"></div>
+                     <div className="space-y-2">
+                        <div className="w-32 h-5 bg-slate-200 animate-pulse rounded"></div>
+                        <div className="flex gap-2">
+                           <div className="w-20 h-3 bg-slate-200 animate-pulse rounded"></div>
+                           <div className="w-24 h-3 bg-slate-200 animate-pulse rounded"></div>
+                        </div>
+                     </div>
+                   </div>
+                 </div>
+                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:w-auto w-full pt-4 lg:pt-0">
+                    {[...Array(4)].map((_, j) => (
+                       <div key={j} className="flex flex-col items-center gap-2">
+                          <div className="w-16 h-3 bg-slate-200 animate-pulse rounded"></div>
+                          <div className="w-20 h-6 bg-slate-200 animate-pulse rounded"></div>
+                       </div>
+                    ))}
+                 </div>
+               </div>
+             </Card>
+           ))}
+        </div>
       ) : filteredSubAgents.length === 0 ? (
-        <Card className="p-8 text-center">
-          <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">
-            {searchQuery
-              ? "No sub-agents found matching your search"
-              : "No sub-agents yet. Share your registration link to recruit sub-agents."}
-          </p>
+        <Card className="p-8">
+           <EmptyState
+             icon={Users}
+             title={searchQuery ? "No matches found" : "No sub-agents yet"}
+             description={
+               searchQuery
+                 ? "No sub-agents found matching your search term."
+                 : "Share your registration link to recruit sub-agents."
+             }
+           />
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
