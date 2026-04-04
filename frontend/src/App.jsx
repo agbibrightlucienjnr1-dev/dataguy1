@@ -18,7 +18,7 @@ import {
 } from "./pages/public";
 
 // Dashboard Pages
-import { DashboardPage, ProfilePage } from "./pages/dashboard";
+import { DashboardPage, ProfilePage, SettingsPage } from "./pages/dashboard";
 
 // Agent Pages
 import {
@@ -40,6 +40,7 @@ import {
   AdminCustomersPage,
   AdminWithdrawalsPage,
   AdminSystemPage,
+  AdminReportsPage,
 } from "./pages/admin";
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
             <Route path="/sub-agents" element={<AgentSubAgentsPage />} />
             <Route path="/customers" element={<AgentCustomersPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 
@@ -89,7 +91,9 @@ function App() {
               element={<AdminWithdrawalsPage />}
             />
             <Route path="/admin/system" element={<AdminSystemPage />} />
+            <Route path="/admin/reports" element={<AdminReportsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 

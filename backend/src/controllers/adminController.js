@@ -6,6 +6,7 @@ import {
   getUserDetails,
   updateBundleStatus,
   getFailedOrders,
+  generateReportData,
 } from "../services/adminService.js";
 import { initiateHubnetOrder } from "../services/orderService.js";
 import { checkBalance } from "../services/hubnetService.js";
@@ -510,4 +511,17 @@ export const optimizeDatabaseEndpoint = asyncHandler(async (req, res) => {
     logger.error("Error optimizing database", error);
     throw error;
   }
+});
+
+/**
+ * Get Reports Data
+ * GET /api/admin/reports
+ */
+export const getReportsData = asyncHandler(async (req, res) => {
+  const reportsData = await generateReportData();
+
+  res.status(200).json({
+    success: true,
+    data: reportsData,
+  });
 });

@@ -4,6 +4,7 @@ import {
   loginUser,
   getUserById,
   changePassword,
+  updateUserPreferences,
 } from "../services/authService.js";
 import { validatePasswordStrength } from "../utils/password.js";
 import { AppError } from "../middlewares/errorHandler.js";
@@ -146,5 +147,28 @@ export const updatePassword = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Password changed successfully",
+  });
+});
+
+/**
+ * Update user preferences
+ * PATCH /api/auth/preferences
+ */
+export const updatePreferences = asyncHandler(async (req, res) => {
+  const { preferences } = req.body;
+  const userId = req.user.id;
+
+  if (!preferences) {
+    throw new AppError("Preferences object is required", 400);
+  }
+
+  const updatedUser = await updateUserPreferences(userId, preferences);
+
+  res.status(200).json({
+    success: true,
+    message: "Preferences updated successfully",
+    data: {
+      preferences: updatedUser.preferences,
+    },
   });
 });

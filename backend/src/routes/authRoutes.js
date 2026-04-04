@@ -4,6 +4,7 @@ import {
   login,
   getMe,
   updatePassword,
+  updatePreferences,
 } from "../controllers/authController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { authRateLimiter, apiRateLimiter } from "../middlewares/rateLimiter.js";
@@ -21,6 +22,12 @@ router.patch(
   apiRateLimiter,
   authenticate,
   updatePassword,
+);
+router.patch(
+  "/preferences",
+  apiRateLimiter,
+  authenticate,
+  updatePreferences,
 );
 
 export default router;

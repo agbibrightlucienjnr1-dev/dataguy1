@@ -593,3 +593,110 @@ export const getFailedOrders = async (page = 1, limit = 50) => {
     },
   };
 };
+
+/**
+ * Generate platform report data for analytics charts
+ */
+export const generateReportData = async () => {
+  const prisma = getPrisma();
+  
+  // Calculate 30 days ago
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+  // 1. Fetch daily aggregated orders
+  const dailyOrders = await prisma.order.groupBy({
+    by: ['createdAt'], // Group by raw createdAt to parse in JS because SQLite/Pg might differ for date truncation
+    where: {
+      status: { in: ['completed', 'processing'] },
+      createdAt: { gte: thirtyDaysAgo },
+    },
+    _sum: { pricePaid: true },
+    _count: true,
+  });
+
+  // Aggregate by day string (YYYY-MM-DD)
+  const salesMap = {};
+  for (let i = 0; i <= 30; i++) {
+    const d = new Date(thirtyDaysAgo);
+    d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().split("T")[0];
+    salesMap[dateStr] = {
+      date: dateStr,
+      revenue: 0,
+      orders: 0
+    };
+  }
+
+  dailyOrders.forEach(order => {
+    const dStr = new Date(order.createdAt).toISOString().split("T")[0];
+    if (salesMap[dStr]) {
+      salesMap[dStr].revenue += parseFloat(order._sum.pricePaid || 0);
+      salesMap[dStr].orders += order._count;
+    }
+  });
+
+  const salesTrend = Object.values(salesMap).sort((a,b) => a.date.localeCompare(b.date));
+
+  // 2. Fetch Volume Distribution (Only MTN as per user request)
+  const volumeDistributionReq = await prisma.order.groupBy({
+    by: ['bundleId'],
+    where: {
+      status: { in: ['completed', 'processing'] },
+      createdAt: { gte: thirtyDaysAgo },
+      bundle: { network: "MTN" } // Enforce MTN only!
+    },
+    _count: true
+  });
+
+  const bundleIds = volumeDistributionReq.map(v => v.bundleId);
+  const bundles = await prisma.dataBundle.findMany({
+    where: { id: { in: bundleIds } },
+    select: { id: true, volume: true }
+  });
+
+  const tempVolMap = {};
+  volumeDistributionReq.forEach(vol => {
+    const b = bundles.find(bun => bun.id === vol.bundleId);
+    if (b) {
+      const volName = b.volume;
+      tempVolMap[volName] = (tempVolMap[volName] || 0) + vol._count;
+    }
+  });
+
+  const volumeDistribution = Object.entries(tempVolMap).map(([name, value]) => ({
+    name,
+    value
+  }));
+
+  // Combine top-level overview just as a quick snapshot
+  const [totalOrders, totalRevenue, completedOrders] = await Promise.all([
+    prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+    prisma.order.aggregate({
+      where: {
+        status: { in: ['completed', 'processing'] },
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      _sum: { pricePaid: true }
+    }),
+    prisma.order.count({
+      where: {
+        status: 'completed',
+        createdAt: { gte: thirtyDaysAgo },
+      }
+    }),
+  ]);
+
+  const successRate = totalOrders > 0 ? ((completedOrders / totalOrders) * 100).toFixed(1) : 0;
+
+  return {
+    salesTrend,
+    volumeDistribution,
+    overview: {
+      totalVolume: totalOrders,
+      totalRevenue: parseFloat(totalRevenue._sum.pricePaid || 0).toFixed(2),
+      successRate: parseFloat(successRate)
+    }
+  };
+};

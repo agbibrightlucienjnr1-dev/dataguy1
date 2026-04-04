@@ -16,6 +16,7 @@ import {
   getMemoryStats,
   runDatabaseCleanup,
   optimizeDatabaseEndpoint,
+  getReportsData,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -86,5 +87,10 @@ router.post("/cache/clear", clearCacheMiddleware); // Clear all cache
  * Bundles Management
  */
 router.patch("/bundles/:bundleId/status", toggleBundleStatus); // Activate/deactivate bundle
+
+/**
+ * Analytics Reports
+ */
+router.get("/reports", getReportsData);
 
 export default router;

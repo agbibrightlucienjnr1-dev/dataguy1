@@ -183,6 +183,7 @@ export const getUserById = async (userId) => {
         role: true,
         parentAgentId: true,
         paymentLinkCode: true,
+        preferences: true,
         createdAt: true,
         wallet: {
           select: {
@@ -298,4 +299,37 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
     where: { id: userId },
     data: { passwordHash: newPasswordHash },
   });
+};
+
+/**
+ * Update user preferences
+ * @param {string} userId - User ID
+ * @param {Object} preferences - User preferences
+ * @returns {Promise<Object>} - Updated user
+ */
+export const updateUserPreferences = async (userId, preferences) => {
+  const prisma = getPrisma();
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { preferences: true },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  // Merge the existing preferences with the new ones
+  const mergedPreferences = {
+    ...(user.preferences || {}),
+    ...preferences,
+  };
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { preferences: mergedPreferences },
+    select: { preferences: true },
+  });
+
+  return updatedUser;
 };

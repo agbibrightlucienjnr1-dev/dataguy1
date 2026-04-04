@@ -169,4 +169,10 @@ export const adminApi = {
    * Clear all cache
    */
   clearCache: () => apiClient.post("/admin/cache/clear"),
+
+  // ========== Analytics ==========
+  /**
+   * Get analytics reports data
+   */
+  getReportsData: () => apiClient.get("/admin/reports"),
 };

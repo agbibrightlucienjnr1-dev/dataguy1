@@ -23,4 +23,10 @@ export const authApi = {
    * @param {Object} data - { currentPassword, newPassword }
    */
   changePassword: (data) => apiClient.patch("/auth/change-password", data),
+
+  /**
+   * Update user preferences
+   * @param {Object} preferences - Preferences object
+   */
+  updatePreferences: (preferences) => apiClient.patch("/auth/preferences", { preferences }),
 };

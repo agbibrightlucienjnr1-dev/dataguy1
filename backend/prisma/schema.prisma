@@ -71,6 +71,7 @@ model User {
   parentAgentId     String?          @map("parent_agent_id")
   paymentLinkCode   String?          @unique @map("payment_link_code")
   shopName          String?          @map("shop_name")
+  preferences       Json?
   createdAt         DateTime         @default(now()) @map("created_at")
   
   // Relations
