@@ -9,7 +9,7 @@ import {
   CheckCircle,
   Info,
 } from "lucide-react";
-import { Card, Button, Input, Badge } from "../../components/ui";
+import { Card, Button, Input, Badge, EmptyState, SkeletonTable } from "../../components/ui";
 import { pricingApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -232,13 +232,34 @@ export default function AgentPricingPage() {
 
       {/* Pricing Table */}
       {isLoading ? (
-        <div className="text-center py-12 text-slate-500">
-          Loading bundles...
-        </div>
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+               <thead>
+                 <tr className="border-b border-slate-100 bg-slate-50">
+                    <th className="text-left p-4 text-sm font-medium text-slate-600">Bundle</th>
+                    <th className="text-left p-4 text-sm font-medium text-slate-600">Your Cost</th>
+                    <th className="text-left p-4 text-sm font-medium text-slate-600">Customer Price</th>
+                    <th className="text-left p-4 text-sm font-medium text-slate-600">Status</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 <tr>
+                   <td colSpan={6} className="p-4">
+                     <SkeletonTable rows={5} columns={isAgent ? 6 : 5} />
+                   </td>
+                 </tr>
+               </tbody>
+            </table>
+          </div>
+        </Card>
       ) : Object.keys(bundlesByNetwork).length === 0 ? (
-        <Card className="p-12 text-center">
-          <Tag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500">No bundles available for pricing</p>
+        <Card className="p-8">
+           <EmptyState
+              icon={Tag}
+              title="No bundles found"
+              description="There are currently no active data bundles available for you to set pricing on."
+           />
         </Card>
       ) : (
         <div className="space-y-6">
