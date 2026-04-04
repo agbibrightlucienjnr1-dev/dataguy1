@@ -4,34 +4,39 @@ import { Button } from "../../components/ui";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+      {/* Animated Background Blobs */}
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-slate-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-slate-400 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+
       {/* Navigation */}
-      <nav className="border-b border-slate-100">
+      <nav className="relative z-10 glass-panel border-b border-white/40 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center">
-                <Wifi className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between h-20">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-all">
+                <Wifi className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900">DataGuy</span>
+              <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">DataGuy</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
               <a
                 href="#features"
-                className="text-slate-600 hover:text-slate-900"
+                className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
               >
                 Features
               </a>
               <a
                 href="#how-it-works"
-                className="text-slate-600 hover:text-slate-900"
+                className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
               >
                 How it Works
               </a>
               <a
                 href="#pricing"
-                className="text-slate-600 hover:text-slate-900"
+                className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
               >
                 Pricing
               </a>
@@ -39,10 +44,10 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-3">
               <Link to="/login">
-                <Button variant="ghost">Sign in</Button>
+                <Button variant="ghost" className="font-semibold hover:bg-slate-100">Sign in</Button>
               </Link>
               <Link to="/register">
-                <Button>Get Started</Button>
+                <Button className="font-semibold shadow-md hover:shadow-lg transition-shadow bg-slate-900 hover:bg-slate-800 text-white">Get Started</Button>
               </Link>
             </div>
           </div>
@@ -50,22 +55,27 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="py-20 sm:py-28">
+      <section className="relative z-10 py-24 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+          <div className="text-center max-w-3xl mx-auto animate-float-slow">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 bg-slate-100 text-slate-700 text-sm font-medium mb-8">
+              <span className="flex h-2 w-2 rounded-full bg-slate-900"></span>
+              The #1 Data Reselling Platform
+            </div>
+            
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight">
               Sell Data Bundles.
               <br />
-              <span className="text-slate-500">Earn More.</span>
+              <span className="text-slate-600">Earn More Daily.</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
               Become a DataGuy agent and start selling MTN & AirtelTigo data
               bundles. Set your own prices, earn commissions, and grow your
               business.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/register">
-                <Button size="lg" className="w-full sm:w-auto px-8">
+                <Button size="lg" className="w-full sm:w-auto px-8 h-12 shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0">
                   Start Selling Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -74,7 +84,7 @@ export default function LandingPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto px-8"
+                  className="w-full sm:w-auto px-8 h-12 bg-white/50 backdrop-blur-sm border-slate-300 hover:bg-white hover:text-slate-900 hover:-translate-y-0.5 transition-all shadow-sm"
                 >
                   Track an Order
                 </Button>
@@ -82,20 +92,20 @@ export default function LandingPage() {
             </div>
 
             {/* Stats */}
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
+            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto p-8 glass-panel rounded-2xl relative z-10 animate-float">
               <div>
-                <div className="text-3xl font-bold text-slate-900">5K+</div>
-                <div className="text-sm text-slate-500 mt-1">Active Agents</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">5K+</div>
+                <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Active Agents</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-slate-900">100K+</div>
-                <div className="text-sm text-slate-500 mt-1">
+              <div className="border-x border-slate-200/50">
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">100K+</div>
+                <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">
                   Orders Delivered
                 </div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-slate-900">99.9%</div>
-                <div className="text-sm text-slate-500 mt-1">Success Rate</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">99.9%</div>
+                <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Success Rate</div>
               </div>
             </div>
           </div>
@@ -103,63 +113,63 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 bg-slate-50">
+      <section id="features" className="py-24 relative z-10 bg-white/50 backdrop-blur-lg border-t border-slate-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
               Why Choose DataGuy?
             </h2>
-            <p className="mt-4 text-lg text-slate-600">
-              Everything you need to run your data reselling business
+            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+              Everything you need to run your data reselling business efficiently, with premium tools at your fingertips.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white p-6 rounded-xl border border-slate-100">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="h-6 w-6 text-white" />
+            <div className="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-slate-200/50">
+                <Zap className="h-7 w-7 text-slate-900" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
                 Instant Delivery
               </h3>
-              <p className="text-slate-600">
-                Data bundles are delivered instantly after payment confirmation.
+              <p className="text-slate-600 leading-relaxed">
+                Data bundles are delivered instantly after payment confirmation. No waiting, no hassle.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-100">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4">
-                <Wallet className="h-6 w-6 text-white" />
+            <div className="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-slate-200/50">
+                <Wallet className="h-7 w-7 text-slate-900" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
                 Earn Commissions
               </h3>
-              <p className="text-slate-600">
-                Set your own prices and earn on every sale. Withdraw anytime.
+              <p className="text-slate-600 leading-relaxed">
+                Set your own prices and earn on every sale. Withdraw anytime directly to your Mobile Money.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-100">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-white" />
+            <div className="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-slate-200/50">
+                <Users className="h-7 w-7 text-slate-900" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
                 Build Your Team
               </h3>
-              <p className="text-slate-600">
-                Recruit sub-agents and earn from their sales too.
+              <p className="text-slate-600 leading-relaxed">
+                Recruit sub-agents and earn passive income from their sales too. Scale infinitely.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-100">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="h-6 w-6 text-white" />
+            <div className="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-slate-200/50">
+                <Shield className="h-7 w-7 text-slate-900" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
                 Secure Payments
               </h3>
-              <p className="text-slate-600">
-                All transactions secured with Paystack. Safe & reliable.
+              <p className="text-slate-600 leading-relaxed">
+                All transactions secured with Paystack. Safe, reliable, and entirely automated.
               </p>
             </div>
           </div>
@@ -167,49 +177,49 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className="py-20">
+      <section id="how-it-works" className="py-24 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900">How It Works</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">How It Works</h2>
             <p className="mt-4 text-lg text-slate-600">
-              Get started in 3 simple steps
+              Get started and make your first sale in under 5 minutes
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="text-center group">
+              <div className="w-20 h-20 bg-white shadow-xl shadow-slate-200/50 rounded-2xl flex items-center justify-center text-3xl font-extrabold text-slate-900 mx-auto mb-6 transform group-hover:-translate-y-2 transition-all duration-300 border border-slate-100">
                 1
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
                 Create Account
               </h3>
-              <p className="text-slate-600">
-                Sign up as an agent or sub-agent in under 2 minutes.
+              <p className="text-slate-600 leading-relaxed px-4">
+                Sign up as an agent or sub-agent instantly. No upfront fees required.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="text-center group">
+              <div className="w-20 h-20 bg-white shadow-xl shadow-slate-200/50 rounded-2xl flex items-center justify-center text-3xl font-extrabold text-slate-900 mx-auto mb-6 transform group-hover:-translate-y-2 transition-all duration-300 border border-slate-100">
                 2
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
                 Share Your Link
               </h3>
-              <p className="text-slate-600">
-                Get your unique payment link and share with customers.
+              <p className="text-slate-600 leading-relaxed px-4">
+                Get your unique payment link and share with customers on WhatsApp or social media.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="text-center group">
+              <div className="w-20 h-20 bg-white shadow-xl shadow-slate-200/50 rounded-2xl flex items-center justify-center text-3xl font-extrabold text-slate-900 mx-auto mb-6 transform group-hover:-translate-y-2 transition-all duration-300 border border-slate-100">
                 3
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
                 Earn & Withdraw
               </h3>
-              <p className="text-slate-600">
-                Earn commission on every sale. Withdraw to mobile money or bank.
+              <p className="text-slate-600 leading-relaxed px-4">
+                Earn commission instantly on every fully automated sale. Withdraw anytime.
               </p>
             </div>
           </div>
@@ -217,21 +227,25 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-slate-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="py-24 relative z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-slate-900"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-slate-700 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-slate-800 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 glass-panel-dark rounded-3xl p-12 mt-4 mx-4 shadow-2xl">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
             Ready to Start Earning?
           </h2>
-          <p className="text-slate-300 text-lg mb-8">
-            Join thousands of agents selling data bundles across Ghana.
+          <p className="text-slate-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+            Join the platform that is empowering thousands of agents to build reliable income streams selling data bundles across Ghana.
           </p>
           <Link to="/register">
             <Button
               size="lg"
-              className="bg-white text-slate-900 hover:bg-slate-100"
+              className="bg-white text-slate-900 hover:bg-slate-100 border-0 h-14 px-10 text-lg font-bold shadow-xl shadow-white/10 hover:-translate-y-1 transition-all"
             >
               Create Free Account
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-6 w-6" />
             </Button>
           </Link>
         </div>
