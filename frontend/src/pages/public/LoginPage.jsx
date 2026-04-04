@@ -37,45 +37,47 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Phone Number
           </label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <div className="relative group">
+            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
             <input
               type="tel"
               placeholder="0241234567"
-              className={`w-full h-11 pl-10 pr-4 rounded-lg border bg-white text-sm
-                focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900
-                ${errors.phone ? "border-red-500" : "border-slate-200"}`}
+              className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
+                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
+                hover:border-slate-300
+                ${errors.phone ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("phone")}
             />
           </div>
           {errors.phone && (
-            <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+            <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-red-600"></span>{errors.phone.message}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Password
           </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <div className="relative group">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
             <input
-              type={showPassword ? "text" : "password"}
+               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              className={`w-full h-11 pl-10 pr-12 rounded-lg border bg-white text-sm
-                focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900
-                ${errors.password ? "border-red-500" : "border-slate-200"}`}
+              className={`w-full h-12 pl-11 pr-12 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
+                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
+                hover:border-slate-300
+                ${errors.password ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -85,23 +87,21 @@ export default function LoginPage() {
             </button>
           </div>
           {errors.password && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.password.message}
-            </p>
+            <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-red-600"></span>{errors.password.message}</p>
           )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center justify-between pt-2">
+          <label className="flex items-center gap-2.5 cursor-pointer group">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+              className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 transition-colors cursor-pointer"
             />
-            <span className="text-sm text-slate-600">Remember me</span>
+            <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">Remember me</span>
           </label>
           <Link
             to="/forgot-password"
-            className="text-sm font-medium text-slate-900 hover:text-slate-700"
+            className="text-sm font-semibold text-slate-900 hover:text-slate-700 transition-colors"
           >
             Forgot password?
           </Link>
@@ -109,15 +109,15 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="w-full h-11"
+          className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0"
           isLoading={loginMutation.isPending}
         >
-          Sign in
+          Sign in to Dashboard
         </Button>
       </form>
 
-      <div className="mt-6 text-center">
-        <p className="text-slate-600">
+      <div className="mt-8 text-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+        <p className="text-slate-600 text-sm">
           Don't have an account?{" "}
           <Link
             to="/register"
