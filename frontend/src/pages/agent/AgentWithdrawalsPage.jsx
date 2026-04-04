@@ -17,7 +17,7 @@ import {
   Phone,
   AlertTriangle,
 } from "lucide-react";
-import { Card, Button, Input, Badge, Modal } from "../../components/ui";
+import { Card, Button, Input, Badge, Modal, EmptyState } from "../../components/ui";
 import { withdrawalsApi, walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { MOBILE_MONEY_NETWORKS } from "../../utils/constants";
@@ -101,7 +101,7 @@ export default function AgentWithdrawalsPage() {
     total: paginationData.total || 0,
     pages: paginationData.totalPages || paginationData.pages || 1,
   };
-  const banks = banksData?.data || [];
+  const banks = Array.isArray(banksData?.data) ? banksData.data : banksData?.data?.banks || [];
 
   // Form setup
   const schema =
@@ -260,14 +260,37 @@ export default function AgentWithdrawalsPage() {
       <Card>
         <div className="divide-y divide-slate-100">
           {isLoading ? (
-            <div className="p-8 text-center text-slate-500">
-              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-              Loading withdrawals...
-            </div>
+             <div className="space-y-0 divide-y divide-slate-100">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full h-[72px]">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-full bg-slate-200 animate-pulse"></div>
+                       <div className="flex flex-col gap-2">
+                          <div className="w-24 h-4 bg-slate-200 animate-pulse rounded"></div>
+                          <div className="w-40 h-3 bg-slate-200 animate-pulse rounded"></div>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-4 sm:justify-end">
+                       <div className="flex flex-col gap-2 items-end">
+                         <div className="w-16 h-5 bg-slate-200 animate-pulse rounded"></div>
+                         <div className="w-12 h-3 bg-slate-200 animate-pulse rounded"></div>
+                       </div>
+                       <div className="w-20 h-6 bg-slate-200 animate-pulse rounded-full"></div>
+                    </div>
+                  </div>
+                ))}
+             </div>
           ) : withdrawals.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
-              <ArrowDownToLine className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-              No withdrawals yet
+            <div className="p-8">
+              <EmptyState
+                icon={ArrowDownToLine}
+                title="No withdrawals yet"
+                description="You haven't requested any withdrawals yet."
+                action={{
+                  label: "Withdraw Funds",
+                  onClick: () => setShowWithdrawModal(true),
+                }}
+              />
             </div>
           ) : (
             withdrawals.map((withdrawal) => (
