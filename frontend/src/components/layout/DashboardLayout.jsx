@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, NavLink, Link } from "react-router-dom";
+import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Wifi,
@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  ChevronRight,
   Tag,
   Users,
   BarChart3,
@@ -27,27 +28,115 @@ import { useLogout } from "../../hooks";
 import { adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 
-const agentNavItems = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/orders", icon: ShoppingCart, label: "My Orders" },
-  { to: "/bundles", icon: Package, label: "Data Bundles" },
-  { to: "/wallet", icon: Wallet, label: "Wallet" },
-  { to: "/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
-  { to: "/pricing", icon: Tag, label: "My Pricing" },
-  { to: "/sub-agents", icon: Users, label: "My Sub-Agents" },
-  { to: "/customers", icon: Users, label: "My Customers" },
+const agentNavGroups = [
+  {
+    title: "Main",
+    items: [{ to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }],
+  },
+  {
+    title: "Store",
+    items: [
+      { to: "/bundles", icon: Package, label: "Data Bundles" },
+      { to: "/orders", icon: ShoppingCart, label: "My Orders" },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { to: "/wallet", icon: Wallet, label: "Wallet" },
+      { to: "/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
+      { to: "/pricing", icon: Tag, label: "Pricing Setup" },
+    ],
+  },
+  {
+    title: "Network",
+    items: [
+      { to: "/sub-agents", icon: Users, label: "My Sub-Agents" },
+      { to: "/customers", icon: User, label: "My Customers" },
+    ],
+  },
 ];
 
-const adminNavItems = [
-  { to: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/admin/orders", icon: ShoppingCart, label: "All Orders" },
-  { to: "/admin/users", icon: Users, label: "Users" },
-  { to: "/admin/customers", icon: Users, label: "Customers" },
-  { to: "/admin/bundles", icon: Package, label: "Bundles" },
-  { to: "/admin/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
-  { to: "/admin/system", icon: Server, label: "System" },
-  { to: "/admin/reports", icon: BarChart3, label: "Reports" },
+const adminNavGroups = [
+  {
+    title: "Main",
+    items: [{ to: "/admin", icon: LayoutDashboard, label: "Dashboard" }],
+  },
+  {
+    title: "Store",
+    items: [
+      { to: "/admin/bundles", icon: Package, label: "Bundles" },
+      { to: "/admin/orders", icon: ShoppingCart, label: "All Orders" },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { to: "/admin/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
+      { to: "/admin/reports", icon: BarChart3, label: "Reports" },
+    ],
+  },
+  {
+    title: "Network",
+    items: [
+      { to: "/admin/users", icon: Users, label: "System Users" },
+      { to: "/admin/customers", icon: User, label: "Customers" },
+    ],
+  },
+  {
+    title: "Platform",
+    items: [{ to: "/admin/system", icon: Server, label: "System Settings" }],
+  },
 ];
+
+function NavGroup({ group, setSidebarOpen }) {
+  const { pathname } = useLocation();
+  const isGroupActive = group.items.some(
+    (item) =>
+      item.to === pathname ||
+      (item.to !== "/dashboard" && item.to !== "/admin" && pathname.startsWith(item.to))
+  );
+  const [isOpen, setIsOpen] = useState(isGroupActive);
+
+  return (
+    <div className="mb-2">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold tracking-wider text-slate-500 uppercase hover:text-slate-300 transition-colors"
+      >
+        <span>{group.title}</span>
+        <ChevronRight
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+        />
+      </button>
+      
+      <div 
+        className={`mt-1 space-y-1 overflow-hidden transition-all duration-200 ease-in-out ${
+          isOpen ? "max-h-96 opacity-100 visible" : "max-h-0 opacity-0 invisible"
+        }`}
+      >
+        {group.items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/dashboard" || item.to === "/admin"}
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              }`
+            }
+          >
+            <item.icon className={`w-5 h-5 ${pathname === item.to || (item.to !== "/dashboard" && item.to !== "/admin" && pathname.startsWith(item.to)) ? "text-indigo-200" : ""}`} />
+            {item.label}
+          </NavLink>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -55,7 +144,7 @@ export default function DashboardLayout() {
   const { user, isAdmin } = useAuthStore();
   const logout = useLogout();
 
-  const navItems = isAdmin() ? adminNavItems : agentNavItems;
+  const navGroups = isAdmin() ? adminNavGroups : agentNavGroups;
 
   // Fetch Hubnet balance for admin users
   const {
@@ -130,24 +219,9 @@ export default function DashboardLayout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/dashboard" || item.to === "/admin"}
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-white text-slate-900"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                  }`
-                }
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </NavLink>
+          <nav className="flex-1 px-3 py-4 overflow-y-auto style-scrollbar">
+            {navGroups.map((group) => (
+              <NavGroup key={group.title} group={group} setSidebarOpen={setSidebarOpen} />
             ))}
           </nav>
 
