@@ -13,12 +13,14 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
-import { Card, Button, Input, Badge, Modal } from "../../components/ui";
+import { Card, Button, Input, Badge, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { useNavigate } from "react-router-dom";
 import { ordersApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS, ORDER_STATUSES } from "../../utils/constants";
 
 export default function AgentOrdersPage() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
   const [networkFilter, setNetworkFilter] = useState("");
@@ -177,16 +179,22 @@ export default function AgentOrdersPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Loading orders...
+                  <td colSpan={7} className="p-0">
+                    <SkeletonTable rows={5} columns={7} />
                   </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
-                    <ShoppingCart className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-                    No orders found
+                  <td colSpan={7} className="p-8">
+                    <EmptyState
+                      icon={ShoppingCart}
+                      title="No orders found"
+                      description="You haven't placed any orders matching your criteria."
+                      action={{
+                        label: "Go to Dashboard",
+                        onClick: () => navigate("/dashboard"),
+                      }}
+                    />
                   </td>
                 </tr>
               ) : (
