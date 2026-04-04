@@ -13,7 +13,8 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Card, Button, Badge } from "../../components/ui";
+import { Card, Button, Badge, EmptyState } from "../../components/ui";
+import { useNavigate } from "react-router-dom";
 import { walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -37,6 +38,7 @@ const TRANSACTION_TYPES = {
 };
 
 export default function AgentWalletPage() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState("");
   const limit = 10;
@@ -177,13 +179,34 @@ export default function AgentWalletPage() {
 
         <div className="divide-y divide-slate-100">
           {isLoading ? (
-            <div className="p-8 text-center text-slate-500">
-              Loading transactions...
-            </div>
+             <div className="space-y-0 divide-y divide-slate-100">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="p-4 flex flex-row items-center justify-between w-full h-[72px]">
+                    <div className="flex gap-4 items-center">
+                       <div className="w-10 h-10 rounded-full bg-slate-200 animate-pulse"></div>
+                       <div className="flex flex-col gap-2">
+                          <div className="w-24 h-4 bg-slate-200 animate-pulse rounded"></div>
+                          <div className="w-32 h-3 bg-slate-200 animate-pulse rounded"></div>
+                       </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                       <div className="w-16 h-5 bg-slate-200 animate-pulse rounded"></div>
+                       <div className="w-12 h-3 bg-slate-200 animate-pulse rounded"></div>
+                    </div>
+                  </div>
+                ))}
+             </div>
           ) : transactions.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
-              <Wallet className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-              No transactions yet
+            <div className="p-8">
+              <EmptyState
+                 icon={Wallet}
+                 title="No transactions yet"
+                 description="You haven't made any earnings or withdrawals yet."
+                 action={{
+                   label: "View Bundles",
+                   onClick: () => navigate("/bundles"),
+                 }}
+              />
             </div>
           ) : (
             transactions.map((transaction) => {
