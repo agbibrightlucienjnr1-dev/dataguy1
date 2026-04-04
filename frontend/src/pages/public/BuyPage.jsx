@@ -13,6 +13,7 @@ import {
   CheckCircle,
   ArrowLeft,
   Package,
+  Lock,
 } from "lucide-react";
 import { Card, Button, Input, Badge } from "../../components/ui";
 import { useSellerInfo, usePaymentLinkBundles } from "../../hooks";
@@ -251,17 +252,26 @@ export default function BuyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+      {/* Animated Subtle Background */}
+      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
       {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-white/50 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="text-xl font-bold text-slate-900">
-              DataGuy
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-105 transition-all">
+                <Wifi className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+                DataGuy
+              </span>
             </Link>
             <Link
               to="/track"
-              className="text-sm text-slate-600 hover:text-slate-900"
+              className="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200"
             >
               Track Order
             </Link>
@@ -269,21 +279,24 @@ export default function BuyPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Seller Info */}
-        <Card className="p-6 mb-6 bg-linear-to-r from-slate-900 to-slate-800 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6" />
+      <main className="max-w-5xl mx-auto px-4 py-8 relative z-10">
+        {/* Seller Info Container */}
+        <div className="p-8 mb-8 rounded-2xl bg-slate-900 shadow-2xl relative overflow-hidden border border-slate-800 animate-float-slow">
+          <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-slate-700 rounded-full mix-blend-screen filter blur-2xl opacity-40"></div>
+          
+          <div className="relative z-10 flex items-center gap-5">
+            <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+              <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <p className="text-slate-300 text-sm">Buying from</p>
-              <h2 className="text-xl font-semibold">
+              <p className="text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Buying from</p>
+              <h2 className="text-2xl font-bold text-white tracking-tight">
                 {seller?.shopName || seller?.name}
               </h2>
             </div>
           </div>
-        </Card>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Bundle Selection */}
@@ -294,18 +307,20 @@ export default function BuyPage() {
                 variant={networkFilter === "" ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setNetworkFilter("")}
+                className={`transition-all rounded-full px-5 ${networkFilter === "" ? 'bg-slate-900 text-white shadow-md' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'}`}
               >
                 All Networks
               </Button>
               {networks.map((network) => {
                 const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
+                const isActive = networkFilter === network;
                 return (
                   <Button
                     key={network}
-                    variant={networkFilter === network ? "primary" : "outline"}
+                    variant={isActive ? "primary" : "outline"}
                     size="sm"
                     onClick={() => setNetworkFilter(network)}
-                    className={networkFilter === network ? style.bg : ""}
+                    className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'}`}
                   >
                     {network}
                   </Button>
@@ -318,47 +333,52 @@ export default function BuyPage() {
               ([network, networkBundles]) => {
                 const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
                 return (
-                  <div key={network}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className={`w-3 h-3 rounded-full ${style.bg}`} />
-                      <h3 className="font-semibold text-slate-900">
+                  <div key={network} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className={`w-4 h-4 rounded shadow-sm ${style.bg}`} />
+                      <h3 className="font-bold text-slate-900 text-lg tracking-tight">
                         {network}
                       </h3>
-                      <Badge variant="secondary" size="sm">
+                      <Badge variant="secondary" size="sm" className="bg-slate-200 text-slate-700 ml-1">
                         {networkBundles.length} bundles
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                       {networkBundles.map((bundle) => {
                         const isSelected = selectedBundle?.id === bundle.id;
                         return (
                           <button
                             key={bundle.id}
                             onClick={() => setSelectedBundle(bundle)}
-                            className={`p-4 rounded-xl border-2 text-left transition-all ${
+                            className={`p-5 rounded-2xl border-2 text-left transition-all duration-300 relative overflow-hidden group ${
                               isSelected
-                                ? `${style.border} ${style.bgLight} ring-2 ring-offset-2 ring-${network === "MTN" ? "yellow" : "red"}-500`
-                                : "border-slate-200 bg-white hover:border-slate-300"
+                                ? `${style.border} ${style.bgLight} ring-4 ring-offset-2 ring-${network === "MTN" ? "yellow" : "red"}-500/20 shadow-lg -translate-y-1`
+                                : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
                             }`}
                           >
-                            <div className="flex items-center justify-between mb-2">
-                              <Wifi className={`w-4 h-4 ${style.text}`} />
+                            {isSelected && (
+                              <div className={`absolute top-0 right-0 w-16 h-16 transform translate-x-8 -translate-y-8 rotate-45 ${style.bg} opacity-10`}></div>
+                            )}
+                            <div className="flex items-center justify-between mb-3 relative z-10">
+                              <Wifi className={`w-5 h-5 transition-colors ${isSelected ? style.text : 'text-slate-400 group-hover:text-slate-600'}`} />
                               {isSelected && (
                                 <CheckCircle
-                                  className={`w-4 h-4 ${style.text}`}
+                                  className={`w-5 h-5 ${style.text} animate-in zoom-in duration-200`}
                                 />
                               )}
                             </div>
-                            <p className="font-bold text-slate-900 text-lg">
-                              {bundle.volume}
-                            </p>
-                            <p className="text-slate-500 text-sm mb-2">
-                              {bundle.validity}
-                            </p>
-                            <p className={`font-bold text-lg ${style.text}`}>
-                              {formatCurrency(bundle.price)}
-                            </p>
+                            <div className="relative z-10">
+                              <p className={`font-extrabold text-2xl transition-colors ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>
+                                {bundle.volume}
+                              </p>
+                              <p className="text-slate-500 text-sm font-medium mb-3">
+                                {bundle.validity}
+                              </p>
+                              <p className={`font-bold tracking-tight text-lg ${isSelected ? style.text : 'text-slate-700'}`}>
+                                {formatCurrency(bundle.price)}
+                              </p>
+                            </div>
                           </button>
                         );
                       })}
@@ -369,25 +389,29 @@ export default function BuyPage() {
             )}
 
             {bundles.length === 0 && (
-              <Card className="p-8 text-center">
-                <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600">No bundles available</p>
-              </Card>
+              <div className="glass-panel p-12 rounded-3xl text-center border border-white/50">
+                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Package className="w-10 h-10 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">No bundles available</h3>
+                <p className="text-slate-600">This seller hasn't added any bundles yet.</p>
+              </div>
             )}
           </div>
 
           {/* Order Form */}
-          <div className="lg:col-span-1">
-            <Card ref={formRef} className="p-6 sticky top-6">
-              <h3 className="font-semibold text-slate-900 mb-4">
+          <div className="lg:col-span-1 border-slate-200">
+            <div ref={formRef} className="glass-panel p-6 sm:p-8 rounded-3xl sticky top-28 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/60">
+              <h3 className="font-bold text-xl text-slate-900 mb-6 tracking-tight">
                 Complete Your Purchase
               </h3>
 
               {/* Selected Bundle Summary */}
               {selectedBundle ? (
-                <div className="p-4 bg-slate-50 rounded-lg mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-600">Selected:</span>
+                <div className="p-5 bg-white rounded-2xl mb-6 shadow-sm border border-slate-100 flex flex-col relative overflow-hidden">
+                  <div className={`absolute top-0 left-0 w-1 h-full ${NETWORK_STYLES[selectedBundle.network]?.bg || "bg-slate-500"}`}></div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected</span>
                     <Badge
                       className={
                         NETWORK_STYLES[selectedBundle.network]?.bg ||
@@ -397,25 +421,27 @@ export default function BuyPage() {
                       {selectedBundle.network}
                     </Badge>
                   </div>
-                  <p className="font-bold text-lg text-slate-900">
+                  <p className="font-extrabold text-2xl text-slate-900">
                     {selectedBundle.volume}
                   </p>
-                  <p className="text-slate-500 text-sm">
+                  <p className="text-slate-500 text-sm font-medium mb-4">
                     {selectedBundle.validity}
                   </p>
-                  <div className="mt-3 pt-3 border-t border-slate-200">
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Total:</span>
-                      <span className="font-bold text-lg text-slate-900">
+                  <div className="pt-4 border-t border-slate-100">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Total:</span>
+                      <span className="font-extrabold text-2xl text-slate-900">
                         {formatCurrency(selectedBundle.price)}
                       </span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 bg-slate-50 rounded-lg mb-4 text-center">
-                  <ShoppingCart className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">
+                <div className="p-8 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-2xl mb-6 text-center border-dashed border-2 border-slate-200">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <ShoppingCart className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-500">
                     Select a bundle to continue
                   </p>
                 </div>
@@ -423,34 +449,46 @@ export default function BuyPage() {
 
               {/* Customer Form */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <Input
-                  label="Phone Number"
-                  placeholder="0241234567"
-                  icon={Phone}
-                  error={errors.customerPhone?.message}
-                  {...register("customerPhone")}
-                />
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Phone Number</label>
+                  <div className="relative group">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                    <input
+                      type="tel"
+                      placeholder="0241234567"
+                      className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 ${errors.customerPhone ? "border-red-500" : "border-slate-200"}`}
+                      {...register("customerPhone")}
+                    />
+                  </div>
+                  {errors.customerPhone && <p className="text-sm text-red-600 mt-1">{errors.customerPhone.message}</p>}
+                </div>
 
-                <Input
-                  label="Your Name (Optional)"
-                  placeholder="John Doe"
-                  icon={User}
-                  {...register("customerName")}
-                />
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Your Name (Optional)</label>
+                  <div className="relative group">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-200 bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300"
+                      {...register("customerName")}
+                    />
+                  </div>
+                </div>
 
                 <Button
                   type="submit"
-                  className="w-full gap-2"
+                  className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0 mt-4"
                   disabled={!selectedBundle || createOrder.isPending}
                 >
                   {createOrder.isPending ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
                       Processing...
                     </>
                   ) : (
                     <>
-                      <ShoppingCart className="w-4 h-4" />
+                      <ShoppingCart className="w-5 h-5 mr-2" />
                       Pay{" "}
                       {selectedBundle
                         ? formatCurrency(selectedBundle.price)
@@ -459,23 +497,26 @@ export default function BuyPage() {
                   )}
                 </Button>
 
-                <p className="text-xs text-slate-500 text-center">
-                  You will be redirected to Paystack to complete payment
+                <p className="text-xs font-semibold text-slate-500 text-center pt-2 flex items-center justify-center gap-1.5">
+                  <Lock className="w-3 h-3" />
+                  Secured by Paystack
                 </p>
               </form>
-            </Card>
+            </div>
           </div>
         </div>
       </main>
 
       {/* Register as Agent CTA */}
-      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <Link to={`/register/subagent?agent=${code}`}>
-          <Button variant="outline" className="gap-2">
-            <User className="w-4 h-4" />
-            Register as an Agent
-          </Button>
-        </Link>
+      <div className="max-w-4xl mx-auto px-4 py-12 text-center relative z-10">
+        <div className="inline-block p-1 rounded-full bg-slate-100">
+          <Link to={`/register/subagent?agent=${code}`}>
+            <Button variant="outline" className="gap-2 rounded-full border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-6 py-2 h-auto shadow-sm transition-all hover:shadow-md">
+              <User className="w-4 h-4" />
+              Become an Agent under this Seller
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Footer */}
