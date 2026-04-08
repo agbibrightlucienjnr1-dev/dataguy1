@@ -1,5 +1,6 @@
 import { getPrisma } from "../config/database.js";
 import { verifyTransaction } from "./paystackService.js";
+import { verifyMoolreTransaction } from "./moolreService.js";
 import { confirmPayment, initiateHubnetOrder } from "./orderService.js";
 import { logger } from "../utils/logger.js";
 
@@ -105,6 +106,7 @@ export const verifyOrderPayment = async (orderId) => {
         status: true,
         pricePaid: true,
         transactionFee: true,
+        paymentProvider: true,
         hubnetOrderId: true,
       },
     });
@@ -122,91 +124,26 @@ export const verifyOrderPayment = async (orderId) => {
       };
     }
 
-    // If payment_confirmed but Hubnet not sent, try to send to Hubnet
-    if (order.status === "payment_confirmed") {
-      logger.info("Order payment confirmed but not sent to Hubnet, retrying", {
-        orderId,
-        status: order.status,
-      });
+    // Get payment provider (default to paystack for legacy orders)
+    const provider = order.paymentProvider || "paystack";
+    let verification;
 
-      try {
-        const hubnetResult = await initiateHubnetOrder(orderId);
-        logger.success("Hubnet order initiated on verification retry", {
-          orderId,
-          status: hubnetResult.status,
-          hubnetOrderId: hubnetResult.hubnetOrderId,
-        });
-        return {
-          success: true,
-          reason: "Hubnet initiated on retry",
-          status: hubnetResult.status,
-        };
-      } catch (hubnetError) {
-        logger.error("Failed to initiate Hubnet order on verification retry", {
-          orderId,
-          error: hubnetError.message,
-        });
-        return {
-          success: false,
-          reason: "Hubnet initiation failed",
-          error: hubnetError.message,
-        };
-      }
+    if (provider === "moolre") {
+      verification = await verifyMoolreTransaction(orderId);
+    } else {
+      // Verify with Paystack (order ID is the payment reference)
+      verification = await verifyTransaction(orderId);
     }
-
-    // If failed but payment was made, try to resend to Hubnet
-    if (order.status === "failed" && !order.hubnetOrderId) {
-      logger.info("Order failed but Hubnet not sent, retrying", {
-        orderId,
-        status: order.status,
-      });
-
-      try {
-        const hubnetResult = await initiateHubnetOrder(orderId);
-        logger.success("Hubnet order initiated on failed order retry", {
-          orderId,
-          status: hubnetResult.status,
-          hubnetOrderId: hubnetResult.hubnetOrderId,
-        });
-        return {
-          success: true,
-          reason: "Hubnet initiated on failed order retry",
-          status: hubnetResult.status,
-        };
-      } catch (hubnetError) {
-        logger.error("Failed to initiate Hubnet order on failed order retry", {
-          orderId,
-          error: hubnetError.message,
-        });
-        return {
-          success: false,
-          reason: "Hubnet retry failed",
-          error: hubnetError.message,
-        };
-      }
-    }
-
-    // Order should be pending at this point - verify and process
-    if (order.status !== "pending") {
-      return {
-        success: true,
-        reason: "Already processed",
-        status: order.status,
-      };
-    }
-
-    // Verify with Paystack (order ID is the payment reference)
-    const verification = await verifyTransaction(orderId);
 
     if (!verification.success) {
       return {
         success: false,
         reason: "Payment not completed",
-        paystackStatus: verification.status,
+        status: verification.status,
       };
     }
 
-    // Verify amount matches
+    // Verify amount paid matches expected
     const pricePaidNum = parseFloat(order.pricePaid.toString());
     const transactionFeeNum = order.transactionFee
       ? parseFloat(order.transactionFee.toString())
@@ -214,30 +151,54 @@ export const verifyOrderPayment = async (orderId) => {
     const expectedAmount = pricePaidNum + transactionFeeNum;
     const paidAmount = verification.amount;
 
-    // Allow 1% tolerance OR 0.50 GHS tolerance (whichever is greater) for rounding differences
-    const tolerancePercent = expectedAmount * 0.01;
-    const tolerance = Math.max(tolerancePercent, 0.5);
+    const isMoolre = (order.paymentProvider || "paystack") === "moolre";
+    
+    // For Moolre: if the status API doesn't return an amount (null),
+    // skip the amount check — txstatus=1 is sufficient to confirm payment.
+    if (paidAmount === null && isMoolre) {
+      logger.info("Moolre payment confirmed (no amount in status response — skipping amount check)", {
+        orderId,
+        expectedAmount,
+      });
+    } else {
+      // Allow 1% tolerance OR 0.50 GHS tolerance (whichever is greater)
+      let normalizedPaid = paidAmount ?? 0;
+      
+      // Guard against Moolre returning amount in pesewas (×100) instead of GHS
+      if (isMoolre && normalizedPaid > expectedAmount * 10 && normalizedPaid > 10) {
+        logger.warn("Moolre amount looks like pesewas — dividing by 100", {
+          orderId, rawPaid: normalizedPaid, expectedAmount
+        });
+        normalizedPaid = normalizedPaid / 100;
+      }
 
-    if (Math.abs(paidAmount - expectedAmount) > tolerance) {
-      logger.error("Payment amount mismatch during verification", {
+      const tolerancePercent = expectedAmount * 0.01;
+      const tolerance = Math.max(tolerancePercent, 0.5);
+
+      logger.info("Amount verification check", {
         orderId,
         expected: expectedAmount,
-        paid: paidAmount,
+        paid: normalizedPaid,
         tolerance,
+        provider: order.paymentProvider,
       });
-      return {
-        success: false,
-        reason: "Amount mismatch",
-        expected: expectedAmount,
-        paid: paidAmount,
-      };
-    }
 
-    logger.info("Amount verification passed", {
-      orderId,
-      expected: expectedAmount,
-      paid: paidAmount,
-    });
+      if (Math.abs(normalizedPaid - expectedAmount) > tolerance) {
+        logger.error("Payment amount mismatch during verification", {
+          orderId,
+          expected: expectedAmount,
+          paid: normalizedPaid,
+          rawPaid: paidAmount,
+          tolerance,
+        });
+        return {
+          success: false,
+          reason: "Amount mismatch",
+          expected: expectedAmount,
+          paid: normalizedPaid,
+        };
+      }
+    }
 
     // Payment verified - confirm the order
     const result = await confirmPayment(orderId, orderId);
@@ -439,6 +400,7 @@ export const checkPaymentStatus = async (orderId) => {
         status: true,
         pricePaid: true,
         transactionFee: true,
+        paymentProvider: true,
         createdAt: true,
       },
     });
@@ -457,14 +419,21 @@ export const checkPaymentStatus = async (orderId) => {
       };
     }
 
-    // Check with Paystack
-    const verification = await verifyTransaction(orderId);
+    // Check with Provider
+    const provider = order.paymentProvider || "paystack";
+    let verification;
+
+    if (provider === "moolre") {
+      verification = await verifyMoolreTransaction(orderId);
+    } else {
+      verification = await verifyTransaction(orderId);
+    }
 
     return {
       exists: true,
       status: order.status,
       isPaid: verification.success,
-      paystackStatus: verification.status,
+      providerStatus: verification.status,
       needsVerification: verification.success, // If paid but still pending, needs verification
     };
   } catch (error) {

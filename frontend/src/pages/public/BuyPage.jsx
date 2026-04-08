@@ -20,6 +20,7 @@ import { useSellerInfo, usePaymentLinkBundles } from "../../hooks";
 import { useCreateOrder } from "../../hooks";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORK_PHONE_PREFIXES } from "../../utils/constants";
+import { paymentsApi } from "../../api/payments";
 import toast from "react-hot-toast";
 
 // Validation schema
@@ -27,10 +28,12 @@ const purchaseSchema = z.object({
   customerPhone: z
     .string()
     .min(1, "Phone number is required")
-    .regex(
-      /^0\d{9}$/,
-      "Enter a valid 10-digit phone number (e.g., 0241234567)",
-    ),
+    .regex(/^0\d{9}$/, "Enter a valid 10-digit phone number (e.g., 0241234567)"),
+  paymentNumber: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^0\d{9}$/.test(val), "Enter a valid 10-digit phone number"),
+  network: z.string().optional(),
   customerName: z.string().optional(),
 });
 
@@ -73,6 +76,13 @@ export default function BuyPage() {
   const { code } = useParams();
   const [selectedBundle, setSelectedBundle] = useState(null);
   const [networkFilter, setNetworkFilter] = useState("");
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [moolreReference, setMoolreReference] = useState(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [paymentPhone, setPaymentPhone] = useState(null);
+  const [paymentNetwork, setPaymentNetwork] = useState(null);
+  const [pendingTotal, setPendingTotal] = useState(null);
   const formRef = useRef(null);
 
   // Fetch seller info
@@ -101,6 +111,8 @@ export default function BuyPage() {
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
       customerPhone: "",
+      paymentNumber: "",
+      network: "",
       customerName: "",
     },
   });
@@ -131,8 +143,44 @@ export default function BuyPage() {
     // If it's already an array, return it
     if (Array.isArray(groupedBundles)) return groupedBundles;
     // If it's an object (grouped), flatten it
-    return Object.values(groupedBundles).flat();
+    return Object.values(bundlesData?.bundles || {}).flat();
   }, [bundlesData]);
+
+  const settings = bundlesData?.settings;
+
+  // Calculate fees
+  const { serviceFee, grandTotal } = useMemo(() => {
+    if (!selectedBundle || !settings) return { serviceFee: 0, grandTotal: 0 };
+    
+    const provider = settings.activePaymentProvider;
+    const price = Number(selectedBundle.price);
+    let ourFee = 0;
+    let moolreSurcharge = 0;
+    
+    if (provider === "moolre") {
+      // 1. Our service fee: percentage of bundle price
+      const percentage = Number(settings.moolreFeePercentage);
+      ourFee = (percentage / 100) * price;
+
+      // 2. Moolre's estimated surcharge (that they add automatically at the prompt)
+      // Moolre charges 1% of the TOTAL amount we ask them to collect, minimum GHS 0.50
+      const baseTotal = price + ourFee;
+      moolreSurcharge = Math.max(baseTotal * 0.01, 0.50);
+    } else {
+      // Paystack: flat fee for small amounts, percentage for larger ones
+      const flatFee = Number(settings.paystackFlatFee);
+      const percentage = Number(settings.paystackFeePercentage);
+      ourFee = price < 20 ? flatFee : (percentage / 100) * price;
+    }
+    
+    // Combine both into one 'Service Fee' for UI transparency as requested
+    const displayFee = ourFee + moolreSurcharge;
+    
+    return {
+      serviceFee: displayFee,
+      grandTotal: price + displayFee
+    };
+  }, [selectedBundle, settings]);
 
   // Filter bundles by network
   const filteredBundles = useMemo(() => {
@@ -185,29 +233,78 @@ export default function BuyPage() {
       return;
     }
 
-    const phoneNetwork = getNetworkFromPhone(data.customerPhone);
-    if (!phoneNetwork) {
-      toast.error(
-        "Could not detect network from the phone number. Please enter a valid Ghana number (e.g., 0241234567)",
-      );
+    // Get payment phone and network
+    const payPhone = data.paymentNumber ? normalizePhone(data.paymentNumber) : normalizePhone(data.customerPhone);
+    const inferredNetwork = getNetworkFromPhone(payPhone);
+    const finalNetwork = data.network || inferredNetwork;
+
+    if (!finalNetwork) {
+      toast.error("Could not detect network from the phone number. Please choose a network.");
       return;
     }
 
-    if (phoneNetwork !== selectedBundle.network) {
-      toast.error(
-        `This phone number is ${phoneNetwork} but the selected bundle is for ${selectedBundle.network}. Please use a matching phone number or choose a different bundle.`,
-      );
+    if (!data.paymentNumber && finalNetwork !== selectedBundle.network) {
+      toast.error(`The selected bundle is for ${selectedBundle.network} but your number is ${finalNetwork}. Use a matching number or specify a different payment number.`);
       return;
     }
+
+    // Save for OTP usage
+    setPaymentPhone(payPhone);
+    setPaymentNetwork(finalNetwork);
+    setPendingTotal(grandTotal); 
+
 
     createOrder.mutate({
       code,
       data: {
         bundleId: selectedBundle.id,
         customerPhone: normalizePhone(data.customerPhone),
+        paymentNumber: payPhone,
+        network: finalNetwork,
         customerName: data.customerName || undefined,
       },
+    }, {
+      onSuccess: (response) => {
+        const payment = response.data?.payment;
+        if (payment?.otpRequired) {
+          // TP14: OTP was sent — show OTP verification modal
+          setMoolreReference(payment.reference);
+          setOtpModalOpen(true);
+        } else if (payment?.authorizationUrl) {
+          // Paystack: redirect to payment page
+          window.location.href = payment.authorizationUrl;
+        } else if (payment?.success) {
+          // Moolre direct prompt: payment prompt was sent to customer's phone directly (no OTP needed)
+          toast.success("Payment prompt sent to your phone. Please check your phone and enter your Mobile Money PIN.", { duration: 8000 });
+          setTimeout(() => {
+            window.location.href = `/track?phone=${paymentPhone}`;
+          }, 5000);
+        }
+      }
     });
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode) return toast.error("Please enter the OTP");
+    setVerifyingOtp(true);
+    try {
+      await paymentsApi.verifyMoolreOtp({
+        reference: moolreReference,
+        otpcode: otpCode,
+        network: paymentNetwork,
+        phone: paymentPhone
+      });
+      toast.success("OTP Verified! Check your phone for the Mobile Money PIN prompt.");
+      setOtpModalOpen(false);
+      // Let them click Track Order implicitly or wait for redirect (Track Order is better for now)
+      setTimeout(() => {
+        window.location.href = `/track?phone=${paymentPhone}`;
+      }, 5000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to verify OTP");
+    } finally {
+      setVerifyingOtp(false);
+    }
   };
 
   const isLoading = sellerLoading || bundlesLoading;
@@ -427,11 +524,23 @@ export default function BuyPage() {
                   <p className="text-slate-500 text-sm font-medium mb-4">
                     {selectedBundle.validity}
                   </p>
-                  <div className="pt-4 border-t border-slate-100">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-medium">Total:</span>
-                      <span className="font-extrabold text-2xl text-slate-900">
+                  <div className="pt-4 border-t border-slate-100 space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-slate-500 font-medium">Bundle Price:</span>
+                      <span className="font-semibold text-slate-700">
                         {formatCurrency(selectedBundle.price)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-slate-500 font-medium font-bold">Service Fee:</span>
+                      <span className="font-semibold text-slate-700">
+                        {formatCurrency(serviceFee)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-50">
+                      <span className="text-slate-900 font-bold">Total:</span>
+                      <span className="font-extrabold text-2xl text-slate-900">
+                        {formatCurrency(grandTotal)}
                       </span>
                     </div>
                   </div>
@@ -464,6 +573,33 @@ export default function BuyPage() {
                 </div>
 
                 <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Payment Number (Optional)</label>
+                  <div className="relative group">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                    <input
+                      type="tel"
+                      placeholder="Leave blank to use recipient number"
+                      className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 ${errors.paymentNumber ? "border-red-500" : "border-slate-200"}`}
+                      {...register("paymentNumber")}
+                    />
+                  </div>
+                  {errors.paymentNumber && <p className="text-sm text-red-600 mt-1">{errors.paymentNumber.message}</p>}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Payment Network</label>
+                  <select
+                    {...register("network")}
+                    className="w-full h-12 px-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 border-slate-200"
+                  >
+                    <option value="">Auto-detect from number</option>
+                    <option value="MTN">MTN</option>
+                    <option value="TELECEL">Telecel</option>
+                    <option value="AT">AT</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Your Name (Optional)</label>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
@@ -491,7 +627,7 @@ export default function BuyPage() {
                       <ShoppingCart className="w-5 h-5 mr-2" />
                       Pay{" "}
                       {selectedBundle
-                        ? formatCurrency(selectedBundle.price)
+                        ? formatCurrency(grandTotal)
                         : ""}
                     </>
                   )}
@@ -499,7 +635,7 @@ export default function BuyPage() {
 
                 <p className="text-xs font-semibold text-slate-500 text-center pt-2 flex items-center justify-center gap-1.5">
                   <Lock className="w-3 h-3" />
-                  Secured by Paystack
+                  Secured by {settings?.activePaymentProvider === "moolre" ? "Moolre" : "Paystack"}
                 </p>
               </form>
             </div>
@@ -531,6 +667,50 @@ export default function BuyPage() {
           </p>
         </div>
       </footer>
+
+      {/* Moolre OTP Modal */}
+      {otpModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <Card className="max-w-sm w-full p-6 bg-white animate-in zoom-in-95">
+            <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mb-2">
+              Payment Verification
+            </h3>
+            <p className="text-sm text-slate-500 mb-6 font-medium">
+              An OTP has been sent to your phone. Enter it to authorize the payment of 
+              <span className="text-slate-900 font-bold ml-1">{formatCurrency(pendingTotal)}</span>.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">OTP Code</label>
+                <input
+                  type="text"
+                  placeholder="Enter 4-6 digit OTP"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-center text-lg tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 rounded-xl h-12"
+                  onClick={() => setOtpModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 rounded-xl h-12 bg-slate-900 text-white"
+                  onClick={handleVerifyOtp}
+                  disabled={!otpCode || verifyingOtp}
+                >
+                  {verifyingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Pay"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

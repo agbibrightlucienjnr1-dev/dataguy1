@@ -11,6 +11,7 @@ import {
   Activity,
   Server,
   FileText,
+  CreditCard,
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { Button } from "../../components/ui";
@@ -26,6 +27,28 @@ export default function AdminSystemPage() {
     hardDeleteOrders: true,
     optimize: true,
     statusesToCleanup: ["failed", "cancelled"], // Default safe statuses
+  });
+
+  // Fetch settings
+  const {
+    data: settingsData,
+    isLoading: settingsLoading,
+    refetch: refetchSettings,
+  } = useQuery({
+    queryKey: ["admin", "settings"],
+    queryFn: () => adminApi.getSettings(),
+  });
+
+  // Update Settings mutation
+  const updateSettingsMutation = useMutation({
+    mutationFn: (data) => adminApi.updateSettings(data),
+    onSuccess: () => {
+      toast.success("Settings updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin", "settings"] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update settings");
+    },
   });
 
   // Fetch database stats
@@ -143,6 +166,98 @@ export default function AdminSystemPage() {
           Monitor database size, memory usage, and perform maintenance tasks
         </p>
       </div>
+
+      {/* Settings Card */}
+      <Card className="p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <CreditCard className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-lg font-semibold text-slate-900">
+            Payment & System Settings
+          </h2>
+        </div>
+        
+        {settingsLoading ? (
+          <div className="flex justify-center py-4"><Spinner /></div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-tight">
+                  Active Payment Provider
+                </label>
+                <select
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  value={settingsData?.data?.activePaymentProvider || "paystack"}
+                  onChange={(e) => updateSettingsMutation.mutate({ activePaymentProvider: e.target.value })}
+                  disabled={updateSettingsMutation.isPending}
+                >
+                  <option value="paystack">Paystack</option>
+                  <option value="moolre">Moolre API</option>
+                </select>
+                <p className="text-xs text-slate-500 mt-2">
+                  Controls the gateway used for all new orders.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  Moolre Service Fees
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Flat Fee (GHS)</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={settingsData?.data?.moolreFlatFee || 0}
+                      onChange={(e) => updateSettingsMutation.mutate({ moolreFlatFee: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Percentage (%)</label>
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={settingsData?.data?.moolreFeePercentage || 0}
+                      onChange={(e) => updateSettingsMutation.mutate({ moolreFeePercentage: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  Paystack Service Fees
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Flat Fee (GHS)</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={settingsData?.data?.paystackFlatFee || 0}
+                      onChange={(e) => updateSettingsMutation.mutate({ paystackFlatFee: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Percentage (%)</label>
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={settingsData?.data?.paystackFeePercentage || 0}
+                      onChange={(e) => updateSettingsMutation.mutate({ paystackFeePercentage: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+        )}
+      </Card>
 
       {/* Memory Statistics */}
       <Card className="p-6">

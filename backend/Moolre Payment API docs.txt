@@ -1,0 +1,335 @@
+Documentation / Payment / Initiate Payment
+Initiate Payment
+POST
+https://api.moolre.com/open/transact/payment
+
+This endpoint allows you to initiate a payment by sending a USSD payment request to a payer's/customer's phone number for approval.
+
+
+
+verified_user
+Public vs. Private API Keys
+expand_more
+Public API Key (X-API-PUBKEY)
+Recommended for Collections. Safe for use in client-side code (JavaScript Inline, Mobile Apps). Valid for 5 years. Does not expire when your password changes.
+
+Private API Key (X-API-KEY)
+For Server-Side Only. Required for Payouts (Transfers) and sensitive Account Management. Must NEVER be exposed in frontend code. Expires every time you generate a new key or change your password.
+
+* Both keys work for Payment initiation, but using the Public Key is the security best practice for frontend integrations.
+
+
+cached
+Payment Lifecycle
+expand_more
+send
+Step 1
+Initial Request
+Pass all required parameters. To prevent fraud, a One-Time Password (OTP) is sent to the payer (customer) via SMS.
+
+sms
+Step 2
+Collect OTP
+The Customer must provide the code to you via your User Interface to prove they own the number being used to make the payment.
+
+verified_user
+Step 3
+Verify OTP
+Pass all required parameters again and include the OTP in the otpcode parameter.
+
+check_circle
+Step 4
+Verification Response
+If verification is successful, a success response is returned. If unsuccessful, the request will fail.
+
+payments
+Step 5
+Trigger Payment Prompt
+Pass all required parameters to this endpoint again (without OTP) to initiate the actual payment request.
+
+smartphone
+Step 6
+Customer Approval
+The Customer receives a prompt on their screen and enters their Mobile Money PIN to approve the payment.
+
+account_balance_wallet
+Step 7
+Instant Settlement
+Upon approval, the Customer is debited and your Moolre wallet/account is credited instantly.
+
+
+Headers
+X-API-USER stringrequired
+This is your Moolre username.
+
+Your Username
+X-API-PUBKEY stringrequired
+This is your Public API Key Generated from your Account.
+
+YOUR_PUBLIC_KEY
+Body Params
+type
+required
+ID of the function. Must be 1.
+
+1
+channel
+required
+13=MTN, 6=Telecel, 7=AT
+
+
+MTN
+currency
+required
+Currency for the payment.
+
+
+GHS - Ghana Cedis
+payer
+required
+Mobile Money number of the payer/customer.
+
+amount
+required
+Amount to be paid.
+
+externalref
+required
+Unique ID to identify the payment.
+
+otpcode
+(Optional)
+One-Time Password sent to the payer.
+
+reference
+(Optional)
+Reference message for the payment.
+
+sessionid
+(Optional)
+Session ID from a USSD transaction to skip OTP.
+
+accountnumber
+required
+Your Moolre Account Number.
+
+Responses
+
+200_OTP_REQ
+OTP Required
+chevron_right
+
+200_OTP_SUCCESS
+OTP Verified
+chevron_right
+
+200_PAYMENT_REQ
+Payment Requested
+chevron_right
+
+400_INVALID_OTP
+Invalid OTP
+chevron_right
+
+400_NON_UNIQUE_REF
+Non-Unique Ref
+
+
+
+
+Shell request
+
+curl --request POST \
+     --url 'https://api.moolre.com/open/transact/payment' \
+     --header 'X-API-USER: Your Username' \
+     --header 'X-API-PUBKEY: YOUR_PUBLIC_KEY' \
+     --header 'Content-Type: application/json' \
+     --data '{
+  "type": 1,
+  "channel": "13",
+  "currency": "GHS",
+  "payer": "",
+  "amount": "",
+  "externalref": "",
+  "otpcode": "",
+  "reference": "",
+  "sessionid": "",
+  "accountnumber": ""
+}'
+
+
+
+Response:
+
+{
+  "status": 1,
+  "code": "TP14",
+  "message": "Please complete the verification process sent to you via SMS and try again.",
+  "data": "all",
+  "go": null
+}
+
+
+
+
+
+
+Documentation / Payment / Payment Status
+Payment Status
+POST
+https://api.moolre.com/open/transact/status
+
+This endpoint allows you to check the final status of a transaction. It is the same as the Transfer Status endpoint. Please refer to the Transfer Status endpoint for details.
+
+lightbulb
+Public API Key Usage
+Public API Key can also be used to check the status of a transaction.
+
+dangerous
+Do not Assume Transfer Failure
+Never assume a transfer has failed unless the transfer response or status check response txstatus indicates failure with a value of 2.
+
+
+
+
+Headers
+X-API-USER stringrequired
+This is your Moolre username.
+
+Your Username
+X-API-PUBKEY stringrequired
+This is your Public API Key Generated from your Account.
+
+YOUR_PUBLIC_KEY
+Body Params
+type
+required
+ID of the function. Must be 1.
+
+1
+idtype
+required
+1 = Unique externalref, 2 = Moolre Generated ID
+
+
+Select ID Type
+id
+required
+The externalref or Moolre ID to be checked.
+
+accountnumber
+required
+Your Moolre Account Number.
+
+Responses
+
+200
+Success
+chevron_right
+RESPONSE BODY
+statusinteger
+codestring
+messagestring
+dataobject
+txstatusinteger
+1=Successful, 0=Pending, 2=Failed
+transactionidstring
+externalrefstring
+tsstring
+
+
+
+
+
+Request
+curl --request POST \
+     --url 'https://api.moolre.com/open/transact/status' \
+     --header 'X-API-USER: Your Username' \
+     --header 'X-API-PUBKEY: YOUR_PUBLIC_KEY' \
+     --header 'Content-Type: application/json' \
+     --data '{
+  "type": 1,
+  "idtype": "",
+  "id": "",
+  "accountnumber": ""
+}'
+
+
+
+Response
+
+{
+  "status": 1,
+  "code": "SS01",
+  "message": "Transaction Successful",
+  "data": {
+    "txstatus": 1,
+    "txtype": 2,
+    "accountnumber": "100000100002",
+    "payer": "",
+    "payee": "0209151872",
+    "amount": "1",
+    "value": "1",
+    "transactionid": "31772290",
+    "externalref": "1231231-128",
+    "thirdpartyref": "471700539041",
+    "ts": "2023-11-21 03:57:25"
+  },
+  "go": null
+}
+
+
+
+
+
+Documentation / Payment / Payment Webhook
+Payment Webhook
+POST
+{{WEBHOOK_CALLBACK_URL}}
+
+You provide your callback url when creating your wallet, activating API or generating a payment link. When payments are received a callback is sent to your callback URL.
+
+Field Description
+Field	Description	Format
+txstatus	Represents the transaction status: 1 (Successful), 0 (Pending), 2 (Failed).	Integer
+payer	The number to which the prompt was sent and from which the funds were debited.	String
+terminalid	The terminal ID of a wallet that received an incoming transaction.	String
+accountnumber	The account number of a wallet that received an incoming transaction.	String
+name	A name or unique ID provided during creation of a terminal ID for Merchant reference.	String
+amount	The amount specified for the transaction.	Double
+value	The actual amount credited/debited, minus any applicable fees.	Double
+transactionid	A unique transaction ID generated by Moolre.	Integer
+externalref	A unique ID generated by the integrating party to identify each transaction.	String
+thirdpartyref	The transaction ID of the receiving or sending institution.	String
+secret	A unique string to verify that the callback is from Moolre.	String
+ts	The timestamp of the transaction (GMT).	String
+Example Webhook Payload
+
+content_copy
+Copy
+{
+    "status": 1,
+    "code": "P01",
+    "message": "Transaction Successful",
+    "data": {
+        "txstatus": 1,
+        "payer": "233250130550",
+        "terminalid": "",
+        "accountnumber": "420500413146",
+        "name": "Nancy Naaki",
+        "amount": "15.21",
+        "value": "15.21",
+        "transactionid": "32712684",
+        "externalref": "vbundle_C2394897D48042826013EFC24A280676E3",
+        "thirdpartyref": "48149622075",
+        "secret": "c80b20ce-f229-41a4-b7e1-eb5cd1655bbe",
+        "ts": "2024-11-27 21:11:29"
+    },
+    "go": null
+}
+
+
+
+
+
+

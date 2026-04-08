@@ -1,6 +1,8 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { initializeTransaction } from "./paystackService.js";
+import { getActivePaymentProvider, getSystemSettings } from "./settingsService.js";
+import { initiateMoolrePayment } from "./moolreService.js";
 import { logger } from "../utils/logger.js";
 import { Prisma } from "@prisma/client";
 import { upsertCustomerOnOrderPlacement } from "./customerService.js";
@@ -103,6 +105,9 @@ export const getBundlesWithSellerPricing = async (sellerCode) => {
     return acc;
   }, {});
 
+  const settings = await getSystemSettings();
+  const activeProvider = settings.activePaymentProvider;
+
   return {
     seller: {
       name: seller.name,
@@ -112,6 +117,13 @@ export const getBundlesWithSellerPricing = async (sellerCode) => {
     },
     bundles: grouped,
     totalBundles: bundlesWithPricing.length,
+    settings: {
+      activePaymentProvider: activeProvider,
+      moolreFlatFee: settings.moolreFlatFee,
+      moolreFeePercentage: settings.moolreFeePercentage,
+      paystackFlatFee: settings.paystackFlatFee,
+      paystackFeePercentage: settings.paystackFeePercentage,
+    }
   };
 };
 
@@ -120,7 +132,7 @@ export const getBundlesWithSellerPricing = async (sellerCode) => {
  */
 export const createOrderFromLink = async (sellerCode, orderData) => {
   const prisma = getPrisma();
-  const { customerPhone, customerName, bundleId } = orderData;
+  const { customerPhone, paymentNumber, network, customerName, bundleId } = orderData;
 
   // Get and validate seller
   const seller = await getSellerByCode(sellerCode);
@@ -174,9 +186,6 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
   }
 
   // Check for recent duplicate order (same customer phone + bundle + seller within last 30 seconds)
-  // This prevents accidental duplicate orders from double-clicks or page refreshes
-  // Only blocks if there's an active (pending/payment_confirmed/processing) order
-  // Completed/failed orders don't block, and different bundles/sellers are always allowed
   const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
   const existingOrder = await prisma.order.findFirst({
     where: {
@@ -205,54 +214,98 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
 
     // Re-initialize payment for the existing order if it doesn't have a payment reference
     if (!existingOrder.paymentReference) {
-      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
-
+      const activeProvider = await getActivePaymentProvider();
+      
       // Calculate total amount (pricePaid + transactionFee)
       const existingTotalAmount = existingOrder.pricePaid.add(
         existingOrder.transactionFee || 0,
       );
 
-      const paymentData = await initializeTransaction({
-        email: customerPhone + "@customer.dataguy.com",
-        amount: existingTotalAmount.toString(), // Total amount including transaction fee
-        reference: existingOrder.id,
-        callbackUrl,
-        metadata: {
-          orderId: existingOrder.id,
-          customerPhone,
-          customerName,
-          bundleId,
-          sellerId: seller.id,
-          sellerName: seller.name,
-          bundleInfo: `${bundle.network} ${bundle.volume}`,
-        },
-      });
+      let paymentData;
+      
+      if (activeProvider === "moolre") {
+        if (!network) throw new AppError("Network selection is required for Moolre payments", 400);
 
-      // Return order without transactionFee for customer-facing response
-      const { transactionFee: _, ...orderWithoutFee } = existingOrder;
+        paymentData = await initiateMoolrePayment({
+          amount: existingTotalAmount,
+          phone: paymentNumber || customerPhone,
+          network,
+          reference: existingOrder.id
+        });
+
+        // Update provider on order to track who initiated this successfully
+        await prisma.order.update({
+          where: { id: existingOrder.id },
+          data: { paymentProvider: "moolre" }
+        });
+      } else {
+        const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
+
+        paymentData = await initializeTransaction({
+          email: customerPhone + "@customer.dataguy.com",
+          amount: existingTotalAmount.toString(),
+          reference: existingOrder.id,
+          callbackUrl,
+          metadata: {
+            orderId: existingOrder.id,
+            customerPhone,
+            customerName,
+            bundleId,
+            sellerId: seller.id,
+            sellerName: seller.name,
+            bundleInfo: `${bundle.network} ${bundle.volume}`,
+          },
+        });
+
+        await prisma.order.update({
+          where: { id: existingOrder.id },
+          data: { paymentProvider: "paystack" }
+        });
+      }
 
       return {
-        order: orderWithoutFee, // Exclude transactionFee from customer response
+        order: existingOrder,
         payment: paymentData,
       };
     }
 
-    // If payment already exists, just return the order (without transactionFee)
-    const { transactionFee: __, ...orderWithoutFee2 } = existingOrder;
-
     return {
-      order: orderWithoutFee2, // Exclude transactionFee from customer response
+      order: existingOrder,
       payment: null, // Payment already initialized
     };
   }
 
-  // Calculate transaction fee (hidden from customer)
-  // If amount < 20: flat fee of 0.5
-  // If amount >= 20: 5% of amount
+  // Calculate transaction fee
+  const settings = await getSystemSettings();
+  const activeProvider = settings.activePaymentProvider;
+  const provider = activeProvider === "moolre" ? "moolre" : "paystack";
+  
+  const flatFee = provider === "moolre" ? settings.moolreFlatFee : settings.paystackFlatFee;
+  const percentage = provider === "moolre" ? settings.moolreFeePercentage : settings.paystackFeePercentage;
+  
   const priceAsNumber = parseFloat(pricePaid.toString());
-  const transactionFee =
-    priceAsNumber < 20 ? new Prisma.Decimal(0.5) : pricePaid.mul(0.05);
-  const totalAmount = pricePaid.add(transactionFee); // Total amount to charge
+  
+  let transactionFeeValue;
+
+  if (provider === "moolre") {
+    // Your service fee: always a percentage (this is what is stored in DB)
+    transactionFeeValue = pricePaid.mul(new Prisma.Decimal(percentage.toString()).div(100));
+    
+    logger.info("Moolre fee breakdown", {
+      bundlePrice: priceAsNumber,
+      serviceFee: transactionFeeValue.toString(),
+    });
+  } else {
+    // Paystack: flat fee for small amounts, percentage for larger ones
+    if (priceAsNumber < 20) {
+      transactionFeeValue = flatFee;
+    } else {
+      transactionFeeValue = pricePaid.mul(new Prisma.Decimal(percentage.toString()).div(100));
+    }
+  }
+  
+  const transactionFee = new Prisma.Decimal(transactionFeeValue.toString());
+  const totalAmount = pricePaid.add(transactionFee); // Total amount to charge customer (price + our fee)
 
   // Upsert customer record each time an order is created
   await upsertCustomerOnOrderPlacement({
@@ -270,8 +323,9 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
       sellerId: seller.id,
       sellerType: seller.role,
       pricePaid, // Original price (what customer sees)
-      transactionFee, // Fee: 0.5 if < 20, else 4% (hidden from customer)
+      transactionFee, 
       status: "pending",
+      paymentProvider: activeProvider
     },
     include: {
       bundle: true,
@@ -286,32 +340,41 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
     },
   });
 
-  // Initialize Paystack transaction
-  const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
+  let paymentData;
+  
+  if (activeProvider === "moolre") {
+    if (!network) throw new AppError("Network selection is required for Moolre payments", 400);
 
-  // Initialize Paystack transaction with total amount (pricePaid + fee)
-  const paymentData = await initializeTransaction({
-    email: customerPhone + "@customer.dataguy.com", // Convert phone to email format
-    amount: totalAmount.toString(), // Total amount including transaction fee
-    reference: order.id,
-    callbackUrl,
-    metadata: {
-      orderId: order.id,
-      customerPhone,
-      customerName,
-      bundleId,
-      sellerId: seller.id,
-      sellerName: seller.name,
-      bundleInfo: `${bundle.network} ${bundle.volume}`,
-    },
-  });
+    paymentData = await initiateMoolrePayment({
+      amount: totalAmount,
+      phone: paymentNumber || customerPhone,
+      network,
+      reference: order.id
+    });
+  } else {
+    // Initialize Paystack transaction
+    const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/payment/callback`;
 
-  // Return order without transactionFee for customer-facing response
-  // Customers should only see pricePaid, not the hidden transaction fee
-  const { transactionFee: _, ...orderWithoutFee } = order;
+    // Initialize Paystack transaction with total amount (pricePaid + fee)
+    paymentData = await initializeTransaction({
+      email: customerPhone + "@customer.dataguy.com", // Convert phone to email format
+      amount: totalAmount.toString(), // Total amount including transaction fee
+      reference: order.id,
+      callbackUrl,
+      metadata: {
+        orderId: order.id,
+        customerPhone,
+        customerName,
+        bundleId,
+        sellerId: seller.id,
+        sellerName: seller.name,
+        bundleInfo: `${bundle.network} ${bundle.volume}`,
+      },
+    });
+  }
 
   return {
-    order: orderWithoutFee, // Exclude transactionFee from customer response
+    order,
     payment: paymentData,
   };
 };

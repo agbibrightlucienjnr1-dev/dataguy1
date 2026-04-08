@@ -6,6 +6,8 @@ import {
   verifyAndProcessPayment,
   checkPaymentStatusEndpoint,
   forceVerifyPayment,
+  moolreWebhook,
+  moolreVerifyOtp,
 } from "../controllers/paymentController.js";
 import {
   paymentRateLimiter,
@@ -17,6 +19,12 @@ const router = express.Router();
 // Webhook endpoint (no authentication - verified by signature)
 // Higher limit for webhooks as they come from Paystack
 router.post("/webhook", paymentRateLimiter, paystackWebhook);
+
+// Moolre Webhook
+router.post("/moolre/webhook", paymentRateLimiter, moolreWebhook);
+
+// Moolre OTP Verification
+router.post("/moolre/verify-otp", publicRateLimiter, moolreVerifyOtp);
 
 // Callback endpoint for payment redirect
 router.get("/callback", publicRateLimiter, paymentCallback);

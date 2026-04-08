@@ -18,6 +18,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import withdrawalRoutes from "./routes/withdrawalRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
 
 const app = express();
 
@@ -182,6 +183,7 @@ app.use("/api/admin", adminRoutes); // Admin routes have their own pagination li
 app.use("/api/withdrawals", standardPaginationLimiter, withdrawalRoutes);
 app.use("/api/customers", standardPaginationLimiter, customerRoutes);
 app.use("/api/agent", standardPaginationLimiter, agentRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

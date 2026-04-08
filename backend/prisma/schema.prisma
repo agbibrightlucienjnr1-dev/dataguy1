@@ -1,12 +1,206 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                  String          @id @default(uuid())
+  name                String
+  email               String          @unique
+  phone               String
+  passwordHash        String          @map("password_hash")
+  role                UserRole        @default(agent)
+  parentAgentId       String?         @map("parent_agent_id")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  paymentLinkCode     String?         @unique @map("payment_link_code")
+  shopName            String?         @map("shop_name")
+  preferences         Json?
+  agentPrices         AgentPrice[]
+  orders              Order[]         @relation("SellerOrders")
+  subAgentPrices      SubAgentPrice[]
+  parentAgent         User?           @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
+  subAgents           User[]          @relation("AgentHierarchy")
+  wallet              Wallet?
+  approvedWithdrawals Withdrawal[]    @relation("ApprovedWithdrawals")
+  withdrawals         Withdrawal[]    @relation("UserWithdrawals")
+
+  @@map("users")
+}
+
+model DataBundle {
+  id             String          @id @default(uuid())
+  network        Network
+  volume         String
+  hubnetCost     Decimal         @map("hubnet_cost") @db.Decimal(10, 2)
+  adminPrice     Decimal         @map("admin_price") @db.Decimal(10, 2)
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  agentPrices    AgentPrice[]
+  orders         Order[]
+  subAgentPrices SubAgentPrice[]
+
+  @@unique([network, volume])
+  @@map("data_bundles")
+}
+
+model AgentPrice {
+  id            String     @id @default(uuid())
+  agentId       String     @map("agent_id")
+  bundleId      String     @map("bundle_id")
+  customerPrice Decimal    @map("customer_price") @db.Decimal(10, 2)
+  subAgentPrice Decimal    @map("sub_agent_price") @db.Decimal(10, 2)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  agent         User       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  bundle        DataBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, bundleId])
+  @@map("agent_prices")
+}
+
+model SubAgentPrice {
+  id            String     @id @default(uuid())
+  subAgentId    String     @map("sub_agent_id")
+  bundleId      String     @map("bundle_id")
+  customerPrice Decimal    @map("customer_price") @db.Decimal(10, 2)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  bundle        DataBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  subAgent      User       @relation(fields: [subAgentId], references: [id], onDelete: Cascade)
+
+  @@unique([subAgentId, bundleId])
+  @@map("sub_agent_prices")
+}
+
+model Customer {
+  id                    String    @id @default(uuid())
+  phone                 String    @unique @map("phone")
+  name                  String?   @map("name")
+  totalOrdersCount      Int       @default(0) @map("total_orders_count")
+  successfulOrdersCount Int       @default(0) @map("successful_orders_count")
+  firstOrderAt          DateTime? @map("first_order_at")
+  lastOrderAt           DateTime? @map("last_order_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model Order {
+  id                 String             @id @default(uuid())
+  customerPhone      String             @map("customer_phone")
+  customerName       String?            @map("customer_name")
+  bundleId           String             @map("bundle_id")
+  sellerId           String             @map("seller_id")
+  sellerType         SellerType         @map("seller_type")
+  pricePaid          Decimal            @map("price_paid") @db.Decimal(10, 2)
+  status             OrderStatus        @default(pending)
+  paymentReference   String?            @unique @map("payment_reference")
+  paymentConfirmedAt DateTime?          @map("payment_confirmed_at")
+  hubnetOrderId      String?            @map("hubnet_order_id")
+  hubnetStatus       String?            @map("hubnet_status")
+  hubnetResponse     String?            @map("hubnet_response")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  completedAt        DateTime?          @map("completed_at")
+  commissionAmount   Decimal?           @map("commission_amount") @db.Decimal(10, 2)
+  commissionPaid     Boolean            @default(false) @map("commission_paid")
+  transactionFee     Decimal            @default(0) @map("transaction_fee") @db.Decimal(10, 2)
+  paymentProvider    String             @default("paystack") @map("payment_provider")
+  bundle             DataBundle         @relation(fields: [bundleId], references: [id])
+  seller             User               @relation("SellerOrders", fields: [sellerId], references: [id])
+  walletTransaction  WalletTransaction?
+
+  @@index([customerPhone])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model Wallet {
+  id             String              @id @default(uuid())
+  userId         String              @unique @map("user_id")
+  balance        Decimal             @default(0) @db.Decimal(10, 2)
+  totalEarned    Decimal             @default(0) @map("total_earned") @db.Decimal(10, 2)
+  totalWithdrawn Decimal             @default(0) @map("total_withdrawn") @db.Decimal(10, 2)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  transactions   WalletTransaction[]
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id            String            @id @default(uuid())
+  walletId      String            @map("wallet_id")
+  type          TransactionType
+  amount        Decimal           @db.Decimal(10, 2)
+  balanceBefore Decimal           @map("balance_before") @db.Decimal(10, 2)
+  balanceAfter  Decimal           @map("balance_after") @db.Decimal(10, 2)
+  status        TransactionStatus @default(completed)
+  reference     String?
+  description   String?
+  orderId       String?           @unique @map("order_id")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  order         Order?            @relation(fields: [orderId], references: [id])
+  wallet        Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("wallet_transactions")
+}
+
+model Withdrawal {
+  id                    String           @id @default(uuid())
+  userId                String           @map("user_id")
+  amount                Decimal          @db.Decimal(10, 2)
+  accountType           BankAccountType  @map("account_type")
+  accountNumber         String           @map("account_number")
+  accountName           String           @map("account_name")
+  bankName              String?          @map("bank_name")
+  mobileNetwork         String?          @map("mobile_network")
+  status                WithdrawalStatus @default(pending)
+  reference             String           @unique
+  paystackRecipientCode String?          @map("paystack_recipient_code")
+  paystackTransferCode  String?          @map("paystack_transfer_code")
+  paystackResponse      String?          @map("paystack_response")
+  adminNote             String?          @map("admin_note")
+  approvedBy            String?          @map("approved_by")
+  approvedAt            DateTime?        @map("approved_at")
+  processedAt           DateTime?        @map("processed_at")
+  completedAt           DateTime?        @map("completed_at")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+  approver              User?            @relation("ApprovedWithdrawals", fields: [approvedBy], references: [id])
+  user                  User             @relation("UserWithdrawals", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("withdrawals")
+}
+
+model SystemSettings {
+  id                    String   @id @default("global")
+  activePaymentProvider String   @default("paystack") @map("active_payment_provider")
+  
+  // Moolre Fees
+  moolreFeePercentage   Decimal  @default(5.0) @map("moolre_fee_percentage") @db.Decimal(5, 2)
+  moolreFlatFee        Decimal  @default(0.5) @map("moolre_flat_fee") @db.Decimal(10, 2)
+  
+  // Paystack Fees
+  paystackFeePercentage Decimal  @default(1.95) @map("paystack_fee_percentage") @db.Decimal(5, 2)
+  paystackFlatFee      Decimal  @default(0.0) @map("paystack_flat_fee") @db.Decimal(10, 2)
+  
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
 }
 
 enum UserRole {
@@ -18,6 +212,8 @@ enum UserRole {
 enum Network {
   MTN
   AIRTELTIGO
+  TELECEL
+  AT
 }
 
 enum OrderStatus {
@@ -60,216 +256,3 @@ enum BankAccountType {
   bank_account
   mobile_money
 }
-
-model User {
-  id                String           @id @default(uuid())
-  name              String
-  email             String           @unique
-  phone             String
-  passwordHash      String           @map("password_hash")
-  role              UserRole         @default(agent)
-  parentAgentId     String?          @map("parent_agent_id")
-  paymentLinkCode   String?          @unique @map("payment_link_code")
-  shopName          String?          @map("shop_name")
-  preferences       Json?
-  createdAt         DateTime         @default(now()) @map("created_at")
-  
-  // Relations
-  parentAgent       User?            @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
-  subAgents         User[]           @relation("AgentHierarchy")
-  agentPrices       AgentPrice[]
-  subAgentPrices    SubAgentPrice[]
-  orders            Order[]          @relation("SellerOrders")
-  wallet            Wallet?
-  withdrawals       Withdrawal[]     @relation("UserWithdrawals")
-  approvedWithdrawals Withdrawal[]   @relation("ApprovedWithdrawals")
-  
-  @@map("users")
-}
-
-model DataBundle {
-  id                String           @id @default(uuid())
-  network           Network
-  volume            String           // e.g. "1GB", "2GB", "5GB"
-  hubnetCost        Decimal          @map("hubnet_cost") @db.Decimal(10, 2)
-  adminPrice        Decimal          @map("admin_price") @db.Decimal(10, 2)
-  isActive          Boolean          @default(true) @map("is_active")
-  createdAt         DateTime         @default(now()) @map("created_at")
-  updatedAt         DateTime         @updatedAt @map("updated_at")
-  
-  // Relations
-  agentPrices       AgentPrice[]
-  subAgentPrices    SubAgentPrice[]
-  orders            Order[]
-  
-  @@unique([network, volume])
-  @@map("data_bundles")
-}
-
-model AgentPrice {
-  id              String    @id @default(uuid())
-  agentId         String    @map("agent_id")
-  bundleId        String    @map("bundle_id")
-  customerPrice   Decimal   @map("customer_price") @db.Decimal(10, 2)
-  subAgentPrice   Decimal   @map("sub_agent_price") @db.Decimal(10, 2)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  
-  // Relations
-  agent           User      @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  bundle          DataBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  
-  @@unique([agentId, bundleId])
-  @@map("agent_prices")
-}
-
-model SubAgentPrice {
-  id              String    @id @default(uuid())
-  subAgentId      String    @map("sub_agent_id")
-  bundleId        String    @map("bundle_id")
-  customerPrice   Decimal   @map("customer_price") @db.Decimal(10, 2)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  
-  // Relations
-  subAgent        User      @relation(fields: [subAgentId], references: [id], onDelete: Cascade)
-  bundle          DataBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  
-  @@unique([subAgentId, bundleId])
-  @@map("sub_agent_prices")
-}
-
-model Customer {
-  id                     String   @id @default(uuid())
-  phone                  String   @unique @map("phone")
-  name                   String?  @map("name")
-  totalOrdersCount       Int      @default(0) @map("total_orders_count")
-  successfulOrdersCount  Int      @default(0) @map("successful_orders_count")
-  firstOrderAt           DateTime? @map("first_order_at")
-  lastOrderAt            DateTime? @map("last_order_at")
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime @updatedAt @map("updated_at")
-
-  @@map("customers")
-}
-
-model Order {
-  id                  String      @id @default(uuid())
-  
-  // Customer details (embedded, no customer account)
-  customerPhone       String      @map("customer_phone")
-  customerName        String?     @map("customer_name")
-  
-  // Order details
-  bundleId            String      @map("bundle_id")
-  sellerId            String      @map("seller_id")
-  sellerType          SellerType  @map("seller_type")
-  
-  // Pricing
-  pricePaid           Decimal     @map("price_paid") @db.Decimal(10, 2)
-  transactionFee      Decimal     @default(0) @map("transaction_fee") @db.Decimal(10, 2)
-  
-  // Commission tracking
-  commissionAmount    Decimal?    @map("commission_amount") @db.Decimal(10, 2)
-  commissionPaid      Boolean     @default(false) @map("commission_paid")
-  
-  // Status
-  status              OrderStatus @default(pending)
-  
-  // Payment tracking
-  paymentReference    String?     @unique @map("payment_reference")
-  paymentConfirmedAt  DateTime?   @map("payment_confirmed_at")
-  
-  // Hubnet tracking
-  hubnetOrderId       String?     @map("hubnet_order_id")
-  hubnetStatus        String?     @map("hubnet_status")
-  hubnetResponse      String?     @map("hubnet_response") @db.Text
-  
-  // Timestamps
-  createdAt           DateTime    @default(now()) @map("created_at")
-  updatedAt           DateTime    @updatedAt @map("updated_at")
-  completedAt         DateTime?   @map("completed_at")
-  
-  // Relations
-  bundle              DataBundle  @relation(fields: [bundleId], references: [id])
-  seller              User        @relation("SellerOrders", fields: [sellerId], references: [id])
-  walletTransaction   WalletTransaction?
-  
-  @@index([customerPhone])
-  @@index([sellerId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("orders")
-}
-
-model Wallet {
-  id              String              @id @default(uuid())
-  userId          String              @unique @map("user_id")
-  balance         Decimal             @default(0) @db.Decimal(10, 2)
-  totalEarned     Decimal             @default(0) @map("total_earned") @db.Decimal(10, 2)
-  totalWithdrawn  Decimal             @default(0) @map("total_withdrawn") @db.Decimal(10, 2)
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
-  
-  // Relations
-  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions    WalletTransaction[]
-  
-  @@map("wallets")
-}
-
-model WalletTransaction {
-  id              String              @id @default(uuid())
-  walletId        String              @map("wallet_id")
-  type            TransactionType
-  amount          Decimal             @db.Decimal(10, 2)
-  balanceBefore   Decimal             @map("balance_before") @db.Decimal(10, 2)
-  balanceAfter    Decimal             @map("balance_after") @db.Decimal(10, 2)
-  status          TransactionStatus   @default(completed)
-  reference       String?
-  description     String?
-  orderId         String?             @unique @map("order_id")
-  createdAt       DateTime            @default(now()) @map("created_at")
-  
-  // Relations
-  wallet          Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  order           Order?              @relation(fields: [orderId], references: [id])
-  
-  @@index([walletId])
-  @@index([type])
-  @@index([createdAt])
-  @@map("wallet_transactions")
-}
-
-model Withdrawal {
-  id                    String              @id @default(uuid())
-  userId                String              @map("user_id")
-  amount                Decimal             @db.Decimal(10, 2)
-  accountType           BankAccountType     @map("account_type")
-  accountNumber         String              @map("account_number")
-  accountName           String              @map("account_name")
-  bankName              String?             @map("bank_name")
-  mobileNetwork         String?             @map("mobile_network")
-  status                WithdrawalStatus    @default(pending)
-  reference             String              @unique
-  paystackRecipientCode String?             @map("paystack_recipient_code")
-  paystackTransferCode  String?             @map("paystack_transfer_code")
-  paystackResponse      String?             @map("paystack_response") @db.Text
-  adminNote             String?             @map("admin_note")
-  approvedBy            String?             @map("approved_by")
-  approvedAt            DateTime?           @map("approved_at")
-  processedAt           DateTime?           @map("processed_at")
-  completedAt           DateTime?           @map("completed_at")
-  createdAt             DateTime            @default(now()) @map("created_at")
-  updatedAt             DateTime            @updatedAt @map("updated_at")
-  
-  // Relations
-  user                  User                @relation("UserWithdrawals", fields: [userId], references: [id], onDelete: Cascade)
-  approver              User?               @relation("ApprovedWithdrawals", fields: [approvedBy], references: [id], onDelete: SetNull)
-  
-  @@index([userId])
-  @@index([status])
-  @@map("withdrawals")
-}
-
-

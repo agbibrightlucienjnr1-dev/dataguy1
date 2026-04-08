@@ -28,4 +28,10 @@ export const paymentsApi = {
    */
   forceVerify: (reference) =>
     apiClient.post(`/payments/force-verify/${reference}`),
+
+  /**
+   * Verify Moolre OTP
+   */
+  verifyMoolreOtp: (data) =>
+    apiClient.post(`/payments/moolre/verify-otp`, data),
 };

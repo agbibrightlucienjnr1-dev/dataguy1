@@ -175,4 +175,16 @@ export const adminApi = {
    * Get analytics reports data
    */
   getReportsData: () => apiClient.get("/admin/reports"),
+
+  // ========== Settings ==========
+
+  /**
+   * Get system settings
+   */
+  getSettings: () => apiClient.get("/settings"),
+
+  /**
+   * Update system settings
+   */
+  updateSettings: (data) => apiClient.put("/settings", data),
 };

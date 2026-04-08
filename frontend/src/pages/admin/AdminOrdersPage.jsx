@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
-import { adminApi } from "../../api";
+import { adminApi, paymentsApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
 
@@ -98,6 +98,25 @@ export default function AdminOrdersPage() {
         error.message ||
         "Failed to mark order as completed";
       toast.error(errorMessage, { duration: 5000 });
+    },
+  });
+
+  // Mutation for force-verifying payment (for Moolre stuck pending orders)
+  const forceVerifyMutation = useMutation({
+    mutationFn: (orderId) => paymentsApi.forceVerify(orderId),
+    onSuccess: (data) => {
+      const result = data?.data;
+      if (result?.confirmed) {
+        toast.success("Payment verified! Order confirmed and sent to Hubnet.");
+      } else if (result?.reason === "Payment not completed") {
+        toast("Payment not yet detected by Moolre. Try again in a minute.", { icon: "⏳" });
+      } else {
+        toast.success(result?.reason || "Verification check complete.");
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Verification failed.");
     },
   });
 
@@ -438,9 +457,9 @@ export default function AdminOrdersPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-500">Seller Phone</p>
-                <p className="font-medium text-slate-900">
-                  {selectedOrder.seller?.phone}
+                <p className="text-sm text-slate-500">Payment via</p>
+                <p className="font-medium text-slate-900 capitalize">
+                  {selectedOrder.paymentProvider || "paystack"}
                 </p>
               </div>
             </div>
@@ -477,6 +496,33 @@ export default function AdminOrdersPage() {
                   </p>
                 </div>
               )}
+
+            {/* Force Verify Button - for pending Moolre orders */}
+            {selectedOrder.status === "pending" && (
+              <div className="pt-4 border-t border-slate-200">
+                <p className="text-xs text-slate-500 mb-2">
+                  If the customer has already paid, click below to check Moolre's status and confirm the order.
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                  onClick={() => forceVerifyMutation.mutate(selectedOrder.id)}
+                  disabled={forceVerifyMutation.isPending}
+                >
+                  {forceVerifyMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Checking Payment...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Force Verify Payment
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
             {/* Fulfill Order Button - only for payment_confirmed status */}
             {selectedOrder.status === "payment_confirmed" && (

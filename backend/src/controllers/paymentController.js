@@ -16,6 +16,8 @@ import {
 } from "../services/paymentVerificationService.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
+import { getPrisma } from "../config/database.js";
+import { submitMoolreOtp, verifyMoolreTransaction } from "../services/moolreService.js";
 
 /**
  * Paystack webhook endpoint
@@ -571,4 +573,109 @@ export const forceVerifyPayment = asyncHandler(async (req, res) => {
   }
 
   throw new AppError(result.reason || "Payment verification failed", 400);
+});
+
+/**
+ * Submit OTP for Moolre Payment
+ * POST /api/payments/moolre/verify-otp
+ */
+export const moolreVerifyOtp = asyncHandler(async (req, res) => {
+  const { reference, otpcode, network, phone } = req.body;
+  if (!reference || !otpcode) {
+    throw new AppError("Reference and OTP code are required", 400);
+  }
+
+  const prisma = getPrisma();
+  const order = await prisma.order.findUnique({
+    where: { id: reference }
+  });
+
+  if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  // Calculate the original initiation amount: pricePaid + transactionFee
+  const amount = order.pricePaid.add(order.transactionFee || 0);
+
+  const result = await submitMoolreOtp({ 
+    amount, 
+    phone: phone || order.customerPhone, 
+    network: network || order.network, 
+    reference, 
+    otpcode 
+  });
+
+  res.status(200).json({
+    success: true,
+    message: result.message
+  });
+});
+
+/**
+ * Handle Moolre Webhook
+ * POST /api/payments/moolre/webhook
+ */
+export const moolreWebhook = asyncHandler(async (req, res) => {
+  const payload = req.body;
+  
+  if (!payload || !payload.data) {
+    return res.status(400).send("Invalid payload");
+  }
+
+  const { txstatus, externalref, amount: paidAmountStr } = payload.data;
+  if (txstatus !== 1) {
+    return res.status(200).json({ received: true });
+  }
+
+  const orderId = externalref; 
+  const paymentReference = externalref;
+  logger.info("=== MOOLRE PAYMENT WEBHOOK START ===", { orderId });
+
+  try {
+    const order = await getOrderById(orderId);
+    
+    if (order.status === "processing" || order.status === "completed") {
+      return res.status(200).json({ success: true, message: "Order already processed" });
+    }
+
+    if (order.status === "payment_confirmed") {
+      try {
+        const hubnetResult = await initiateHubnetOrder(orderId);
+        logger.success("Hubnet order initiated on retry", { orderId, status: hubnetResult.status });
+      } catch (err) { /* ignore */ }
+      return res.status(200).json({ received: true });
+    }
+
+    const verification = await verifyMoolreTransaction(paymentReference);
+    if (!verification.success) {
+      return res.status(200).json({ received: true });
+    }
+
+    const pricePaidNum = parseFloat(order.pricePaid.toString());
+    const transactionFeeNum = order.transactionFee ? parseFloat(order.transactionFee.toString()) : 0;
+    const expectedAmount = pricePaidNum + transactionFeeNum;
+    const paidAmount = parseFloat(paidAmountStr);
+
+    const tolerancePercent = expectedAmount * 0.01;
+    const tolerance = Math.max(tolerancePercent, 0.5);
+
+    if (Math.abs(paidAmount - expectedAmount) > tolerance) {
+      logger.error("Moolre webhook amount mismatch", { orderId, expectedAmount, paidAmount });
+      throw new AppError("Payment amount mismatch", 400);
+    }
+
+    const result = await confirmPayment(orderId, paymentReference);
+    
+    try {
+      const hubnetResult = await initiateHubnetOrder(orderId);
+      logger.success("Hubnet order initiated successfully", { orderId, status: hubnetResult.status });
+    } catch (hubnetError) {
+      logger.error("Hubnet error after Moolre payment", { orderId, error: hubnetError.message });
+    }
+
+    res.status(200).json({ received: true });
+  } catch (error) {
+    logger.error("Moolre webhook error", error);
+    res.status(500).json({ received: true });
+  }
 });

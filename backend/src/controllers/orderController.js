@@ -164,7 +164,7 @@ export const getLinkBundles = asyncHandler(async (req, res) => {
  */
 export const purchaseFromLink = asyncHandler(async (req, res) => {
   const { code } = req.params;
-  const { customerPhone, customerName, bundleId } = req.body;
+  const { customerPhone, paymentNumber, network, customerName, bundleId } = req.body;
 
   // Validate required fields
   if (!customerPhone || !bundleId) {
@@ -178,6 +178,8 @@ export const purchaseFromLink = asyncHandler(async (req, res) => {
 
   const result = await createOrderFromLink(code, {
     customerPhone,
+    paymentNumber: paymentNumber || customerPhone,
+    network,
     customerName,
     bundleId,
   });
