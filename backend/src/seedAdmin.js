@@ -46,14 +46,24 @@ export async function seedAdmin(shouldDisconnect = false) {
       },
     });
 
-    logger.info("Admin user created successfully", {
-      email: admin.email,
-      phone: admin.phone,
+    // Seed SystemSettings
+    const existingSettings = await prisma.systemSettings.findUnique({
+      where: { id: "global" }
     });
-    console.log("✅ Admin user created successfully");
-    console.log("📧 Email:", admin.email);
-    console.log("📱 Phone:", admin.phone);
-    console.log("⚠️ IMPORTANT: Change the admin password immediately!");
+
+    if (!existingSettings) {
+      await prisma.systemSettings.create({
+        data: {
+          id: "global",
+          activePaymentProvider: "paystack",
+          moolreFeePercentage: 5.0,
+          moolreFlatFee: 0.5,
+          paystackFeePercentage: 1.95,
+          paystackFlatFee: 0.0,
+        }
+      });
+      logger.info("Default system settings created");
+    }
 
     return { created: true, admin };
   } catch (error) {
