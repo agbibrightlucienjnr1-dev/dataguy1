@@ -1,0 +1,115 @@
+BOSSUDATAHUB API Docs
+
+Use this guide to connect your website/app to Bossu Data Hub API.
+
+Base URL: https://bossudatahub.com/api.php
+
+1) Request Your API Key
+Login to your Bossu Data Hub account.
+Go to My Profile.
+Open Developer API Access.
+Fill: Website URL, Note (optional).
+Submit request and wait for admin approval.
+Note: On approval, the system auto-generates your API key.
+
+
+2) Check Request Status
+Inside My Profile > Developer API Access:
+
+Pending Approved Rejected Revoked
+
+When approved, copy your generated key from Approved API Key.
+
+
+3) Authenticate Requests
+X-API-Key: your_key
+Authorization: Bearer your_key
+api_key=your_key in body/query
+
+
+4) Available Actions
+ping
+balance
+packages
+create_order
+order_status
+
+
+5) Quick Examples
+Ping
+curl -X POST "https://bossudatahub.com/api.php" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_APPROVED_KEY" \
+  -d '{"action":"ping"}'
+Check Wallet Balance
+curl -X POST "https://bossudatahub.com/api.php" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_APPROVED_KEY" \
+  -d '{"action":"balance"}'
+List Packages
+curl -X POST "https://bossudatahub.com/api.php" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_APPROVED_KEY" \
+  -d '{"action":"packages","network":"mtn"}'
+Create Order
+curl -X POST "https://bossudatahub.com/api.php" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_APPROVED_KEY" \
+  -d '{
+    "action":"create_order",
+    "network":"mtn",
+    "package_key":"1gb",
+    "recipient_phone":"0241234567",
+    "external_reference":"my-order-1001",
+    "callback_url":"https://mysite.com/webhook/bossu"
+  }'
+Check Order Status
+curl -X POST "https://bossudatahub.com/api.php" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_APPROVED_KEY" \
+  -d '{"action":"order_status","order_id":"EXT_1700000000_1234"}'
+
+
+6) Important Fields
+For create_order:
+
+network required (example: mtn)
+package_key required
+recipient_phone required format: 0XXXXXXXXX
+external_reference optional but recommended
+callback_url optional (receive webhook when order completes/fails)
+
+
+7) Webhook Callbacks
+Include callback_url when creating an order. We'll POST to that URL when status changes to completed, failed, or cancelled.
+
+Callback Payload
+{
+  "event": "order.status_updated",
+  "data": {
+    "order_id": "EXT_1700000000_1234",
+    "reference": "my-order-1001",
+    "status": "completed",
+    "network": "mtn",
+    "package_name": "1gb",
+    "recipient_phone": "0241234567",
+    "price": 3.95,
+    "updated_at": "2026-03-30T12:00:00+00:00"
+  }
+}
+Headers Sent
+Content-Type: application/json
+X-Webhook-Event: order.status_updated
+User-Agent: BossuDataHub/1.0
+
+
+8) Common Errors
+Unauthorized: invalid API key -> key invalid, pending, rejected, or revoked.
+Insufficient balance -> wallet balance too low.
+Package not found for selected network -> wrong network/package key.
+Rate limit exceeded -> too many requests in short time.
+9) Best Practices
+Always send external_reference for each order.
+Save returned order_id and query status with order_status.
+Use callback_url to get automatic status updates instead of polling.
+Do not expose your API key in public frontend code.
