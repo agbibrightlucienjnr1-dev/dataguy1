@@ -175,16 +175,22 @@ export const adminApi = {
    * Get analytics reports data
    */
   getReportsData: () => apiClient.get("/admin/reports"),
-
   // ========== Settings ==========
 
   /**
    * Get system settings
    */
-  getSettings: () => apiClient.get("/settings"),
+  getSystemSettings: () => apiClient.get("/settings"),
 
   /**
    * Update system settings
+   * @param {Object} data - Settings data
    */
-  updateSettings: (data) => apiClient.put("/settings", data),
+  updateSystemSettings: (data) => apiClient.put("/settings", data),
+
+  /**
+   * Send SMS to targets
+   * @param {Object} data - { target: string, customNumber?: string, message: string }
+   */
+  sendSMS: (data) => apiClient.post("/admin/sms/send", data),
 };
