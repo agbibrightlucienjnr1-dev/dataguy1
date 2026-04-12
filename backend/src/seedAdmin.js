@@ -56,6 +56,7 @@ export async function seedAdmin(shouldDisconnect = false) {
         data: {
           id: "global",
           activePaymentProvider: "paystack",
+          activeDeliveryProvider: "hubnet",
           moolreFeePercentage: 5.0,
           moolreFlatFee: 0.5,
           paystackFeePercentage: 1.95,
