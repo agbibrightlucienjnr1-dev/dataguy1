@@ -14,6 +14,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import hubnetRoutes from "./routes/hubnetRoutes.js";
+import bossuRoutes from "./routes/bossuRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import withdrawalRoutes from "./routes/withdrawalRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
@@ -179,6 +180,7 @@ app.use("/api/orders", standardPaginationLimiter, orderRoutes);
 app.use("/api/wallet", standardPaginationLimiter, walletRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/hubnet", hubnetRoutes);
+app.use("/api/bossu", bossuRoutes);
 app.use("/api/admin", adminRoutes); // Admin routes have their own pagination limiter
 app.use("/api/withdrawals", standardPaginationLimiter, withdrawalRoutes);
 app.use("/api/customers", standardPaginationLimiter, customerRoutes);
