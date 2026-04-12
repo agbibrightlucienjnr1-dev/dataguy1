@@ -85,7 +85,10 @@ const adminNavGroups = [
   },
   {
     title: "Platform",
-    items: [{ to: "/admin/system", icon: Server, label: "System Settings" }],
+    items: [
+      { to: "/admin/sms", icon: MessageCircle, label: "SMS Notifications" },
+      { to: "/admin/system", icon: Server, label: "System Settings" }
+    ],
   },
 ];
 
