@@ -41,7 +41,7 @@ export const adminApi = {
   getFailedOrders: () => apiClient.get("/admin/orders/failed"),
 
   /**
-   * Fulfill order - trigger Hubnet data delivery
+   * Fulfill order - trigger data delivery
    * @param {string} orderId - Order ID
    */
   fulfillOrder: (orderId) => apiClient.post(`/admin/orders/${orderId}/fulfill`),
@@ -123,12 +123,17 @@ export const adminApi = {
   rejectWithdrawal: (id, reason) =>
     apiClient.put(`/withdrawals/${id}/reject`, { reason }),
 
-  // ========== Hubnet ==========
+  // ========== Provider Balances ==========
 
   /**
    * Get Hubnet wallet balance
    */
   getHubnetBalance: () => apiClient.get("/admin/hubnet-balance"),
+
+  /**
+   * Get Bossu Data Hub wallet balance
+   */
+  getBossuBalance: () => apiClient.get("/admin/bossu-balance"),
 
   /**
    * Get total wallet balance for all agents and sub-agents
@@ -175,18 +180,21 @@ export const adminApi = {
    * Get analytics reports data
    */
   getReportsData: () => apiClient.get("/admin/reports"),
+
   // ========== Settings ==========
 
   /**
    * Get system settings
    */
   getSystemSettings: () => apiClient.get("/settings"),
+  getSettings: () => apiClient.get("/settings"),
 
   /**
    * Update system settings
    * @param {Object} data - Settings data
    */
   updateSystemSettings: (data) => apiClient.put("/settings", data),
+  updateSettings: (data) => apiClient.put("/settings", data),
 
   /**
    * Send SMS to targets

@@ -165,6 +165,22 @@ export default function DashboardLayout() {
 
   const hubnetBalance = hubnetBalanceData?.balance || "0.00";
 
+  // Fetch Bossu balance for admin users
+  const {
+    data: bossuBalanceData,
+    isLoading: bossuBalanceLoading,
+    refetch: refetchBossuBalance,
+  } = useQuery({
+    queryKey: ["admin", "bossu-balance"],
+    queryFn: () => adminApi.getBossuBalance(),
+    enabled: isAdmin(),
+    refetchInterval: 60000,
+    retry: 2,
+    retryDelay: 3000,
+  });
+
+  const bossuBalance = bossuBalanceData?.balance || "0.00";
+
   // Fetch total wallet balance for all agents/sub-agents
   const {
     data: totalWalletBalanceData,
@@ -173,8 +189,8 @@ export default function DashboardLayout() {
   } = useQuery({
     queryKey: ["admin", "total-wallet-balance"],
     queryFn: () => adminApi.getTotalWalletBalance(),
-    enabled: isAdmin(), // Only fetch for admin users
-    refetchInterval: 60000, // Refetch every 60 seconds
+    enabled: isAdmin(),
+    refetchInterval: 60000,
     retry: 2,
     retryDelay: 3000,
   });
@@ -331,13 +347,13 @@ export default function DashboardLayout() {
                   <Wallet className="w-4 h-4 text-slate-600" />
                   <div className="flex flex-col">
                     <span className="text-xs text-slate-500 leading-none">
-                      Hubnet Balance
+                      Hubnet
                     </span>
                     <span className="text-sm font-semibold text-slate-900 leading-tight">
                       {hubnetBalanceLoading ? (
                         <span className="inline-flex items-center gap-1">
                           <RefreshCw className="w-3 h-3 animate-spin" />
-                          Loading...
+                          ...
                         </span>
                       ) : (
                         formatCurrency(hubnetBalance)
@@ -347,11 +363,44 @@ export default function DashboardLayout() {
                   <button
                     onClick={() => refetchHubnetBalance()}
                     className="ml-1 p-1 hover:bg-slate-200 rounded transition-colors"
-                    title="Refresh balance"
+                    title="Refresh Hubnet balance"
                   >
                     <RefreshCw
                       className={`w-3.5 h-3.5 text-slate-500 ${
                         hubnetBalanceLoading ? "animate-spin" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
+
+              {/* Bossu Balance (Admin only) */}
+              {isAdmin() && (
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-200">
+                  <Wallet className="w-4 h-4 text-amber-600" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-amber-600 leading-none">
+                      Bossu
+                    </span>
+                    <span className="text-sm font-semibold text-amber-900 leading-tight">
+                      {bossuBalanceLoading ? (
+                        <span className="inline-flex items-center gap-1">
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          ...
+                        </span>
+                      ) : (
+                        formatCurrency(bossuBalance)
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => refetchBossuBalance()}
+                    className="ml-1 p-1 hover:bg-amber-100 rounded transition-colors"
+                    title="Refresh Bossu balance"
+                  >
+                    <RefreshCw
+                      className={`w-3.5 h-3.5 text-amber-500 ${
+                        bossuBalanceLoading ? "animate-spin" : ""
                       }`}
                     />
                   </button>
