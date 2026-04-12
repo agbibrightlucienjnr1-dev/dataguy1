@@ -18,6 +18,8 @@ import {
 import { getMemoryUsage, checkMemoryUsage } from "../utils/memoryMonitor.js";
 import { asyncHandler, AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
+import { getPrisma } from "../config/database.js";
+import { sendSMS } from "../services/smsService.js";
 
 /**
  * Get all users (agents and sub-agents)
@@ -524,4 +526,73 @@ export const getReportsData = asyncHandler(async (req, res) => {
     success: true,
     data: reportsData,
   });
+});
+
+/**
+ * Send SMS to specific targets (Admin feature)
+ * POST /api/admin/sms/send
+ */
+export const sendAdminSMS = asyncHandler(async (req, res) => {
+  const { target, customNumber, message } = req.body;
+
+  if (!message || message.trim() === "") {
+    throw new AppError("Message cannot be empty", 400);
+  }
+
+  const prisma = getPrisma();
+  let recipients = [];
+
+  try {
+    if (target === "specific") {
+      if (!customNumber) {
+        throw new AppError("Specific number is required", 400);
+      }
+      recipients.push(customNumber);
+    } else if (target === "all_customers") {
+      const customers = await prisma.customer.findMany({ select: { phone: true } });
+      recipients = customers.map(c => c.phone).filter(Boolean);
+    } else if (target === "all_agents") {
+      const agents = await prisma.user.findMany({ 
+        where: { role: { in: ["agent", "sub_agent"] } },
+        select: { phone: true } 
+      });
+      recipients = agents.map(a => a.phone).filter(Boolean);
+    } else if (target === "both") {
+      const [customers, agents] = await Promise.all([
+        prisma.customer.findMany({ select: { phone: true } }),
+        prisma.user.findMany({ 
+          where: { role: { in: ["agent", "sub_agent"] } },
+          select: { phone: true } 
+        })
+      ]);
+      recipients = [
+        ...customers.map(c => c.phone),
+        ...agents.map(a => a.phone)
+      ].filter(Boolean);
+    } else {
+      throw new AppError("Invalid target specified", 400);
+    }
+
+    // Deduplicate recipients
+    recipients = [...new Set(recipients)];
+
+    if (recipients.length === 0) {
+      throw new AppError("No valid recipients found for this target", 400);
+    }
+
+    const result = await sendSMS(recipients, message);
+
+    if (!result.success) {
+      throw new AppError(result.message || "Failed to send SMS via the provider", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `SMS queued to send to ${recipients.length} recipient${recipients.length !== 1 ? 's' : ''}.`,
+    });
+
+  } catch (error) {
+    logger.error("Error in sendAdminSMS", error);
+    throw error;
+  }
 });
