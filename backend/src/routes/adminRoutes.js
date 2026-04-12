@@ -11,6 +11,7 @@ import {
   fulfillOrder,
   markOrderCompleted,
   getHubnetBalance,
+  getBossuBalance,
   getTotalWalletBalance,
   getDatabaseStats,
   getMemoryStats,
@@ -65,10 +66,11 @@ router.get("/statistics", getStatistics); // Platform statistics
 router.get("/wallets", getWallets); // View all wallet balances
 
 /**
- * Hubnet
+ * Provider Balances
  */
-router.get("/hubnet-balance", getHubnetBalance); // Get Hubnet wallet balance
-router.get("/total-wallet-balance", getTotalWalletBalance); // Get total wallet balance for all agents/sub-agents
+router.get("/hubnet-balance", getHubnetBalance);
+router.get("/bossu-balance", getBossuBalance);
+router.get("/total-wallet-balance", getTotalWalletBalance);
 
 /**
  * Database Management
