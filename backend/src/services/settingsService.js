@@ -16,6 +16,7 @@ export const getSystemSettings = async () => {
       data: {
         id: "global",
         activePaymentProvider: "paystack",
+        activeDeliveryProvider: "hubnet",
         moolreFeePercentage: 5.0,
         moolreFlatFee: 0.5,
         paystackFeePercentage: 1.95,
@@ -36,6 +37,14 @@ export const getActivePaymentProvider = async () => {
 };
 
 /**
+ * Get active delivery provider specifically
+ */
+export const getActiveDeliveryProvider = async () => {
+  const settings = await getSystemSettings();
+  return settings.activeDeliveryProvider;
+};
+
+/**
  * Update system settings
  */
 export const updateSystemSettings = async (updates) => {
@@ -46,6 +55,7 @@ export const updateSystemSettings = async (updates) => {
 
   const allowedFields = [
     "activePaymentProvider", 
+    "activeDeliveryProvider",
     "moolreFeePercentage", 
     "moolreFlatFee", 
     "paystackFeePercentage", 
