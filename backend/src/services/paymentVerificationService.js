@@ -1,7 +1,7 @@
 import { getPrisma } from "../config/database.js";
 import { verifyTransaction } from "./paystackService.js";
 import { verifyMoolreTransaction } from "./moolreService.js";
-import { confirmPayment, initiateHubnetOrder } from "./orderService.js";
+import { confirmPayment, initiateHubnetOrder as initiateDeliveryOrder } from "./orderService.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -48,7 +48,7 @@ export const getPendingOrdersForVerification = async (options = {}) => {
         // Payment confirmed but Hubnet failed - need retry
         {
           status: "payment_confirmed",
-          hubnetOrderId: null,
+          providerOrderId: null,
           createdAt: {
             gte: minCreatedAt,
             lte: maxCreatedAt,
@@ -57,7 +57,7 @@ export const getPendingOrdersForVerification = async (options = {}) => {
         // Failed orders (Hubnet failed) - need retry
         {
           status: "failed",
-          hubnetOrderId: null,
+          providerOrderId: null,
           createdAt: {
             gte: minCreatedAt,
             lte: maxCreatedAt,
@@ -76,7 +76,7 @@ export const getPendingOrdersForVerification = async (options = {}) => {
       transactionFee: true,
       customerPhone: true,
       createdAt: true,
-      hubnetOrderId: true,
+      providerOrderId: true,
       bundle: {
         select: {
           network: true,
@@ -107,7 +107,7 @@ export const verifyOrderPayment = async (orderId) => {
         pricePaid: true,
         transactionFee: true,
         paymentProvider: true,
-        hubnetOrderId: true,
+        providerOrderId: true,
       },
     });
 
@@ -209,28 +209,27 @@ export const verifyOrderPayment = async (orderId) => {
       alreadyProcessed: result.alreadyProcessed,
     });
 
-    // Always attempt Hubnet fulfillment - the function has safeguards against duplicates
-    // This handles cases where payment was processed but Hubnet failed
-    logger.info("Attempting Hubnet order fulfillment", { orderId });
+    // Always attempt delivery fulfillment - the function has safeguards against duplicates
+    logger.info("Attempting delivery order fulfillment", { orderId });
     try {
-      const hubnetResult = await initiateHubnetOrder(orderId);
+      const deliveryResult = await initiateDeliveryOrder(orderId);
       if (
-        hubnetResult.status === "processing" ||
-        hubnetResult.status === "completed"
+        deliveryResult.status === "processing" ||
+        deliveryResult.status === "completed"
       ) {
-        logger.success("Hubnet order initiated/verified", {
+        logger.success("Delivery order initiated/verified", {
           orderId,
-          status: hubnetResult.status,
-          hubnetOrderId: hubnetResult.hubnetOrderId,
+          status: deliveryResult.status,
+          providerOrderId: deliveryResult.providerOrderId,
         });
       }
-    } catch (hubnetError) {
+    } catch (deliveryError) {
       // Log error but don't fail the verification - payment is already confirmed
       logger.error(
-        "Failed to initiate Hubnet order (payment confirmed, will retry)",
+        "Failed to initiate delivery order (payment confirmed, will retry)",
         {
           orderId,
-          error: hubnetError.message,
+          error: deliveryError.message,
         },
       );
       // Order remains in payment_confirmed status for manual retry
@@ -256,28 +255,28 @@ export const verifyOrderPayment = async (orderId) => {
       try {
         const currentOrder = await prisma.order.findUnique({
           where: { id: orderId },
-          select: { id: true, status: true, hubnetOrderId: true },
+          select: { id: true, status: true, providerOrderId: true },
         });
 
         if (
           currentOrder &&
           currentOrder.status === "payment_confirmed" &&
-          !currentOrder.hubnetOrderId
+          !currentOrder.providerOrderId
         ) {
-          logger.info("Attempting Hubnet after confirmation error", {
+          logger.info("Attempting delivery after confirmation error", {
             orderId,
           });
-          const hubnetResult = await initiateHubnetOrder(orderId);
-          logger.success("Hubnet order initiated after confirmation error", {
+          const deliveryResult = await initiateDeliveryOrder(orderId);
+          logger.success("Delivery order initiated after confirmation error", {
             orderId,
-            status: hubnetResult.status,
-            hubnetOrderId: hubnetResult.hubnetOrderId,
+            status: deliveryResult.status,
+            providerOrderId: deliveryResult.providerOrderId,
           });
         }
-      } catch (hubnetError) {
-        logger.error("Failed to initiate Hubnet after confirmation error", {
+      } catch (deliveryError) {
+        logger.error("Failed to initiate delivery after confirmation error", {
           orderId,
-          error: hubnetError.message,
+          error: deliveryError.message,
         });
       }
 
