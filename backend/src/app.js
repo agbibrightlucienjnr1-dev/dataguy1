@@ -113,7 +113,18 @@ app.use((req, res, next) => {
 });
 
 // Request size limits to prevent DoS attacks
-app.use(express.json({ limit: "10mb" }));
+// Also capture raw body for webhook signature verification
+app.use(
+  express.json({
+    limit: "10mb",
+    verify: (req, _res, buf) => {
+      // Store raw body for webhook signature verification
+      if (req.originalUrl.includes("/webhook")) {
+        req.rawBody = buf;
+      }
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Global rate limiter - applied to all routes as base layer

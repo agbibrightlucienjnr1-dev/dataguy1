@@ -173,12 +173,17 @@ export const verifyTransaction = async (reference) => {
 
 /**
  * Verify Paystack webhook signature
+ * @param {Object} payload - Parsed JSON body (fallback)
+ * @param {string} signature - x-paystack-signature header
+ * @param {Buffer} [rawBody] - Raw request body buffer (preferred for accurate HMAC)
  */
-export const verifyWebhookSignature = (payload, signature) => {
+export const verifyWebhookSignature = (payload, signature, rawBody) => {
   try {
+    // Use raw body if available (exact bytes Paystack signed), else fall back to re-stringified JSON
+    const body = rawBody || JSON.stringify(payload);
     const hash = crypto
       .createHmac("sha512", getSecretKey())
-      .update(JSON.stringify(payload))
+      .update(body)
       .digest("hex");
 
     return hash === signature;

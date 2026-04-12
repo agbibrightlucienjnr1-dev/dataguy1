@@ -31,7 +31,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
     throw new AppError("Missing webhook signature", 401);
   }
 
-  const isValid = verifyWebhookSignature(req.body, signature);
+  const isValid = verifyWebhookSignature(req.body, signature, req.rawBody);
 
   if (!isValid) {
     logger.error("Invalid Paystack webhook signature");
