@@ -280,6 +280,32 @@ export const getHubnetBalance = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get Bossu Data Hub wallet balance
+ * GET /api/admin/bossu-balance
+ */
+export const getBossuBalance = asyncHandler(async (req, res) => {
+  try {
+    const { checkBalance: bossuCheckBalance } = await import("../services/bossuService.js");
+    const balanceData = await bossuCheckBalance();
+
+    res.status(200).json({
+      success: true,
+      balance: balanceData.balance,
+      currency: balanceData.currency || "GHS",
+    });
+  } catch (error) {
+    logger.error("Error fetching Bossu balance", error);
+    // Don't throw — return 0 balance so UI doesn't break when Bossu key is missing
+    res.status(200).json({
+      success: true,
+      balance: 0,
+      currency: "GHS",
+      error: "Failed to fetch Bossu balance",
+    });
+  }
+});
+
+/**
  * Get total wallet balance for all agents and sub-agents
  * GET /api/admin/total-wallet-balance
  */
@@ -348,8 +374,8 @@ export const markOrderCompleted = asyncHandler(async (req, res) => {
     data: {
       status: "completed",
       completedAt: new Date(),
-      hubnetResponse: JSON.stringify({
-        ...JSON.parse(order.hubnetResponse || "{}"),
+      providerResponse: JSON.stringify({
+        ...JSON.parse(order.providerResponse || "{}"),
         manuallyCompleted: true,
         completedBy: "admin",
         completedAt: new Date().toISOString(),
