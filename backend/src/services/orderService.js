@@ -215,6 +215,24 @@ export const confirmPayment = async (orderId, paymentReference) => {
   // Process payment confirmation and credit wallet
   const result = await processPaymentConfirmation(orderId, paymentReference);
 
+  // Send automated SMS if this is newly processed
+  if (!result.alreadyProcessed && result.order) {
+    const { order } = result;
+    try {
+      const { sendSMS } = await import("./smsService.js");
+      const agentUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/buy/${order.seller.paymentLinkCode}`;
+      
+      const message = `Your payment for ${order.bundle.network} ${order.bundle.volume} is confirmed! We truly appreciate your trust in DataGuy. Keep enjoying seamless connectivity. Reorder anytime: ${agentUrl}`;
+      
+      // Dispatch asynchronously without awaiting to prevent blocking the flow
+      sendSMS(order.customerPhone, message).catch(err => {
+        logger.error("Failed to send order confirmation SMS", { orderId, error: err.message });
+      });
+    } catch (err) {
+      logger.error("Error setting up confirmation SMS", { orderId, error: err.message });
+    }
+  }
+
   return result;
 };
 
