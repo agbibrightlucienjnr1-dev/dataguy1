@@ -82,7 +82,7 @@ export const hubnetWebhook = async (req, res) => {
     // If not found by reference, try transaction_id
     if (!order && transaction_id) {
       order = await prisma.order.findFirst({
-        where: { hubnetOrderId: transaction_id },
+        where: { providerOrderId: transaction_id },
         include: {
           bundle: true,
           seller: {
@@ -193,7 +193,7 @@ export const hubnetWebhook = async (req, res) => {
     // Update order status (ONLY source of truth for delivery)
     const updateData = {
       status: newStatus,
-      hubnetResponse: JSON.stringify({
+      providerResponse: JSON.stringify({
         webhookReceived: true,
         webhookTimestamp: new Date().toISOString(),
         status,
@@ -324,9 +324,9 @@ export const checkDeliveryStatus = async (req, res) => {
     }
 
     let hubnetData = null;
-    if (order.hubnetResponse) {
+    if (order.providerResponse) {
       try {
-        hubnetData = JSON.parse(order.hubnetResponse);
+        hubnetData = JSON.parse(order.providerResponse);
       } catch (e) {
         // Ignore parse errors
       }
@@ -346,7 +346,7 @@ export const checkDeliveryStatus = async (req, res) => {
         pricePaid: order.pricePaid,
         createdAt: order.createdAt,
         completedAt: order.completedAt,
-        hubnetOrderId: order.hubnetOrderId,
+        hubnetOrderId: order.providerOrderId,
         hubnetData: hubnetData,
       },
     });
