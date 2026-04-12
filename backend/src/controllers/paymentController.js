@@ -59,7 +59,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       logger.info("Order found", {
         orderId,
         status: order.status,
-        hubnetOrderId: order.hubnetOrderId,
+        hubnetOrderId: order.providerOrderId,
       });
 
       // If order is already fully processed (processing/completed), just acknowledge
@@ -67,7 +67,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
         logger.info("Order already sent to Hubnet - SKIPPING", {
           orderId,
           status: order.status,
-          hubnetOrderId: order.hubnetOrderId,
+          hubnetOrderId: order.providerOrderId,
         });
         return res.status(200).json({
           success: true,
@@ -91,7 +91,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
           logger.success("Hubnet order initiated on retry", {
             orderId,
             status: hubnetResult.status,
-            hubnetOrderId: hubnetResult.hubnetOrderId,
+            hubnetOrderId: hubnetResult.providerOrderId,
           });
         } catch (hubnetError) {
           logger.error("Failed to initiate Hubnet order on retry", {
@@ -107,7 +107,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
       }
 
       // If order failed (Hubnet failed previously), retry Hubnet
-      if (order.status === "failed" && !order.hubnetOrderId) {
+      if (order.status === "failed" && !order.providerOrderId) {
         logger.info("Order failed previously, retrying Hubnet", {
           orderId,
           status: order.status,
@@ -119,7 +119,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
           logger.success("Hubnet order initiated on failed order retry", {
             orderId,
             status: hubnetResult.status,
-            hubnetOrderId: hubnetResult.hubnetOrderId,
+            hubnetOrderId: hubnetResult.providerOrderId,
           });
         } catch (hubnetError) {
           logger.error("Failed to initiate Hubnet order on failed retry", {
@@ -204,7 +204,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
         logger.success("=== HUBNET SUCCESS ===", {
           orderId,
           status: hubnetResult.status,
-          hubnetOrderId: hubnetResult.hubnetOrderId,
+          hubnetOrderId: hubnetResult.providerOrderId,
         });
       } catch (hubnetError) {
         // Log error but don't fail the webhook - payment is already confirmed
@@ -249,13 +249,13 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
           logger.info("Order status after confirmation error", {
             orderId,
             status: currentOrder.status,
-            hubnetOrderId: currentOrder.hubnetOrderId,
+            hubnetOrderId: currentorder.providerOrderId,
           });
 
           // If payment is confirmed but not sent to Hubnet, send it now
           if (
             currentOrder.status === "payment_confirmed" &&
-            !currentOrder.hubnetOrderId
+            !currentorder.providerOrderId
           ) {
             logger.info("Attempting Hubnet after confirmation error", {
               orderId,
@@ -264,7 +264,7 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
             logger.success("Hubnet order initiated after confirmation error", {
               orderId,
               status: hubnetResult.status,
-              hubnetOrderId: hubnetResult.hubnetOrderId,
+              hubnetOrderId: hubnetResult.providerOrderId,
             });
           }
         } catch (hubnetError) {
@@ -426,7 +426,7 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
       logger.success("=== CALLBACK: HUBNET SUCCESS ===", {
         orderId,
         status: hubnetResult.status,
-        hubnetOrderId: hubnetResult.hubnetOrderId,
+        hubnetOrderId: hubnetResult.providerOrderId,
       });
     } catch (hubnetError) {
       // Log error but don't fail - payment is already confirmed
@@ -456,13 +456,13 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
         logger.info("Order already processed, checking if Hubnet needed", {
           orderId,
           status: currentOrder.status,
-          hubnetOrderId: currentOrder.hubnetOrderId,
+          hubnetOrderId: currentorder.providerOrderId,
         });
 
         // If payment is confirmed but not sent to Hubnet, send it now
         if (
           currentOrder.status === "payment_confirmed" &&
-          !currentOrder.hubnetOrderId
+          !currentorder.providerOrderId
         ) {
           logger.info("=== CALLBACK ERROR HANDLER: CALLING HUBNET ===", {
             orderId,
@@ -472,7 +472,7 @@ export const verifyAndProcessPayment = asyncHandler(async (req, res) => {
             logger.success("=== CALLBACK ERROR HANDLER: HUBNET SUCCESS ===", {
               orderId,
               status: hubnetResult.status,
-              hubnetOrderId: hubnetResult.hubnetOrderId,
+              hubnetOrderId: hubnetResult.providerOrderId,
             });
           } catch (hubnetError) {
             logger.error("=== CALLBACK ERROR HANDLER: HUBNET FAILED ===", {
