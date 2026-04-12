@@ -1,0 +1,90 @@
+Send SMS (POST Request)
+
+POST
+https://api.moolre.com/open/sms/send
+
+This API allows you to send SMS to anyone on any network instantly. Before you begin, please make sure you've followed our Getting Started guide to register for the service and obtain your X-API-VASKEY.
+
+Headers
+An optional scenario key for testing purposes. Use `ASMS07` to simulate an unapproved sender ID error, and `AIN01` for an authentication error.
+
+X-Scenario-Key string
+An optional scenario key for testing purposes.
+
+Body Params
+type
+integer
+required
+ID of the sms sending function. Should be 1.
+
+1
+senderid
+string
+required
+Sender ID to be displayed as the Sender of the SMS. Must be registered and approved.
+
+messages
+array
+required
+An array of message objects.
+
+Add Message
+Message 1
+recipient *
+message *
+ref (optional)
+Generate Ref
+Responses
+
+200
+Success
+chevron_right
+RESPONSE BODY
+statusinteger
+1 for success
+codestring
+SMS01
+messagestring
+Success
+
+400
+Unapproved Sender ID
+chevron_right
+
+401
+Authentication Error
+
+
+
+EXAMPLE REQUEST
+
+curl --request POST \
+     --url 'https://api.moolre.com/open/sms/send' \
+     --header 'X-API-VASKEY: YOUR_X_API_VASKEY' \
+     --header 'Content-Type: application/json' \
+     --data '{
+  "type": 1,
+  "senderid": "",
+  "messages": [
+    {
+      "recipient": "",
+      "message": "",
+      "ref": ""
+    }
+  ]
+}'
+
+
+
+
+EXAMOLE RESPONSE
+
+{
+  "status": 1,
+  "code": "SMS01",
+  "message": "Success",
+  "data": null,
+  "go": null
+}
+
+
