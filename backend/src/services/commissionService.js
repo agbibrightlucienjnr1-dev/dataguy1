@@ -272,6 +272,10 @@ export const processPaymentConfirmation = async (orderId, paymentReference) => {
             commissionAmount: commission,
             commissionPaid: true,
           },
+          include: {
+            bundle: true,
+            seller: true,
+          }
         });
 
         // 2. Create wallet transaction for seller (sub-agent or agent)
