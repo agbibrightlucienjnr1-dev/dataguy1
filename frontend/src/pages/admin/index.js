@@ -6,3 +6,4 @@ export { default as AdminWithdrawalsPage } from "./AdminWithdrawalsPage";
 export { default as AdminSystemPage } from "./AdminSystemPage";
 export { default as AdminCustomersPage } from "./AdminCustomersPage";
 export { default as AdminReportsPage } from "./AdminReportsPage";
+export { default as AdminSmsPage } from "./AdminSmsPage";
