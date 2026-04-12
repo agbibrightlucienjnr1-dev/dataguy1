@@ -101,9 +101,10 @@ model Order {
   status             OrderStatus        @default(pending)
   paymentReference   String?            @unique @map("payment_reference")
   paymentConfirmedAt DateTime?          @map("payment_confirmed_at")
-  hubnetOrderId      String?            @map("hubnet_order_id")
-  hubnetStatus       String?            @map("hubnet_status")
-  hubnetResponse     String?            @map("hubnet_response")
+  providerOrderId    String?            @map("hubnet_order_id")
+  providerStatus     String?            @map("hubnet_status")
+  providerResponse   String?            @map("hubnet_response")
+  deliveryProvider   String             @default("hubnet") @map("delivery_provider")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
   completedAt        DateTime?          @map("completed_at")
@@ -188,7 +189,8 @@ model Withdrawal {
 
 model SystemSettings {
   id                    String   @id @default("global")
-  activePaymentProvider String   @default("paystack") @map("active_payment_provider")
+  activePaymentProvider  String   @default("paystack") @map("active_payment_provider")
+  activeDeliveryProvider String   @default("hubnet") @map("active_delivery_provider")
   
   // Moolre Fees
   moolreFeePercentage   Decimal  @default(5.0) @map("moolre_fee_percentage") @db.Decimal(5, 2)
