@@ -5,7 +5,9 @@ import {
   processPaymentConfirmation,
   markOrderAsProcessing,
 } from "./commissionService.js";
-import { checkBalance, initiateDataTransaction } from "./hubnetService.js";
+import { checkBalance as hubnetCheckBalance, initiateDataTransaction as hubnetInitiateTransaction } from "./hubnetService.js";
+import { checkBalance as bossuCheckBalance, initiateDataTransaction as bossuInitiateTransaction } from "./bossuService.js";
+import { getActiveDeliveryProvider } from "./settingsService.js";
 import { upsertCustomerOnOrderPlacement } from "./customerService.js";
 import { logger } from "../utils/logger.js";
 
@@ -237,12 +239,21 @@ export const confirmPayment = async (orderId, paymentReference) => {
 };
 
 /**
- * Initiate Hubnet order (call this after payment confirmed)
+ * Initiate delivery order via the active provider (Hubnet or Bossu)
+ * Call this after payment is confirmed.
  */
-export const initiateHubnetOrder = async (orderId) => {
+export const initiateDeliveryOrder = async (orderId) => {
   const prisma = getPrisma();
 
-  logger.info("=== initiateHubnetOrder START ===", { orderId });
+  // Determine which provider to use
+  let activeProvider;
+  try {
+    activeProvider = await getActiveDeliveryProvider();
+  } catch {
+    activeProvider = "hubnet"; // fallback
+  }
+
+  logger.info("=== initiateDeliveryOrder START ===", { orderId, activeProvider });
 
   try {
     // Get order with bundle details
@@ -264,63 +275,59 @@ export const initiateHubnetOrder = async (orderId) => {
       throw new AppError("Order not found", 404);
     }
 
-    logger.info("initiateHubnetOrder - Order loaded", {
+    logger.info("initiateDeliveryOrder - Order loaded", {
       orderId,
       status: order.status,
-      hubnetOrderId: order.hubnetOrderId,
+      providerOrderId: order.providerOrderId,
       customerPhone: order.customerPhone,
       network: order.bundle?.network,
       volume: order.bundle?.volume,
     });
 
-    // CRITICAL: Prevent duplicate Hubnet orders
-    // Order should be in payment_confirmed or failed status (allow retry for failed orders)
+    // CRITICAL: Prevent duplicate delivery orders
     if (order.status !== "payment_confirmed" && order.status !== "failed") {
       logger.warn("Order cannot be fulfilled - invalid status", {
         orderId,
         status: order.status,
-        hubnetOrderId: order.hubnetOrderId,
+        providerOrderId: order.providerOrderId,
       });
-      // If already processing or completed, just return (already sent to Hubnet)
       if (order.status === "processing" || order.status === "completed") {
-        logger.info("Order already sent to Hubnet, skipping", {
+        logger.info("Order already sent to provider, skipping", {
           orderId,
           status: order.status,
-          hubnetOrderId: order.hubnetOrderId,
+          providerOrderId: order.providerOrderId,
         });
         return order;
       }
-      // If still pending, payment wasn't confirmed yet
       if (order.status === "pending") {
-        logger.error("Cannot send to Hubnet - payment not confirmed", {
+        logger.error("Cannot send to provider - payment not confirmed", {
           orderId,
           status: order.status,
         });
         throw new AppError(
-          "Payment must be confirmed before initiating Hubnet order",
+          "Payment must be confirmed before initiating delivery order",
           400,
         );
       }
       return order;
     }
 
-    // Additional check: If hubnetOrderId already exists, order was already sent to Hubnet
-    if (order.hubnetOrderId) {
+    // Additional check: If providerOrderId already exists, order was already sent
+    if (order.providerOrderId) {
       logger.info(
-        "Order already has Hubnet transaction ID, skipping duplicate send",
+        "Order already has provider transaction ID, skipping duplicate send",
         {
           orderId,
           status: order.status,
-          hubnetOrderId: order.hubnetOrderId,
+          providerOrderId: order.providerOrderId,
         },
       );
       return order;
     }
 
-    // STEP 1: Generate a unique lock ID and ATOMICALLY claim this order BEFORE calling Hubnet
-    // This prevents duplicate Hubnet calls even if multiple requests come in simultaneously
-    const lockId = `LOCK-${orderId}-${Date.now()}`;
-    logger.info("Attempting to acquire lock", { orderId, lockId });
+    // STEP 1: Generate a unique lock ID and ATOMICALLY claim this order
+    const lockId = `DELIV-LOCK-${orderId}-${Date.now()}`;
+    logger.info("Attempting to acquire delivery lock", { orderId, lockId });
 
     const lockResult = await prisma.order.updateMany({
       where: {
@@ -328,31 +335,30 @@ export const initiateHubnetOrder = async (orderId) => {
         status: {
           in: ["payment_confirmed", "failed"],
         },
-        hubnetOrderId: null, // Only lock if not already locked/sent
+        providerOrderId: null,
       },
       data: {
-        hubnetOrderId: lockId, // Set lock ID immediately
+        providerOrderId: lockId,
+        deliveryProvider: activeProvider,
         status: "processing",
       },
     });
 
-    logger.info("Lock acquisition result", {
+    logger.info("Delivery lock acquisition result", {
       orderId,
       lockId,
       count: lockResult.count,
     });
 
-    // If no rows updated, another request already locked/processed this order
     if (lockResult.count === 0) {
       logger.warn(
-        "Order already locked by another request, skipping Hubnet call",
+        "Order already locked by another request, skipping delivery call",
         {
           orderId,
           attemptedLockId: lockId,
         },
       );
 
-      // Return current order state
       const currentOrder = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
@@ -365,13 +371,12 @@ export const initiateHubnetOrder = async (orderId) => {
       return currentOrder;
     }
 
-    logger.info("Order locked for Hubnet processing", {
+    logger.info(`Order locked for ${activeProvider} processing`, {
       orderId,
       lockId,
     });
 
-    // Log that we're about to send to Hubnet
-    logger.info("SENDING ORDER TO HUBNET", {
+    logger.info(`SENDING ORDER TO ${activeProvider.toUpperCase()}`, {
       orderId,
       status: "processing",
       customerPhone: order.customerPhone,
@@ -380,61 +385,68 @@ export const initiateHubnetOrder = async (orderId) => {
     });
 
     try {
-      // Step 2: Check Hubnet balance
-      logger.info("Checking Hubnet balance before initiating order", {
-        orderId,
-      });
+      // Step 2: Check provider balance
+      const checkBalance = activeProvider === "bossu" ? bossuCheckBalance : hubnetCheckBalance;
+      logger.info(`Checking ${activeProvider} balance before initiating order`, { orderId });
       const balanceCheck = await checkBalance();
 
       if (!balanceCheck.success) {
-        throw new AppError("Failed to check Hubnet balance", 500);
+        throw new AppError(`Failed to check ${activeProvider} balance`, 500);
       }
 
-      logger.info("Hubnet balance check successful", {
+      logger.info(`${activeProvider} balance check successful`, {
         balance: balanceCheck.balance,
         currency: balanceCheck.currency,
       });
 
-      // Step 3: Initiate Hubnet data transaction
-      logger.info("Initiating Hubnet data transaction", {
+      // Step 3: Initiate data transaction via the active provider
+      const initiateTransaction = activeProvider === "bossu" ? bossuInitiateTransaction : hubnetInitiateTransaction;
+      
+      logger.info(`Initiating ${activeProvider} data transaction`, {
         orderId,
         phone: order.customerPhone,
         network: order.bundle.network,
         volume: order.bundle.volume,
       });
 
-      const hubnetTransaction = await initiateDataTransaction({
+      const txParams = {
         phone: order.customerPhone,
         network: order.bundle.network,
         volume: order.bundle.volume,
-        reference: order.id, // Use order ID as reference
-        referrer: order.seller?.phone, // Optional: seller's phone for alerts
-        webhookUrl: process.env.HUBNET_WEBHOOK_URL, // Optional: webhook for status updates
-      });
+        reference: order.id,
+      };
 
-      if (!hubnetTransaction.success) {
-        throw new AppError("Failed to initiate Hubnet transaction", 500);
+      if (activeProvider === "bossu") {
+        txParams.webhookUrl = process.env.BOSSU_WEBHOOK_URL;
+      } else {
+        txParams.referrer = order.seller?.phone;
+        txParams.webhookUrl = process.env.HUBNET_WEBHOOK_URL;
       }
 
-      logger.success("Hubnet transaction initiated successfully", {
+      const providerTransaction = await initiateTransaction(txParams);
+
+      if (!providerTransaction.success) {
+        throw new AppError(`Failed to initiate ${activeProvider} transaction`, 500);
+      }
+
+      logger.success(`${activeProvider} transaction initiated successfully`, {
         orderId,
-        hubnetTransactionId: hubnetTransaction.transactionId,
-        hubnetPaymentId: hubnetTransaction.paymentId,
-        code: hubnetTransaction.code,
+        transactionId: providerTransaction.transactionId,
       });
 
-      // Step 4: Update order with actual Hubnet transaction ID
+      // Step 4: Update order with actual provider transaction ID
       const updatedOrder = await prisma.order.update({
         where: { id: orderId },
         data: {
-          hubnetOrderId: hubnetTransaction.transactionId || lockId, // Use Hubnet ID or keep lock ID
-          hubnetResponse: JSON.stringify({
-            transactionId: hubnetTransaction.transactionId,
-            paymentId: hubnetTransaction.paymentId,
-            reference: hubnetTransaction.reference,
-            message: hubnetTransaction.message,
-            code: hubnetTransaction.code,
-            ipAddress: hubnetTransaction.ipAddress,
+          providerOrderId: providerTransaction.transactionId || lockId,
+          providerResponse: JSON.stringify({
+            provider: activeProvider,
+            transactionId: providerTransaction.transactionId,
+            paymentId: providerTransaction.paymentId,
+            reference: providerTransaction.reference,
+            message: providerTransaction.message,
+            code: providerTransaction.code,
+            ipAddress: providerTransaction.ipAddress,
             initiatedAt: new Date().toISOString(),
           }),
         },
@@ -446,48 +458,51 @@ export const initiateHubnetOrder = async (orderId) => {
         },
       });
 
-      logger.info("Order awaiting Hubnet delivery confirmation", {
+      logger.info(`Order awaiting ${activeProvider} delivery confirmation`, {
         orderId,
-        hubnetCode: hubnetTransaction.code,
-        hubnetOrderId: updatedOrder.hubnetOrderId,
+        providerOrderId: updatedOrder.providerOrderId,
         status: "processing",
       });
 
       return updatedOrder;
-    } catch (hubnetError) {
-      // Hubnet call failed - mark order as failed but KEEP the lock ID to prevent retries
-      logger.error("Hubnet API call failed", {
+    } catch (providerError) {
+      // Provider call failed - mark as failed and clear lock to allow retry
+      logger.error(`${activeProvider} API call failed`, {
         orderId,
         lockId,
-        error: hubnetError.message,
+        error: providerError.message,
       });
 
       await prisma.order.update({
         where: { id: orderId },
         data: {
           status: "failed",
-          hubnetOrderId: null, // Clear lock to allow retry
-          hubnetResponse: JSON.stringify({
-            error: hubnetError.message,
+          providerOrderId: null,
+          providerResponse: JSON.stringify({
+            provider: activeProvider,
+            error: providerError.message,
             failedAt: new Date().toISOString(),
             lockId: lockId,
           }),
         },
       });
 
-      throw hubnetError;
+      throw providerError;
     }
   } catch (error) {
-    logger.error("Error initiating Hubnet order", {
+    logger.error("Error initiating delivery order", {
       orderId,
       error: error.message,
     });
 
     throw error instanceof AppError
       ? error
-      : new AppError("Failed to initiate Hubnet order", 500);
+      : new AppError("Failed to initiate delivery order", 500);
   }
 };
+
+// Backwards-compatible alias so existing callers (paymentController, etc.) don't break
+export const initiateHubnetOrder = initiateDeliveryOrder;
 
 /**
  * Update order status
@@ -524,7 +539,7 @@ export const updateOrderStatus = async (
 };
 
 /**
- * Update Hubnet tracking information
+ * Update provider tracking information
  */
 export const updateHubnetTracking = async (orderId, hubnetData) => {
   const prisma = getPrisma();
@@ -532,9 +547,9 @@ export const updateHubnetTracking = async (orderId, hubnetData) => {
   const order = await prisma.order.update({
     where: { id: orderId },
     data: {
-      hubnetOrderId: hubnetData.orderId,
-      hubnetStatus: hubnetData.status,
-      hubnetResponse: JSON.stringify(hubnetData.response),
+      providerOrderId: hubnetData.orderId,
+      providerStatus: hubnetData.status,
+      providerResponse: JSON.stringify(hubnetData.response),
     },
   });
 
