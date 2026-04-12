@@ -17,6 +17,7 @@ import {
   runDatabaseCleanup,
   optimizeDatabaseEndpoint,
   getReportsData,
+  sendAdminSMS,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -92,5 +93,10 @@ router.patch("/bundles/:bundleId/status", toggleBundleStatus); // Activate/deact
  * Analytics Reports
  */
 router.get("/reports", getReportsData);
+
+/**
+ * SMS/Notifications Management
+ */
+router.post("/sms/send", sendAdminSMS);
 
 export default router;
