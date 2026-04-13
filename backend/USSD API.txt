@@ -1,0 +1,142 @@
+USSD API
+
+Build Interactive
+Offline Apps
+Reach users on any mobile device without internet access. Create powerful menus for banking, voting, and more.
+
+USSD (Unstructured Supplementary Service Data) allows you to build applications that run offline on mobile devices.
+How it Works
+When a user dials your shortcode (e.g., *203#), Moolre sends a POST request to your configured callback URL. The request contains a sessionid which persists across the interaction.
+
+Your server must respond with a JSON object containing:
+
+message: The text to display on the user's screen.
+reply: A boolean. true keeps the session open for user input; false ends the session.
+The State Machine Pattern
+Since HTTP is stateless, you need to track "where" the user is in your menu. You can use the sessionid as a key in a database (Redis, SQL) to store the user's current "stage".
+
+Stage: MENU
+arrow_right_alt
+Stage: INPUT_AMOUNT
+arrow_right_alt
+Stage: CONFIRM
+
+
+Request Body
+This is the request we send to your callback URL when someone dials your USSD Code.
+
+{
+    "sessionId": "3-17074657982460137",
+    "new": true,
+    "msisdn": "233241235993",
+    "network": 3,
+    "message": "",
+    "extension": "109",
+    "data": "11005"
+}
+
+
+
+Response Body
+This is the response you send back to us after we call your callback URL.
+
+{
+    "message": "Menu\n1) Balance\n2) Account Information",
+    "reply": true
+}
+
+
+Parameters
+
+Parameter	Type	Description
+sessionid	String	This is a unique id to track a USSD session
+new	Boolean	This specifies whether this is a new USSD session or a continuing USSD session
+msisdn	String	Mobile number of the initiator of the USSD
+network	Integer	This is the network of the initiator of the USSD. 3 - MTN, 5 - AT, 6 - Telecel
+message	String	This is the message/response sent by the initiator of the USSD
+extension	String	This is your assigned USSD code
+data	String	Any other data entered when initiating a request. Eg. If initiator dials: *203*109*11005#, data = 11005.
+reply	Boolean	Specifies whether a response is expected from the initiator of the USSD. true - Reply is expected, false - Reply is not expected, end the session
+
+
+
+
+
+
+Code Example
+Below is a Node.js implementation of a simple banking menu that allows users to check their balance or initiate a transfer.
+
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// In-memory session store (Use Redis in production)
+const sessions = {}; 
+
+app.post('/ussd/callback', (req, res) => {
+    const { sessionid, msisdn, message, new: isNew } = req.body;
+    
+    // Initialize session
+    if (isNew) {
+        sessions[sessionid] = { stage: 'MENU' };
+        return res.json({
+            message: "Welcome to Moolre Bank\n1. Check Balance\n2. Transfer Money",
+            reply: true
+        });
+    }
+
+    const userSession = sessions[sessionid] || { stage: 'MENU' };
+
+    // State Machine Logic
+    switch (userSession.stage) {
+        case 'MENU':
+            if (message === '1') {
+                // End session
+                return res.json({
+                    message: "Your balance is GHS 50.00",
+                    reply: false
+                });
+            } else if (message === '2') {
+                userSession.stage = 'TRANSFER_AMOUNT';
+                return res.json({
+                    message: "Enter amount to transfer:",
+                    reply: true
+                });
+            } else {
+                return res.json({ message: "Invalid Option\n1. Balance\n2. Transfer", reply: true });
+            }
+            break;
+
+        case 'TRANSFER_AMOUNT':
+            userSession.amount = message;
+            userSession.stage = 'TRANSFER_RECIPIENT';
+            return res.json({
+                message: "Enter recipient phone number:",
+                reply: true
+            });
+            break;
+            
+        case 'TRANSFER_RECIPIENT':
+            // Perform logic...
+            return res.json({
+                message: `Transfer of GHS ${userSession.amount} to ${message} initiated.`,
+                reply: false
+            });
+            break;
+    }
+    
+    // Save state back to store
+    sessions[sessionid] = userSession;
+});
+
+
+
+
+Tips & Tricks
+Timeout Handling: USSD sessions time out quickly (usually 30-60 seconds). Keep your API response times under 2 seconds.
+Character Limits: USSD screens vary by device. Keep your message concise (under 160 chars) to ensure it displays correctly on all phones.
+Pagination: For long lists, implement a "Press 9 for more" logic to handle pagination manually within your state machine.
+
+
+
+
