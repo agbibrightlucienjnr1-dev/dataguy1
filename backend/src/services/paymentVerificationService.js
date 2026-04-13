@@ -2,6 +2,8 @@ import { getPrisma } from "../config/database.js";
 import { verifyTransaction } from "./paystackService.js";
 import { verifyMoolreTransaction } from "./moolreService.js";
 import { confirmPayment, initiateHubnetOrder as initiateDeliveryOrder } from "./orderService.js";
+import { checkOrderStatus as bossuCheckOrderStatus } from "./bossuService.js";
+import { incrementCustomerSuccessfulOrders } from "./customerService.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -357,16 +359,21 @@ export const verifyAllPendingPayments = async (options = {}) => {
       }
     }
 
+    // Also check Bossu orders stuck in "processing"
+    const bossuResults = await verifyProcessingBossuOrders();
+
     const duration = Date.now() - startTime;
 
     logger.success("Payment verification completed", {
       ...results,
+      bossu: bossuResults,
       durationMs: duration,
     });
 
     return {
       success: true,
       ...results,
+      bossu: bossuResults,
       durationMs: duration,
     };
   } catch (error) {
@@ -447,5 +454,130 @@ export const checkPaymentStatus = async (orderId) => {
       isPaid: false,
       error: error.message,
     };
+  }
+};
+
+/**
+ * Poll Bossu API for orders stuck in "processing" for over 1 hour.
+ * Acts as a fallback for missed/delayed Bossu webhooks.
+ */
+export const verifyProcessingBossuOrders = async () => {
+  const prisma = getPrisma();
+  const results = { checked: 0, completed: 0, failed: 0, errors: 0 };
+
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+    const stuckOrders = await prisma.order.findMany({
+      where: {
+        status: "processing",
+        deliveryProvider: "bossu",
+        updatedAt: { lte: oneHourAgo },
+        providerOrderId: { not: null },
+      },
+      select: {
+        id: true,
+        providerOrderId: true,
+        customerPhone: true,
+        customerName: true,
+        bundle: { select: { network: true, volume: true } },
+      },
+      take: 20,
+    });
+
+    results.checked = stuckOrders.length;
+
+    if (stuckOrders.length === 0) {
+      return results;
+    }
+
+    logger.info("Checking stuck Bossu orders", { count: stuckOrders.length });
+
+    for (const order of stuckOrders) {
+      try {
+        // Skip lock IDs — these never reached Bossu
+        if (order.providerOrderId.startsWith("DELIV-LOCK")) {
+          continue;
+        }
+
+        const statusResult = await bossuCheckOrderStatus(order.providerOrderId);
+
+        if (!statusResult.success) {
+          logger.warn("Bossu status check failed for order", {
+            orderId: order.id,
+            providerOrderId: order.providerOrderId,
+          });
+          results.errors++;
+          continue;
+        }
+
+        const bossuStatus = (statusResult.status || "").toLowerCase();
+
+        if (["completed", "success", "delivered"].includes(bossuStatus)) {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              status: "completed",
+              completedAt: new Date(),
+              providerResponse: JSON.stringify({
+                provider: "bossu",
+                resolvedBy: "polling_fallback",
+                bossuStatus,
+                polledAt: new Date().toISOString(),
+              }),
+            },
+          });
+
+          await incrementCustomerSuccessfulOrders({
+            customerPhone: order.customerPhone,
+            customerName: order.customerName,
+          });
+
+          results.completed++;
+          logger.success("Bossu order resolved via polling", {
+            orderId: order.id,
+            providerOrderId: order.providerOrderId,
+            bossuStatus,
+          });
+        } else if (["failed", "error", "cancelled"].includes(bossuStatus)) {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              status: "failed",
+              providerResponse: JSON.stringify({
+                provider: "bossu",
+                resolvedBy: "polling_fallback",
+                bossuStatus,
+                polledAt: new Date().toISOString(),
+              }),
+            },
+          });
+
+          results.failed++;
+          logger.warn("Bossu order failed (resolved via polling)", {
+            orderId: order.id,
+            providerOrderId: order.providerOrderId,
+            bossuStatus,
+          });
+        }
+
+        // Rate-limit API calls
+        await new Promise((r) => setTimeout(r, 300));
+      } catch (err) {
+        results.errors++;
+        logger.error("Error polling Bossu order status", {
+          orderId: order.id,
+          error: err.message,
+        });
+      }
+    }
+
+    logger.info("Bossu polling fallback completed", results);
+    return results;
+  } catch (error) {
+    logger.error("Bossu polling fallback batch failed", {
+      error: error.message,
+    });
+    return { ...results, error: error.message };
   }
 };
