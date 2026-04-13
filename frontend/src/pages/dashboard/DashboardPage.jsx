@@ -15,6 +15,7 @@ import {
   Sparkles,
   Tag,
   ChevronRight,
+  Phone,
 } from "lucide-react";
 import { Card } from "../../components/ui";
 import { useAuthStore } from "../../stores";
@@ -188,6 +189,29 @@ export default function DashboardPage() {
             </div>
           </Card>
         )}
+
+        {/* USSD Agent Code */}
+        {user?.agentCode && (
+          <Card className="bg-linear-to-r from-indigo-900 to-indigo-800 text-white p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Phone className="w-5 h-5" />
+                  <h3 className="font-semibold">USSD Code</h3>
+                </div>
+                <p className="text-indigo-200 text-sm">
+                  USSD code coming soon!
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="bg-white/10 rounded-lg px-4 py-2 text-xl font-bold font-mono tracking-widest truncate max-w-xs">
+                  {user.agentCode}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
 
 
       </div>
