@@ -15,6 +15,7 @@ model User {
   role                UserRole        @default(agent)
   parentAgentId       String?         @map("parent_agent_id")
   createdAt           DateTime        @default(now()) @map("created_at")
+  agentCode           Int             @unique @default(autoincrement()) @map("agent_code")
   paymentLinkCode     String?         @unique @map("payment_link_code")
   shopName            String?         @map("shop_name")
   preferences         Json?
@@ -203,6 +204,22 @@ model SystemSettings {
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
+}
+
+model UssdSession {
+  id        String   @id // Moolre sessionId
+  msisdn    String   // Caller phone number
+  stage     String   @default("AWAIT_AGENT") // Current state machine stage
+  agentId   String?  @map("agent_id")
+  network   String?  // Selected network
+  bundleId  String?  @map("bundle_id")
+  recipient String?  // Recipient phone number
+  page      Int      @default(0) // Pagination for bundle list
+  orderId   String?  @map("order_id") // Created order reference
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ussd_sessions")
 }
 
 enum UserRole {
