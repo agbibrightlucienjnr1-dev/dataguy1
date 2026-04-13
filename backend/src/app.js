@@ -20,6 +20,7 @@ import withdrawalRoutes from "./routes/withdrawalRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
+import ussdRoutes from "./routes/ussdRoutes.js";
 
 const app = express();
 
@@ -197,6 +198,7 @@ app.use("/api/withdrawals", standardPaginationLimiter, withdrawalRoutes);
 app.use("/api/customers", standardPaginationLimiter, customerRoutes);
 app.use("/api/agent", standardPaginationLimiter, agentRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/ussd", ussdRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
