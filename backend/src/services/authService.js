@@ -102,6 +102,7 @@ export const registerUser = async (userData) => {
       role: true,
       parentAgentId: true,
       paymentLinkCode: true,
+      agentCode: true,
       createdAt: true,
     },
   });
@@ -183,6 +184,7 @@ export const getUserById = async (userId) => {
         role: true,
         parentAgentId: true,
         paymentLinkCode: true,
+        agentCode: true,
         preferences: true,
         createdAt: true,
         wallet: {
