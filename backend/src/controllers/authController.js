@@ -6,6 +6,11 @@ import {
   changePassword,
   updateUserPreferences,
 } from "../services/authService.js";
+import {
+  requestPasswordReset,
+  verifyPasswordResetCode,
+  resetPasswordWithCode,
+} from "../services/passwordResetService.js";
 import { validatePasswordStrength } from "../utils/password.js";
 import { AppError } from "../middlewares/errorHandler.js";
 
@@ -171,4 +176,40 @@ export const updatePreferences = asyncHandler(async (req, res) => {
       preferences: updatedUser.preferences,
     },
   });
+});
+
+/**
+ * Request password reset
+ * POST /api/auth/forgot-password
+ */
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { phone } = req.body;
+
+  if (!phone) {
+    throw new AppError("Phone number is required", 400);
+  }
+
+  const result = await requestPasswordReset(phone);
+
+  res.status(200).json(result);
+});
+
+/**
+ * Reset password with code
+ * POST /api/auth/reset-password
+ */
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { phone, code, newPassword, confirmPassword } = req.body;
+
+  if (!phone || !code || !newPassword || !confirmPassword) {
+    throw new AppError("Phone, code, new password, and confirmation are required", 400);
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new AppError("Passwords do not match", 400);
+  }
+
+  const result = await resetPasswordWithCode(phone, code, newPassword);
+
+  res.status(200).json(result);
 });

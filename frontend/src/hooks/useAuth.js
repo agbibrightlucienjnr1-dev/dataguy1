@@ -136,3 +136,57 @@ export function useChangePassword() {
     },
   });
 }
+
+/**
+ * Hook for requesting password reset
+ */
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: authApi.forgotPassword,
+    onSuccess: () => {
+      toast.success("Reset code sent! Check your phone for the 4-digit code.");
+    },
+    onError: (error) => {
+      toast.error(
+        getErrorMessage(
+          error,
+          "Failed to send reset code. Please try again.",
+        ),
+      );
+    },
+  });
+}
+
+/**
+ * Hook for resetting password with code
+ */
+export function useResetPassword() {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: authApi.resetPassword,
+    onSuccess: () => {
+      toast.success("Password reset successfully! You can now log in with your new password.");
+      navigate("/login");
+    },
+    onError: (error) => {
+      let errorMessage = getErrorMessage(
+        error,
+        "Failed to reset password. Please try again.",
+      );
+
+      // Format multi-line password errors for better display
+      if (errorMessage.includes("\n•")) {
+        errorMessage = errorMessage.replace(/\n•/g, "\n•");
+      }
+
+      toast.error(errorMessage, {
+        duration: 5000,
+        style: {
+          whiteSpace: 'pre-line',
+          maxWidth: '500px',
+        },
+      });
+    },
+  });
+}

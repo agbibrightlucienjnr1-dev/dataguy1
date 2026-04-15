@@ -1,6 +1,7 @@
 export { default as LandingPage } from "./LandingPage";
 export { default as LoginPage } from "./LoginPage";
 export { default as RegisterPage } from "./RegisterPage";
+export { default as ForgotPasswordPage } from "./ForgotPasswordPage";
 export { default as BuyPage } from "./BuyPage";
 export { default as PaymentCallbackPage } from "./PaymentCallbackPage";
 export { default as OrderTrackingPage } from "./OrderTrackingPage";

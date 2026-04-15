@@ -5,6 +5,8 @@ export {
   useLogout,
   useAuth,
   useChangePassword,
+  useForgotPassword,
+  useResetPassword,
 } from "./useAuth";
 
 // Data hooks

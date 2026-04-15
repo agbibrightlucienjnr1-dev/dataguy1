@@ -275,3 +275,15 @@ enum BankAccountType {
   bank_account
   mobile_money
 }
+
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  phone      String   @map("phone")
+  tokenHash  String   @map("token_hash")
+  expiresAt  DateTime @map("expires_at")
+  used       Boolean  @default(false) @map("used")
+  usedAt     DateTime? @map("used_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}

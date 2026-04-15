@@ -12,6 +12,7 @@ import {
   LandingPage,
   LoginPage,
   RegisterPage,
+  ForgotPasswordPage,
   BuyPage,
   PaymentCallbackPage,
   OrderTrackingPage,
@@ -60,6 +61,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/register/:code" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
         </Route>
 

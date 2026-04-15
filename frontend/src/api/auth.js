@@ -29,4 +29,16 @@ export const authApi = {
    * @param {Object} preferences - Preferences object
    */
   updatePreferences: (preferences) => apiClient.patch("/auth/preferences", { preferences }),
+
+  /**
+   * Request password reset
+   * @param {Object} data - { phone }
+   */
+  forgotPassword: (data) => apiClient.post("/auth/forgot-password", data),
+
+  /**
+   * Reset password with code
+   * @param {Object} data - { phone, code, newPassword, confirmPassword }
+   */
+  resetPassword: (data) => apiClient.post("/auth/reset-password", data),
 };

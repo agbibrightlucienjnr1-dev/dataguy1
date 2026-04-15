@@ -158,6 +158,49 @@ export const changePasswordSchema = z
     path: ["newPassword"],
   });
 
+// ========== Password Reset Schemas ==========
+
+export const forgotPasswordSchema = z.object({
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(
+      /^(\+233|0)[0-9]{9}$/,
+      "Please enter a valid Ghana phone number starting with 0 or +233 (e.g., 0241234567)",
+    ),
+});
+
+export const passwordResetSchema = z
+  .object({
+    phone: z
+      .string()
+      .min(1, "Phone number is required")
+      .regex(
+        /^(\+233|0)[0-9]{9}$/,
+        "Please enter a valid Ghana phone number starting with 0 or +233 (e.g., 0241234567)",
+      ),
+    code: z
+      .string()
+      .min(1, "Reset code is required")
+      .regex(/^\d{4}$/, "Please enter a valid 4-digit code"),
+    newPassword: z
+      .string()
+      .min(1, "New password is required")
+      .min(12, "Password must be at least 12 characters long")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Password must contain at least one special character",
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 // ========== Helper for form validation ==========
 
 export const getErrorMessage = (error) => {

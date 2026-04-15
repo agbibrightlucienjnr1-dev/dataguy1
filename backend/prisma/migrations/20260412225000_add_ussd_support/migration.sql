@@ -20,7 +20,7 @@ BEGIN
     FROM numbered WHERE "users".id = numbered.id;
     
     -- Set default for future rows
-    PERFORM setval('users_agent_code_seq', COALESCE((SELECT MAX(agent_code) FROM "users"), 0));
+    PERFORM setval('users_agent_code_seq', COALESCE((SELECT GREATEST(MAX(agent_code), 1) FROM "users"), 1));
     ALTER TABLE "users" ALTER COLUMN "agent_code" SET DEFAULT nextval('users_agent_code_seq');
     ALTER TABLE "users" ALTER COLUMN "agent_code" SET NOT NULL;
     
