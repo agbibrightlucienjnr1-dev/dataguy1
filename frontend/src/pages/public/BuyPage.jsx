@@ -28,11 +28,17 @@ const purchaseSchema = z.object({
   customerPhone: z
     .string()
     .min(1, "Phone number is required")
-    .regex(/^0\d{9}$/, "Enter a valid 10-digit phone number (e.g., 0241234567)"),
+    .regex(
+      /^0\d{9}$/,
+      "Enter a valid 10-digit phone number (e.g., 0241234567)",
+    ),
   paymentNumber: z
     .string()
     .optional()
-    .refine((val) => !val || /^0\d{9}$/.test(val), "Enter a valid 10-digit phone number"),
+    .refine(
+      (val) => !val || /^0\d{9}$/.test(val),
+      "Enter a valid 10-digit phone number",
+    ),
   network: z.string().optional(),
   customerName: z.string().optional(),
 });
@@ -151,12 +157,12 @@ export default function BuyPage() {
   // Calculate fees
   const { serviceFee, grandTotal } = useMemo(() => {
     if (!selectedBundle || !settings) return { serviceFee: 0, grandTotal: 0 };
-    
+
     const provider = settings.activePaymentProvider;
     const price = Number(selectedBundle.price);
     let ourFee = 0;
     let moolreSurcharge = 0;
-    
+
     if (provider === "moolre") {
       // 1. Our service fee: percentage of bundle price
       const percentage = Number(settings.moolreFeePercentage);
@@ -165,20 +171,20 @@ export default function BuyPage() {
       // 2. Moolre's estimated surcharge (that they add automatically at the prompt)
       // Moolre charges 1% of the TOTAL amount we ask them to collect, minimum GHS 0.50
       const baseTotal = price + ourFee;
-      moolreSurcharge = Math.max(baseTotal * 0.01, 0.50);
+      moolreSurcharge = Math.max(baseTotal * 0.01, 0.5);
     } else {
       // Paystack: flat fee for small amounts, percentage for larger ones
       const flatFee = Number(settings.paystackFlatFee);
       const percentage = Number(settings.paystackFeePercentage);
       ourFee = price < 20 ? flatFee : (percentage / 100) * price;
     }
-    
+
     // Combine both into one 'Service Fee' for UI transparency as requested
     const displayFee = ourFee + moolreSurcharge;
-    
+
     return {
       serviceFee: displayFee,
-      grandTotal: price + displayFee
+      grandTotal: price + displayFee,
     };
   }, [selectedBundle, settings]);
 
@@ -234,54 +240,65 @@ export default function BuyPage() {
     }
 
     // Get payment phone and network
-    const payPhone = data.paymentNumber ? normalizePhone(data.paymentNumber) : normalizePhone(data.customerPhone);
+    const payPhone = data.paymentNumber
+      ? normalizePhone(data.paymentNumber)
+      : normalizePhone(data.customerPhone);
     const inferredNetwork = getNetworkFromPhone(payPhone);
     const finalNetwork = data.network || inferredNetwork;
 
     if (!finalNetwork) {
-      toast.error("Could not detect network from the phone number. Please choose a network.");
+      toast.error(
+        "Could not detect network from the phone number. Please choose a network.",
+      );
       return;
     }
 
     if (!data.paymentNumber && finalNetwork !== selectedBundle.network) {
-      toast.error(`The selected bundle is for ${selectedBundle.network} but your number is ${finalNetwork}. Use a matching number or specify a different payment number.`);
+      toast.error(
+        `The selected bundle is for ${selectedBundle.network} but your number is ${finalNetwork}. Use a matching number or specify a different payment number.`,
+      );
       return;
     }
 
     // Save for OTP usage
     setPaymentPhone(payPhone);
     setPaymentNetwork(finalNetwork);
-    setPendingTotal(grandTotal); 
+    setPendingTotal(grandTotal);
 
-
-    createOrder.mutate({
-      code,
-      data: {
-        bundleId: selectedBundle.id,
-        customerPhone: normalizePhone(data.customerPhone),
-        paymentNumber: payPhone,
-        network: finalNetwork,
-        customerName: data.customerName || undefined,
+    createOrder.mutate(
+      {
+        code,
+        data: {
+          bundleId: selectedBundle.id,
+          customerPhone: normalizePhone(data.customerPhone),
+          paymentNumber: payPhone,
+          network: finalNetwork,
+          customerName: data.customerName || undefined,
+        },
       },
-    }, {
-      onSuccess: (response) => {
-        const payment = response.data?.payment;
-        if (payment?.otpRequired) {
-          // TP14: OTP was sent — show OTP verification modal
-          setMoolreReference(payment.reference);
-          setOtpModalOpen(true);
-        } else if (payment?.authorizationUrl) {
-          // Paystack: redirect to payment page
-          window.location.href = payment.authorizationUrl;
-        } else if (payment?.success) {
-          // Moolre direct prompt: payment prompt was sent to customer's phone directly (no OTP needed)
-          toast.success("Payment prompt sent to your phone. Please check your phone and enter your Mobile Money PIN.", { duration: 8000 });
-          setTimeout(() => {
-            window.location.href = `/track?phone=${paymentPhone}`;
-          }, 5000);
-        }
-      }
-    });
+      {
+        onSuccess: (response) => {
+          const payment = response.data?.payment;
+          if (payment?.otpRequired) {
+            // TP14: OTP was sent — show OTP verification modal
+            setMoolreReference(payment.reference);
+            setOtpModalOpen(true);
+          } else if (payment?.authorizationUrl) {
+            // Paystack: redirect to payment page
+            window.location.href = payment.authorizationUrl;
+          } else if (payment?.success) {
+            // Moolre direct prompt: payment prompt was sent to customer's phone directly (no OTP needed)
+            toast.success(
+              "Payment prompt sent to your phone. Please check your phone and enter your Mobile Money PIN.",
+              { duration: 8000 },
+            );
+            setTimeout(() => {
+              window.location.href = `/track?phone=${paymentPhone}`;
+            }, 5000);
+          }
+        },
+      },
+    );
   };
 
   const handleVerifyOtp = async () => {
@@ -292,9 +309,11 @@ export default function BuyPage() {
         reference: moolreReference,
         otpcode: otpCode,
         network: paymentNetwork,
-        phone: paymentPhone
+        phone: paymentPhone,
       });
-      toast.success("OTP Verified! Check your phone for the Mobile Money PIN prompt.");
+      toast.success(
+        "OTP Verified! Check your phone for the Mobile Money PIN prompt.",
+      );
       setOtpModalOpen(false);
       // Let them click Track Order implicitly or wait for redirect (Track Order is better for now)
       setTimeout(() => {
@@ -359,10 +378,10 @@ export default function BuyPage() {
         <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 bg-linear-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-105 transition-all">
                 <Wifi className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-700">
                 DataGuy
               </span>
             </Link>
@@ -381,13 +400,15 @@ export default function BuyPage() {
         <div className="p-8 mb-8 rounded-2xl bg-slate-900 shadow-2xl relative overflow-hidden border border-slate-800 animate-float-slow">
           <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-slate-700 rounded-full mix-blend-screen filter blur-2xl opacity-40"></div>
-          
+
           <div className="relative z-10 flex items-center gap-5">
             <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <p className="text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Buying from</p>
+              <p className="text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">
+                Buying from
+              </p>
               <h2 className="text-2xl font-bold text-white tracking-tight">
                 {seller?.shopName || seller?.name}
               </h2>
@@ -404,7 +425,7 @@ export default function BuyPage() {
                 variant={networkFilter === "" ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setNetworkFilter("")}
-                className={`transition-all rounded-full px-5 ${networkFilter === "" ? 'bg-slate-900 text-white shadow-md' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'}`}
+                className={`transition-all rounded-full px-5 ${networkFilter === "" ? "bg-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"}`}
               >
                 All Networks
               </Button>
@@ -417,7 +438,7 @@ export default function BuyPage() {
                     variant={isActive ? "primary" : "outline"}
                     size="sm"
                     onClick={() => setNetworkFilter(network)}
-                    className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'}`}
+                    className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"}`}
                   >
                     {network}
                   </Button>
@@ -430,13 +451,22 @@ export default function BuyPage() {
               ([network, networkBundles]) => {
                 const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
                 return (
-                  <div key={network} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div
+                    key={network}
+                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                  >
                     <div className="flex items-center gap-2 mb-4">
-                      <div className={`w-4 h-4 rounded shadow-sm ${style.bg}`} />
+                      <div
+                        className={`w-4 h-4 rounded shadow-sm ${style.bg}`}
+                      />
                       <h3 className="font-bold text-slate-900 text-lg tracking-tight">
                         {network}
                       </h3>
-                      <Badge variant="secondary" size="sm" className="bg-slate-200 text-slate-700 ml-1">
+                      <Badge
+                        variant="secondary"
+                        size="sm"
+                        className="bg-slate-200 text-slate-700 ml-1"
+                      >
                         {networkBundles.length} bundles
                       </Badge>
                     </div>
@@ -455,10 +485,14 @@ export default function BuyPage() {
                             }`}
                           >
                             {isSelected && (
-                              <div className={`absolute top-0 right-0 w-16 h-16 transform translate-x-8 -translate-y-8 rotate-45 ${style.bg} opacity-10`}></div>
+                              <div
+                                className={`absolute top-0 right-0 w-16 h-16 transform translate-x-8 -translate-y-8 rotate-45 ${style.bg} opacity-10`}
+                              ></div>
                             )}
                             <div className="flex items-center justify-between mb-3 relative z-10">
-                              <Wifi className={`w-5 h-5 transition-colors ${isSelected ? style.text : 'text-slate-400 group-hover:text-slate-600'}`} />
+                              <Wifi
+                                className={`w-5 h-5 transition-colors ${isSelected ? style.text : "text-slate-400 group-hover:text-slate-600"}`}
+                              />
                               {isSelected && (
                                 <CheckCircle
                                   className={`w-5 h-5 ${style.text} animate-in zoom-in duration-200`}
@@ -466,13 +500,17 @@ export default function BuyPage() {
                               )}
                             </div>
                             <div className="relative z-10">
-                              <p className={`font-extrabold text-2xl transition-colors ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>
+                              <p
+                                className={`font-extrabold text-2xl transition-colors ${isSelected ? "text-slate-900" : "text-slate-800"}`}
+                              >
                                 {bundle.volume}
                               </p>
                               <p className="text-slate-500 text-sm font-medium mb-3">
                                 {bundle.validity}
                               </p>
-                              <p className={`font-bold tracking-tight text-lg ${isSelected ? style.text : 'text-slate-700'}`}>
+                              <p
+                                className={`font-bold tracking-tight text-lg ${isSelected ? style.text : "text-slate-700"}`}
+                              >
                                 {formatCurrency(bundle.price)}
                               </p>
                             </div>
@@ -490,15 +528,22 @@ export default function BuyPage() {
                 <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Package className="w-10 h-10 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">No bundles available</h3>
-                <p className="text-slate-600">This seller hasn't added any bundles yet.</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  No bundles available
+                </h3>
+                <p className="text-slate-600">
+                  This seller hasn't added any bundles yet.
+                </p>
               </div>
             )}
           </div>
 
           {/* Order Form */}
           <div className="lg:col-span-1 border-slate-200">
-            <div ref={formRef} className="glass-panel p-6 sm:p-8 rounded-3xl sticky top-28 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/60">
+            <div
+              ref={formRef}
+              className="glass-panel p-6 sm:p-8 rounded-3xl sticky top-28 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/60"
+            >
               <h3 className="font-bold text-xl text-slate-900 mb-6 tracking-tight">
                 Complete Your Purchase
               </h3>
@@ -506,9 +551,13 @@ export default function BuyPage() {
               {/* Selected Bundle Summary */}
               {selectedBundle ? (
                 <div className="p-5 bg-white rounded-2xl mb-6 shadow-sm border border-slate-100 flex flex-col relative overflow-hidden">
-                  <div className={`absolute top-0 left-0 w-1 h-full ${NETWORK_STYLES[selectedBundle.network]?.bg || "bg-slate-500"}`}></div>
+                  <div
+                    className={`absolute top-0 left-0 w-1 h-full ${NETWORK_STYLES[selectedBundle.network]?.bg || "bg-slate-500"}`}
+                  ></div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Selected
+                    </span>
                     <Badge
                       className={
                         NETWORK_STYLES[selectedBundle.network]?.bg ||
@@ -526,13 +575,17 @@ export default function BuyPage() {
                   </p>
                   <div className="pt-4 border-t border-slate-100 space-y-2">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-slate-500 font-medium">Bundle Price:</span>
+                      <span className="text-slate-500 font-medium">
+                        Bundle Price:
+                      </span>
                       <span className="font-semibold text-slate-700">
                         {formatCurrency(selectedBundle.price)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-slate-500 font-medium font-bold">Service Fee:</span>
+                      <span className="text-slate-500 font-bold">
+                        Service Fee:
+                      </span>
                       <span className="font-semibold text-slate-700">
                         {formatCurrency(serviceFee)}
                       </span>
@@ -546,7 +599,7 @@ export default function BuyPage() {
                   </div>
                 </div>
               ) : (
-                <div className="p-8 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-2xl mb-6 text-center border-dashed border-2 border-slate-200">
+                <div className="p-8 bg-white/50 backdrop-blur-sm rounded-2xl mb-6 text-center border border-dashed border-slate-200/50">
                   <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <ShoppingCart className="w-8 h-8 text-slate-400" />
                   </div>
@@ -559,7 +612,9 @@ export default function BuyPage() {
               {/* Customer Form */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Phone Number</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+                    Phone Number
+                  </label>
                   <div className="relative group">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                     <input
@@ -569,11 +624,17 @@ export default function BuyPage() {
                       {...register("customerPhone")}
                     />
                   </div>
-                  {errors.customerPhone && <p className="text-sm text-red-600 mt-1">{errors.customerPhone.message}</p>}
+                  {errors.customerPhone && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.customerPhone.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Payment Number (Optional)</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+                    Payment Number (Optional)
+                  </label>
                   <div className="relative group">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                     <input
@@ -583,11 +644,17 @@ export default function BuyPage() {
                       {...register("paymentNumber")}
                     />
                   </div>
-                  {errors.paymentNumber && <p className="text-sm text-red-600 mt-1">{errors.paymentNumber.message}</p>}
+                  {errors.paymentNumber && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.paymentNumber.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Payment Network</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+                    Payment Network
+                  </label>
                   <select
                     {...register("network")}
                     className="w-full h-12 px-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 border-slate-200"
@@ -600,7 +667,9 @@ export default function BuyPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Your Name (Optional)</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+                    Your Name (Optional)
+                  </label>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                     <input
@@ -625,17 +694,17 @@ export default function BuyPage() {
                   ) : (
                     <>
                       <ShoppingCart className="w-5 h-5 mr-2" />
-                      Pay{" "}
-                      {selectedBundle
-                        ? formatCurrency(grandTotal)
-                        : ""}
+                      Pay {selectedBundle ? formatCurrency(grandTotal) : ""}
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs font-semibold text-slate-500 text-center pt-2 flex items-center justify-center gap-1.5">
                   <Lock className="w-3 h-3" />
-                  Secured by {settings?.activePaymentProvider === "moolre" ? "Moolre" : "Paystack"}
+                  Secured by{" "}
+                  {settings?.activePaymentProvider === "moolre"
+                    ? "Moolre"
+                    : "Paystack"}
                 </p>
               </form>
             </div>
@@ -647,7 +716,10 @@ export default function BuyPage() {
       <div className="max-w-4xl mx-auto px-4 py-12 text-center relative z-10">
         <div className="inline-block p-1 rounded-full bg-slate-100">
           <Link to={`/register/subagent?agent=${code}`}>
-            <Button variant="outline" className="gap-2 rounded-full border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-6 py-2 h-auto shadow-sm transition-all hover:shadow-md">
+            <Button
+              variant="outline"
+              className="gap-2 rounded-full border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-6 py-2 h-auto shadow-sm transition-all hover:shadow-md"
+            >
               <User className="w-4 h-4" />
               Become an Agent under this Seller
             </Button>
@@ -672,39 +744,51 @@ export default function BuyPage() {
       {otpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <Card className="max-w-sm w-full p-6 bg-white animate-in zoom-in-95">
-            <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mb-2">
+            <h3 className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-purple-600 mb-2">
               Payment Verification
             </h3>
             <p className="text-sm text-slate-500 mb-6 font-medium">
-              An OTP has been sent to your phone. Enter it to authorize the payment of 
-              <span className="text-slate-900 font-bold ml-1">{formatCurrency(pendingTotal)}</span>.
+              An OTP has been sent to your phone. Enter it to authorize the
+              payment of
+              <span className="text-slate-900 font-bold ml-1">
+                {formatCurrency(pendingTotal)}
+              </span>
+              .
             </p>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">OTP Code</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+                  OTP Code
+                </label>
                 <input
                   type="text"
                   placeholder="Enter 4-6 digit OTP"
                   maxLength={6}
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) =>
+                    setOtpCode(e.target.value.replace(/\D/g, ""))
+                  }
                   className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-center text-lg tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
                 />
               </div>
               <div className="flex gap-3 pt-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1 rounded-xl h-12"
                   onClick={() => setOtpModalOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 rounded-xl h-12 bg-slate-900 text-white"
                   onClick={handleVerifyOtp}
                   disabled={!otpCode || verifyingOtp}
                 >
-                  {verifyingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Pay"}
+                  {verifyingOtp ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    "Verify & Pay"
+                  )}
                 </Button>
               </div>
             </div>
