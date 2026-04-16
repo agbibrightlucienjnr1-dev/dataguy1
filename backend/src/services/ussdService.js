@@ -51,6 +51,34 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
 
   try {
     // ==========================================
+    // CUSTOMER ELIGIBILITY CHECK
+    // Only customers who have completed at least one web order
+    // can access USSD. Check runs on every callback (new and
+    // continuing) so it cannot be bypassed by re-dialling.
+    // ==========================================
+    const callerPhone = formatPhone(msisdn);
+    const existingCustomer = await prisma.customer.findUnique({
+      where: { phone: callerPhone },
+      select: { successfulOrdersCount: true },
+    });
+
+    const isEligible =
+      existingCustomer && existingCustomer.successfulOrdersCount > 0;
+
+    if (!isEligible) {
+      logger.info("USSD access denied — not an existing customer", {
+        sessionId,
+        callerPhone,
+        successfulOrdersCount: existingCustomer?.successfulOrdersCount ?? null,
+      });
+      return {
+        message:
+          "Welcome to DataGuy!\nPlease make your first purchase at dataguy.shop to unlock USSD access.",
+        reply: false,
+      };
+    }
+
+    // ==========================================
     // NEW SESSION — Welcome and ask for agent code
     // ==========================================
     if (isNew) {
