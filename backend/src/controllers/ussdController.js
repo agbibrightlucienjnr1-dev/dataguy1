@@ -24,6 +24,36 @@ import { logger } from "../utils/logger.js";
  */
 export const ussdCallback = async (req, res) => {
   try {
+    // -------------------------------------------------------
+    // Body normalisation
+    // Moolre may send the request with Content-Type:
+    // application/x-www-form-urlencoded (or no content-type),
+    // which causes express.urlencoded() to treat the entire
+    // JSON string as a single URL-encoded key with an empty
+    // value: { '{"sessionId":...}': '' }
+    // Detect this and re-parse the key as JSON.
+    // -------------------------------------------------------
+    let rawBody = req.body;
+    if (
+      rawBody &&
+      typeof rawBody === "object" &&
+      !Array.isArray(rawBody)
+    ) {
+      const keys = Object.keys(rawBody);
+      if (
+        keys.length === 1 &&
+        rawBody[keys[0]] === "" &&
+        keys[0].trimStart().startsWith("{")
+      ) {
+        try {
+          rawBody = JSON.parse(keys[0]);
+          logger.info("USSD body re-parsed from URL-encoded wrapper");
+        } catch {
+          // Leave as-is; the missing-fields check below will catch it
+        }
+      }
+    }
+
     const {
       sessionId,
       new: isNew,
@@ -32,7 +62,7 @@ export const ussdCallback = async (req, res) => {
       message,
       extension,
       data,
-    } = req.body;
+    } = rawBody;
 
     logger.info("USSD callback received", {
       sessionId,
@@ -53,7 +83,7 @@ export const ussdCallback = async (req, res) => {
 
     const result = await handleUssdRequest({
       sessionId,
-      isNew: isNew === true || isNew === "true",
+      isNew: isNew === true || isNew === "true" || isNew === 1,
       msisdn,
       message: message || "",
       network, // Moolre network code (3, 5, 6)
