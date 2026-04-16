@@ -53,30 +53,52 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
     // ==========================================
     // CUSTOMER ELIGIBILITY CHECK
     // Only customers who have completed at least one web order
-    // can access USSD. Check runs on every callback (new and
-    // continuing) so it cannot be bypassed by re-dialling.
+    // can access USSD. We check two sources and two phone formats
+    // to be resilient against counter drift and format differences.
     // ==========================================
-    const callerPhone = formatPhone(msisdn);
-    const existingCustomer = await prisma.customer.findUnique({
-      where: { phone: callerPhone },
-      select: { successfulOrdersCount: true },
+    const callerPhone = formatPhone(msisdn);               // 0XXXXXXXXX
+    const callerPhoneIntl = toInternationalPhone(callerPhone); // 233XXXXXXXXX
+
+    // Pass 1: Customer table (fast path — both phone formats)
+    const existingCustomer = await prisma.customer.findFirst({
+      where: {
+        phone: { in: [callerPhone, callerPhoneIntl] },
+      },
+      select: { phone: true, successfulOrdersCount: true },
     });
 
-    const isEligible =
-      existingCustomer && existingCustomer.successfulOrdersCount > 0;
+    let isEligible = (existingCustomer?.successfulOrdersCount ?? 0) > 0;
+
+    // Pass 2: Direct order lookup (fallback for stale/missing counters).
+    // Handles customers whose orders completed before the tracking counter
+    // was set up, or whose counter was never incremented due to a bug.
+    if (!isEligible) {
+      const completedOrder = await prisma.order.findFirst({
+        where: {
+          customerPhone: { in: [callerPhone, callerPhoneIntl] },
+          status: "completed",
+        },
+        select: { id: true },
+      });
+      isEligible = completedOrder !== null;
+    }
+
+    logger.info("USSD eligibility check", {
+      sessionId,
+      callerPhone,
+      customerRecordFound: !!existingCustomer,
+      successfulOrdersCount: existingCustomer?.successfulOrdersCount ?? null,
+      isEligible,
+    });
 
     if (!isEligible) {
-      logger.info("USSD access denied — not an existing customer", {
-        sessionId,
-        callerPhone,
-        successfulOrdersCount: existingCustomer?.successfulOrdersCount ?? null,
-      });
       return {
         message:
           "Welcome to DataGuy!\nPlease make your first purchase at dataguy.shop to unlock USSD access.",
         reply: false,
       };
     }
+
 
     // ==========================================
     // NEW SESSION — Welcome and ask for agent code
