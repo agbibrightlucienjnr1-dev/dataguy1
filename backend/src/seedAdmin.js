@@ -1,3 +1,13 @@
+import "dotenv/config"; // Load environment variables at the very beginning
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Configure dotenv to look for .env file in the backend root directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const envPath = join(__dirname, '..', '..', '.env');
+import('dotenv').then(dotenv => dotenv.config({ path: envPath }));
+
 import { getPrisma } from "./config/database.js";
 import { hashPassword } from "./utils/password.js";
 import { logger } from "./utils/logger.js";
@@ -89,20 +99,16 @@ const isMainModule = import.meta.url === `file://${process.argv[1]?.replace(/\\/
   process.argv[1]?.includes("seedAdmin.js");
 
 if (isMainModule) {
-  // Load environment variables if running directly
-  import("dotenv").then((dotenv) => {
-    dotenv.config();
-    import("./config/database.js").then(({ initDatabase, closeDatabase }) => {
-      initDatabase()
-        .then(() => seedAdmin(true)) // Disconnect after seeding when run directly
-        .then(() => closeDatabase())
-        .then(() => {
-          process.exit(0);
-        })
-        .catch((error) => {
-          console.error("Failed to seed admin:", error);
-          process.exit(1);
-        });
-    });
+  // Environment variables are already loaded at the top
+  import("./config/database.js").then(async ({ initDatabase, closeDatabase }) => {
+    try {
+      await initDatabase();
+      await seedAdmin(true); // Disconnect after seeding when run directly
+      await closeDatabase();
+      process.exit(0);
+    } catch (error) {
+      console.error("Failed to seed admin:", error);
+      process.exit(1);
+    }
   });
 }
