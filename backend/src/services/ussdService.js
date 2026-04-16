@@ -151,7 +151,7 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
         return await handleRecipient(prisma, session, input);
 
       case "CONFIRMATION":
-        return await handleConfirmation(prisma, session, input);
+        return await handleConfirmation(prisma, session, input, moolreNetwork);
 
       default:
         // Unknown stage, restart
@@ -390,7 +390,7 @@ async function handleRecipient(prisma, session, input) {
  * Stage: CONFIRMATION
  * User confirms (1) or cancels (2).
  */
-async function handleConfirmation(prisma, session, input) {
+async function handleConfirmation(prisma, session, input, moolreNetwork) {
   if (input === "2") {
     // Cleanup session
     await prisma.ussdSession.delete({ where: { id: session.id } }).catch(() => {});
@@ -500,17 +500,24 @@ async function handleConfirmation(prisma, session, input) {
 
   try {
     if (activeProvider === "moolre") {
-      // Determine Moolre network code from the caller's network
-      // moolreNetwork from USSD payload maps: 3=MTN, 5=AT, 6=Telecel
-      let callerNetwork;
-      const networkNum = parseInt(session.msisdn?.length > 0 ? "MTN" : "MTN"); // fallback
-      // Use the bundle's network as a reasonable fallback for Moolre's channel code
-      callerNetwork = bundle.network;
+      // Map Moolre's inbound network integer to the network key used by getNetworkCode().
+      // Moolre sends: 3=MTN, 5=AT, 6=Telecel — this is the CALLER's mobile network,
+      // which is what we must charge, regardless of which data network they are buying.
+      const MOOLRE_NETWORK_MAP = { 3: "MTN", 5: "AT", 6: "TELECEL" };
+      const callerNetworkKey =
+        MOOLRE_NETWORK_MAP[moolreNetwork] || bundle.network;
+
+      logger.info("Initiating Moolre USSD payment", {
+        orderId: order.id,
+        moolreNetwork,
+        callerNetworkKey,
+        payerPhone: toInternationalPhone(payerPhone),
+      });
 
       await initiateMoolrePayment({
         amount: totalAmount,
         phone: toInternationalPhone(payerPhone),
-        network: callerNetwork,
+        network: callerNetworkKey,
         reference: order.id,
       });
 
@@ -519,9 +526,7 @@ async function handleConfirmation(prisma, session, input) {
         reply: false,
       };
     } else {
-      // Paystack — initialize and the webhook handles the rest
-      // For USSD, we use Paystack's standard initialize which supports mobile_money channel
-      // The customer will receive a mobile money prompt automatically
+      // Paystack — initialize a web payment; customer completes on dataguy.shop
       const callbackUrl = `${process.env.FRONTEND_URL || "https://www.dataguy.shop"}/payment/callback`;
 
       await initializeTransaction({
@@ -549,6 +554,7 @@ async function handleConfirmation(prisma, session, input) {
     logger.error("USSD payment initiation failed", {
       orderId: order.id,
       error: payError.message,
+      stack: payError.stack,
     });
 
     return {
@@ -561,6 +567,19 @@ async function handleConfirmation(prisma, session, input) {
 // ==========================================
 // HELPER FUNCTIONS
 // ==========================================
+
+/**
+ * Convert a volume string (e.g. "500MB", "1GB", "1.5GB") to megabytes
+ * for correct numeric sorting.
+ */
+function parseVolumeToMB(volume) {
+  if (!volume) return 0;
+  const str = volume.toString().toUpperCase().trim();
+  const match = str.match(/^([\d.]+)\s*(GB|MB)$/);
+  if (!match) return 0;
+  const num = parseFloat(match[1]);
+  return match[2] === "GB" ? num * 1024 : num;
+}
 
 /**
  * Get bundles for agent + network, with agent pricing
@@ -599,7 +618,8 @@ async function getAgentBundles(prisma, agentId, networkKey) {
       network: b.network,
       volume: b.volume,
       price: pricesMap.get(b.id),
-    }));
+    }))
+    .sort((a, b) => parseVolumeToMB(a.volume) - parseVolumeToMB(b.volume));
 }
 
 /**
