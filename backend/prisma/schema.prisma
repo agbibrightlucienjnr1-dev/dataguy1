@@ -15,7 +15,7 @@ model User {
   role                UserRole        @default(agent)
   parentAgentId       String?         @map("parent_agent_id")
   createdAt           DateTime        @default(now()) @map("created_at")
-  agentCode           Int             @unique @default(autoincrement()) @map("agent_code")
+  agentCode           Int             @unique @map("agent_code")
   paymentLinkCode     String?         @unique @map("payment_link_code")
   shopName            String?         @map("shop_name")
   preferences         Json?

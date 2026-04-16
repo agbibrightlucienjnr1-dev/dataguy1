@@ -9,6 +9,22 @@ import { AppError } from "../middlewares/errorHandler.js";
 import { createId } from "@paralleldrive/cuid2";
 
 /**
+ * Helper to generate the next multiple of 3 or 4 agent code
+ * @param {Object} prisma - Prisma client instance
+ * @returns {Promise<number>} - Next valid agent code
+ */
+const getNextAgentCode = async (prisma) => {
+  const result = await prisma.user.aggregate({
+    _max: { agentCode: true },
+  });
+  let nextCode = (result._max.agentCode || 0) + 1;
+  while (nextCode % 3 !== 0 && nextCode % 4 !== 0) {
+    nextCode++;
+  }
+  return nextCode;
+};
+
+/**
  * Register a new user
  * @param {Object} userData - User registration data
  * @returns {Promise<Object>} - Created user and token
@@ -83,6 +99,9 @@ export const registerUser = async (userData) => {
   // Generate unique payment link code
   const paymentLinkCode = createId();
 
+  // Generate next multiple of 3 or 4 agent code
+  const nextAgentCode = await getNextAgentCode(prisma);
+
   // Create user
   const user = await prisma.user.create({
     data: {
@@ -93,6 +112,7 @@ export const registerUser = async (userData) => {
       role: role || "agent",
       parentAgentId: role === "sub_agent" ? parentAgent.id : null,
       paymentLinkCode,
+      agentCode: nextAgentCode,
     },
     select: {
       id: true,
