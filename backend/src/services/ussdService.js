@@ -2,7 +2,7 @@ import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 import { getActivePaymentProvider, getSystemSettings } from "./settingsService.js";
-import { initializeTransaction } from "./paystackService.js";
+import { chargeViaMobileMoney } from "./paystackService.js";
 import { initiateMoolrePayment } from "./moolreService.js";
 import { upsertCustomerOnOrderPlacement } from "./customerService.js";
 import { Prisma } from "@prisma/client";
@@ -324,15 +324,22 @@ async function handleRecipient(prisma, session, input) {
   if (input === "0") {
     recipient = formatPhone(session.msisdn);
   } else {
-    // Basic validation: 10 digits starting with 0, or 12 digits starting with 233
-    const cleaned = input.replace(/\s/g, "");
+    // Strip ALL non-digit characters (USSD platforms can send hyphens,
+    // spaces, or other artifacts alongside the digits).
+    const cleaned = input.replace(/\D/g, "");
+
     if (/^0\d{9}$/.test(cleaned)) {
+      // Standard local format: 0XXXXXXXXX (10 digits)
       recipient = cleaned;
     } else if (/^233\d{9}$/.test(cleaned)) {
+      // International format: 233XXXXXXXXX (12 digits)
       recipient = "0" + cleaned.slice(3);
+    } else if (/^\d{9}$/.test(cleaned)) {
+      // 9 digits — user omitted the leading 0, prepend it
+      recipient = "0" + cleaned;
     } else {
       return {
-        message: "Invalid number.\nEnter recipient number\nor 0 for your number:",
+        message: "Invalid number.\nEnter a valid 10-digit number\nor 0 to use your number:",
         reply: true,
       };
     }
@@ -526,27 +533,22 @@ async function handleConfirmation(prisma, session, input, moolreNetwork) {
         reply: false,
       };
     } else {
-      // Paystack — initialize a web payment; customer completes on dataguy.shop
-      const callbackUrl = `${process.env.FRONTEND_URL || "https://www.dataguy.shop"}/payment/callback`;
+      // Paystack mobile money charge — sends a MoMo PIN prompt directly
+      // to the customer's phone. No web redirect needed.
+      const MOOLRE_NETWORK_MAP = { 3: "MTN", 5: "AT", 6: "TELECEL" };
+      const callerNetworkKey =
+        MOOLRE_NETWORK_MAP[moolreNetwork] || bundle.network;
 
-      await initializeTransaction({
-        email: payerPhone + "@customer.dataguy.com",
-        amount: totalAmount.toString(),
+      await chargeViaMobileMoney({
+        amount: totalAmount,
+        phone: payerPhone,          // local format: 0XXXXXXXXX
+        network: callerNetworkKey,
         reference: order.id,
-        callbackUrl,
-        metadata: {
-          orderId: order.id,
-          customerPhone,
-          bundleId: bundle.id,
-          sellerId: agent.id,
-          sellerName: agent.name,
-          bundleInfo: `${bundle.network} ${bundle.volume}`,
-          source: "ussd",
-        },
+        email: payerPhone + "@customer.dataguy.com",
       });
 
       return {
-        message: `Order placed!\nRef: ${order.id.slice(0, 8)}\nComplete payment at dataguy.shop or check your phone.`,
+        message: "Payment prompt sent to your phone.\nAuthorize to complete purchase.",
         reply: false,
       };
     }

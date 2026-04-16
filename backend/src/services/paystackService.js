@@ -250,3 +250,115 @@ export const getTransaction = async (transactionId) => {
       : new AppError("Failed to get transaction details", 500);
   }
 };
+
+/**
+ * Charge a customer directly via mobile money (Ghana).
+ * Paystack sends a MoMo PIN prompt to the customer's phone.
+ * Use this for USSD flows where redirecting to a URL is not possible.
+ *
+ * @param {Object} params
+ * @param {string|number} params.amount  - Amount in GHS (will be converted to pesewas)
+ * @param {string} params.phone          - Customer phone in local format (0XXXXXXXXX)
+ * @param {string} params.network        - Network key: "MTN" | "TELECEL" | "AT" | "AIRTELTIGO"
+ * @param {string} params.reference      - Unique reference (orderId)
+ * @param {string} params.email          - Customer email (required by Paystack)
+ */
+export const chargeViaMobileMoney = async ({
+  amount,
+  phone,
+  network,
+  reference,
+  email,
+}) => {
+  // Paystack mobile_money provider codes for GHS
+  const NETWORK_TO_PROVIDER = {
+    MTN: "mtn",
+    TELECEL: "vod",
+    VODAFONE: "vod",
+    AT: "tgo",
+    AIRTELTIGO: "tgo",
+  };
+
+  const provider = NETWORK_TO_PROVIDER[network?.toUpperCase()];
+  if (!provider) {
+    throw new AppError(
+      `Unsupported network for mobile money charge: ${network}`,
+      400,
+    );
+  }
+
+  // Paystack expects amount in the lowest currency unit (pesewas)
+  const amountInPesewas = Math.round(parseFloat(amount.toString()) * 100);
+
+  const payload = {
+    email,
+    amount: amountInPesewas,
+    currency: "GHS",
+    reference,
+    mobile_money: {
+      phone, // local format: 0241234567
+      provider,
+    },
+  };
+
+  logger.info("Initiating Paystack mobile money charge", {
+    reference,
+    phone,
+    network,
+    provider,
+    amountInPesewas,
+  });
+
+  try {
+    const response = await fetch(`${PAYSTACK_BASE_URL}/charge`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getSecretKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    logger.info("Paystack charge response", {
+      reference,
+      httpStatus: response.status,
+      status: data.data?.status,
+      message: data.message,
+    });
+
+    if (!response.ok || !data.status) {
+      throw new AppError(
+        data.message || "Failed to initiate mobile money charge",
+        response.status || 400,
+      );
+    }
+
+    const chargeStatus = data.data?.status;
+
+    if (chargeStatus === "failed") {
+      throw new AppError(
+        data.data?.display_text || data.message || "Mobile money charge failed",
+        400,
+      );
+    }
+
+    // "pay_offline" = prompt sent to phone ✓
+    // "pending"     = awaiting customer action ✓
+    return {
+      success: true,
+      status: chargeStatus,
+      reference,
+    };
+  } catch (error) {
+    logger.error("Error initiating Paystack mobile money charge", {
+      reference,
+      error: error.message,
+    });
+    throw error instanceof AppError
+      ? error
+      : new AppError("Mobile money charge failed", 500);
+  }
+};
+
