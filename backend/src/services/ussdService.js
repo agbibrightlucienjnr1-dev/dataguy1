@@ -570,7 +570,7 @@ async function handleConfirmation(prisma, session, input, moolreNetwork) {
       });
 
       return {
-        message: "Payment prompt sent to your phone.\nAuthorize to complete purchase.",
+        message: "Payment prompt sent to your phone.\nAuthorize to complete purchase or check approvals.",
         reply: false,
       };
     }
