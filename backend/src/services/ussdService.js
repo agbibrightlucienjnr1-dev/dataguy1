@@ -94,7 +94,7 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
     if (!isEligible) {
       return {
         message:
-          "Welcome to DataGuy!\nPlease make your first purchase at dataguy.shop to unlock USSD access.",
+          "UNKNOWNED APPLICATION",
         reply: false,
       };
     }
@@ -386,7 +386,7 @@ async function handleRecipient(prisma, session, input) {
   const settings = await getSystemSettings();
   const provider = settings.activePaymentProvider;
   const priceNum = parseFloat(price.toString());
-  
+
   let feeValue;
   if (provider === "moolre") {
     feeValue = priceNum * (parseFloat(settings.moolreFeePercentage.toString()) / 100);
@@ -397,7 +397,7 @@ async function handleRecipient(prisma, session, input) {
       feeValue = priceNum * (parseFloat(settings.paystackFeePercentage.toString()) / 100);
     }
   }
-  
+
   const total = (priceNum + feeValue).toFixed(2);
 
   await prisma.ussdSession.update({
@@ -422,7 +422,7 @@ async function handleRecipient(prisma, session, input) {
 async function handleConfirmation(prisma, session, input, moolreNetwork) {
   if (input === "2") {
     // Cleanup session
-    await prisma.ussdSession.delete({ where: { id: session.id } }).catch(() => {});
+    await prisma.ussdSession.delete({ where: { id: session.id } }).catch(() => { });
     return { message: "Order cancelled.", reply: false };
   }
 
