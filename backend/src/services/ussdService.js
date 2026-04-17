@@ -94,7 +94,7 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
     if (!isEligible) {
       return {
         message:
-          "UNKNOWNED APPLICATION",
+          "UNKNOWN APPLICATION",
         reply: false,
       };
     }
