@@ -223,8 +223,10 @@ export const confirmPayment = async (orderId, paymentReference) => {
     try {
       const { sendSMS } = await import("./smsService.js");
       const agentUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/buy/${order.seller.paymentLinkCode}`;
+      const ussdCode = "*203*138#";
+      const agentCode = order.seller.agentCode;
       
-      const message = `Your payment for ${order.bundle.network} ${order.bundle.volume} is confirmed! We truly appreciate your trust in DataGuy. Keep enjoying seamless connectivity. Reorder anytime: ${agentUrl}`;
+      const message = `Your payment for ${order.bundle.network} ${order.bundle.volume} is confirmed! We truly appreciate your trust in DataGuy. Keep enjoying seamless connectivity. Reorder anytime on our website: ${agentUrl} or dial ${ussdCode} and use Agent Code: ${agentCode}`;
       
       // Dispatch asynchronously without awaiting to prevent blocking the flow
       sendSMS(order.customerPhone, message).catch(err => {
