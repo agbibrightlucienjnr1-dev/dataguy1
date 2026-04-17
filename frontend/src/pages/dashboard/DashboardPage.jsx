@@ -200,7 +200,7 @@ export default function DashboardPage() {
                   <h3 className="font-semibold">USSD Code</h3>
                 </div>
                 <p className="text-indigo-200 text-sm">
-                  USSD code coming soon!
+                  USSD code is now live! Dial *203*138# and enter your agent code to get started.
                 </p>
               </div>
               <div className="flex items-center gap-2">
