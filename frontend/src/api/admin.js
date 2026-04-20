@@ -201,4 +201,10 @@ export const adminApi = {
    * @param {Object} data - { target: string, customNumber?: string, message: string }
    */
   sendSMS: (data) => apiClient.post("/admin/sms/send", data),
+
+  /**
+   * Manually add or update customers
+   * @param {string[]} phones - Array of phone numbers
+   */
+  addCustomers: (phones) => apiClient.post("/admin/customers", { phones }),
 };
