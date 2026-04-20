@@ -156,6 +156,34 @@ export const cleanupOldWalletTransactions = async (daysOld = 180) => {
 };
 
 /**
+ * Clean up old high-volume analytics visitor logs.
+ * We safely drop raw page-view data older than 90 days.
+ */
+export const cleanupOldVisitorLogs = async (daysOld = 90) => {
+  const prisma = getPrisma();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  try {
+    const count = await prisma.visitorLog.count({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+
+    if (count === 0) return { success: true, deleted: 0 };
+
+    const result = await prisma.visitorLog.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+
+    logger.success("Old visitor logs cleaned up", { count: result.count });
+    return { success: true, deleted: result.count };
+  } catch (error) {
+    logger.error("Error cleaning up visitor logs", error);
+    throw error;
+  }
+};
+
+/**
  * Vacuum and optimize database
  * Runs PostgreSQL VACUUM to reclaim space
  * @returns {Promise<Object>} Optimization results
@@ -309,6 +337,9 @@ export const runFullCleanup = async (options = {}) => {
     results.transactions = await cleanupOldWalletTransactions(
       cleanupTransactionsDays,
     );
+
+    // Clean up old logs
+    results.visitorLogs = await cleanupOldVisitorLogs(90);
 
     // Optimize database
     if (optimize) {

@@ -20,6 +20,7 @@ import {
   getReportsData,
   sendAdminSMS,
   addCustomers,
+  getAnalyticsDashboard,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -96,6 +97,7 @@ router.patch("/bundles/:bundleId/status", toggleBundleStatus); // Activate/deact
  * Analytics Reports
  */
 router.get("/reports", getReportsData);
+router.get("/analytics", getAnalyticsDashboard);
 
 /**
  * SMS/Notifications Management

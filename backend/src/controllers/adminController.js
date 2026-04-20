@@ -10,6 +10,7 @@ import {
 } from "../services/adminService.js";
 import { initiateHubnetOrder } from "../services/orderService.js";
 import { addCustomersManually } from "../services/customerService.js";
+import { getAnalyticsStats, getAnalyticsChartData } from "../services/analyticsService.js";
 import { checkBalance } from "../services/hubnetService.js";
 import {
   getDatabaseSize,
@@ -645,6 +646,25 @@ export const addCustomers = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     logger.error("Error adding customers manually", error);
-    throw error;
+    throw new AppError("Failed to add customers manually", 500);
   }
+});
+
+/**
+ * Get internal analytics tracking data
+ * GET /api/admin/analytics
+ */
+export const getAnalyticsDashboard = asyncHandler(async (req, res) => {
+  const [stats, chartData] = await Promise.all([
+    getAnalyticsStats(30),
+    getAnalyticsChartData(7)
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      stats,
+      chartData
+    }
+  });
 });

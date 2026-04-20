@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 
 // Layouts
 import { AuthLayout, DashboardLayout } from "./components/layout";
+import { AnalyticsTracker } from "./components/AnalyticsTracker";
 
 // Auth Guards
 import { RequireAuth, RequireAdmin, GuestOnly } from "./components/auth";
@@ -43,11 +44,13 @@ import {
   AdminSystemPage,
   AdminReportsPage,
   AdminSmsPage,
+  AdminAnalyticsPage,
 } from "./pages/admin";
 
 function App() {
   return (
     <BrowserRouter>
+      <AnalyticsTracker />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
@@ -95,6 +98,7 @@ function App() {
             />
             <Route path="/admin/system" element={<AdminSystemPage />} />
             <Route path="/admin/reports" element={<AdminReportsPage />} />
+            <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             <Route path="/admin/sms" element={<AdminSmsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />

@@ -207,4 +207,9 @@ export const adminApi = {
    * @param {string[]} phones - Array of phone numbers
    */
   addCustomers: (phones) => apiClient.post("/admin/customers", { phones }),
+
+  /**
+   * Fetch robust DB-driven traffic telemetry
+   */
+  getAnalyticsDashboard: () => apiClient.get("/admin/analytics"),
 };

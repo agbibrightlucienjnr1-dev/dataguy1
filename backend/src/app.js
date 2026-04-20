@@ -21,6 +21,7 @@ import customerRoutes from "./routes/customerRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import ussdRoutes from "./routes/ussdRoutes.js";
+import trackingRoutes from "./routes/trackingRoutes.js";
 
 const app = express();
 
@@ -199,6 +200,7 @@ app.use("/api/customers", standardPaginationLimiter, customerRoutes);
 app.use("/api/agent", standardPaginationLimiter, agentRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/ussd", ussdRoutes);
+app.use("/api/track", trackingRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

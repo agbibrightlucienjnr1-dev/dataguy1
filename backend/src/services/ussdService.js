@@ -5,6 +5,7 @@ import { getActivePaymentProvider, getSystemSettings } from "./settingsService.j
 import { chargeViaMobileMoney, submitPaystackOTP } from "./paystackService.js";
 import { initiateMoolrePayment } from "./moolreService.js";
 import { upsertCustomerOnOrderPlacement } from "./customerService.js";
+import { trackEvent } from "./analyticsService.js";
 import { Prisma } from "@prisma/client";
 
 // Network mapping for display and Moolre channel codes
@@ -104,6 +105,15 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
     // NEW SESSION — Welcome and ask for agent code
     // ==========================================
     if (isNew) {
+      // Track the USSD visit
+      trackEvent({
+        sessionId,
+        eventType: "USSD_DIAL",
+        path: "*203*138#",
+        sellerId: null,
+        device: "Feature Phone / USSD",
+      }).catch((e) => logger.error("USSD tracking error", { e }));
+
       // Create/reset session
       await prisma.ussdSession.upsert({
         where: { id: sessionId },

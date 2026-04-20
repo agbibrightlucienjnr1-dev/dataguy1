@@ -27,6 +27,7 @@ model User {
   wallet              Wallet?
   approvedWithdrawals Withdrawal[]    @relation("ApprovedWithdrawals")
   withdrawals         Withdrawal[]    @relation("UserWithdrawals")
+  visitorLogs         VisitorLog[]    @relation("SellerVisitorLogs")
 
   @@map("users")
 }
@@ -286,4 +287,21 @@ model PasswordResetToken {
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("password_reset_tokens")
+}
+
+model VisitorLog {
+  id         String   @id @default(uuid())
+  sessionId  String   @map("session_id")
+  eventType  String   @map("event_type") 
+  path       String?  @map("path")
+  sellerId   String?  @map("seller_id")
+  device     String?  @map("device")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  seller     User?    @relation("SellerVisitorLogs", fields: [sellerId], references: [id], onDelete: SetNull)
+
+  @@index([sellerId])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@map("visitor_logs")
 }
