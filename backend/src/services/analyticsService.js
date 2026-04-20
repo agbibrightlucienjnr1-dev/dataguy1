@@ -49,9 +49,8 @@ export const getAnalyticsStats = async (days = 30) => {
         where: { eventType: "PAGE_VIEW", createdAt: { gte: dateFrom } },
       }),
       
-      // 2. Unique Visitors (distinct session IDs)
-      // Prisma raw query is the cleanest way to count distinct without fetching all
-      prisma.$queryRaw`SELECT COUNT(DISTINCT session_id) as count FROM visitor_logs WHERE event_type = 'PAGE_VIEW' AND created_at >= ${dateFrom}`,
+      // 2. Unique Leads (distinct session IDs - Web + USSD)
+      prisma.$queryRaw`SELECT COUNT(DISTINCT session_id) as count FROM visitor_logs WHERE created_at >= ${dateFrom}`,
 
       // 3. USSD Dials
       prisma.visitorLog.count({
@@ -69,6 +68,55 @@ export const getAnalyticsStats = async (days = 30) => {
       }),
     ]);
 
+    // 6. Device Breakdown
+    const deviceGroups = await prisma.visitorLog.groupBy({
+      by: ['device'],
+      _count: { device: true },
+      where: { createdAt: { gte: dateFrom } }
+    });
+
+    const deviceBreakdown = deviceGroups.map(g => ({
+      name: g.device || "Unknown",
+      value: g._count.device
+    }));
+
+    // 7. Top Performing Agents by Footprints
+    const topAgentGroups = await prisma.visitorLog.groupBy({
+      by: ['sellerId'],
+      _count: { sessionId: true },
+      where: { sellerId: { not: null }, createdAt: { gte: dateFrom } },
+      orderBy: { _count: { sessionId: 'desc' } },
+      take: 5
+    });
+
+    let topAgents = [];
+    if (topAgentGroups.length > 0) {
+      const agentIds = topAgentGroups.map(g => g.sellerId);
+      const agents = await prisma.user.findMany({
+        where: { id: { in: agentIds } },
+        select: { id: true, name: true, agentCode: true }
+      });
+      // Merge
+      topAgents = topAgentGroups.map(g => {
+        const ag = agents.find(a => a.id === g.sellerId) || {};
+        return {
+          sellerId: g.sellerId,
+          name: ag.name || "Unknown Agent",
+          code: ag.agentCode || "???",
+          views: g._count.sessionId
+        };
+      });
+    }
+
+    // 8. Top Entry Paths (most popular portal links)
+    const topPaths = await prisma.visitorLog.groupBy({
+      by: ['path'],
+      _count: { sessionId: true },
+      where: { eventType: "PAGE_VIEW", createdAt: { gte: dateFrom } },
+      orderBy: { _count: { sessionId: 'desc' } },
+      take: 5
+    });
+
     const uniqueCount = uniqueVisitors[0] ? Number(uniqueVisitors[0].count) : 0;
     const conversionRate = uniqueCount > 0 ? ((totalOrders / uniqueCount) * 100).toFixed(2) : "0.00";
 
@@ -78,7 +126,10 @@ export const getAnalyticsStats = async (days = 30) => {
       ussdDials,
       checkoutStarts,
       totalOrders,
-      conversionRate: parseFloat(conversionRate)
+      conversionRate: parseFloat(conversionRate),
+      deviceBreakdown,
+      topAgents,
+      topPaths: topPaths.map(p => ({ path: p.path, views: p._count.sessionId }))
     };
   } catch (error) {
     logger.error("Error fetching analytics stats", error);

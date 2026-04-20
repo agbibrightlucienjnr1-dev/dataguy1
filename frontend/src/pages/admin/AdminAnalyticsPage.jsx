@@ -15,7 +15,10 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  Legend 
+  Legend,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
 import { adminApi } from "../../api/admin";
 
@@ -105,26 +108,125 @@ export const AdminAnalyticsPage = () => {
         />
       </div>
 
-      <div className="bg-white p-6 rounded-xl border border-slate-200">
-        <div className="mb-6">
-           <h3 className="text-lg font-semibold text-slate-900">Traffic Trends (Last 7 Days)</h3>
-           <p className="text-sm text-slate-500">Compare web visits against offline USSD dial usage.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 col-span-1 lg:col-span-2">
+          <div className="mb-6">
+             <h3 className="text-lg font-semibold text-slate-900">Traffic Trends (Last 7 Days)</h3>
+             <p className="text-sm text-slate-500">Compare web visits against offline USSD dial usage.</p>
+          </div>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend verticalAlign="top" height={36}/>
+                <Line type="monotone" name="Web Views" dataKey="views" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                <Line type="monotone" name="Unique Web Users" dataKey="unique" stroke="#10B981" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" name="USSD Dials" dataKey="ussd" stroke="#8B5CF6" strokeWidth={3} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-              />
-              <Legend verticalAlign="top" height={36}/>
-              <Line type="monotone" name="Web Views" dataKey="views" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
-              <Line type="monotone" name="Unique Web Users" dataKey="unique" stroke="#10B981" strokeWidth={3} dot={{ r: 4 }} />
-              <Line type="monotone" name="USSD Dials" dataKey="ussd" stroke="#8B5CF6" strokeWidth={3} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
+
+        <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-slate-900">Device Analytics</h3>
+            <p className="text-sm text-slate-500">Traffic breakdown by hardware.</p>
+          </div>
+          <div className="flex-1 min-h-[300px]">
+             <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats?.deviceBreakdown || []}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {(stats?.deviceBreakdown || []).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B"][index % 4]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value) => [`${value} Uses`, 'Impressions']}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend verticalAlign="bottom" height={36}/>
+                </PieChart>
+             </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Agents */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200">
+          <div className="mb-4">
+             <h3 className="text-lg font-semibold text-slate-900">Top Performing Agents</h3>
+             <p className="text-sm text-slate-500">Highest traffic drivers across 30 days.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 text-sm">
+                  <th className="pb-3 font-medium">Agent</th>
+                  <th className="pb-3 font-medium">Code</th>
+                  <th className="pb-3 font-medium text-right">Traffic Generated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats?.topAgents || []).map((agent, i) => (
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                    <td className="py-4 text-sm font-medium text-slate-900">{agent.name}</td>
+                    <td className="py-4 text-sm font-mono text-slate-500">{agent.code}</td>
+                    <td className="py-4 text-sm text-right font-bold text-indigo-600">{agent.views.toLocaleString()}</td>
+                  </tr>
+                ))}
+                {(!stats?.topAgents || stats.topAgents.length === 0) && (
+                  <tr>
+                    <td colSpan={3} className="py-8 text-center text-slate-500">No agent data recorded yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Top Paths */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200">
+          <div className="mb-4">
+             <h3 className="text-lg font-semibold text-slate-900">Popular Paths</h3>
+             <p className="text-sm text-slate-500">Most visited URLs & Entry Points.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 text-sm">
+                  <th className="pb-3 font-medium">URL Source</th>
+                  <th className="pb-3 font-medium text-right">Footprints</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats?.topPaths || []).map((path, i) => (
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                    <td className="py-4 text-sm font-medium font-mono text-slate-700 truncate max-w-xs">{path.path}</td>
+                    <td className="py-4 text-sm text-right font-bold text-emerald-600">{path.views.toLocaleString()}</td>
+                  </tr>
+                ))}
+                {(!stats?.topPaths || stats.topPaths.length === 0) && (
+                  <tr>
+                    <td colSpan={2} className="py-8 text-center text-slate-500">No path data recorded yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
