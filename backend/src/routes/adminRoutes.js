@@ -19,6 +19,7 @@ import {
   optimizeDatabaseEndpoint,
   getReportsData,
   sendAdminSMS,
+  addCustomers,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -100,5 +101,10 @@ router.get("/reports", getReportsData);
  * SMS/Notifications Management
  */
 router.post("/sms/send", sendAdminSMS);
+
+/**
+ * Customers Management
+ */
+router.post("/customers", addCustomers);
 
 export default router;
