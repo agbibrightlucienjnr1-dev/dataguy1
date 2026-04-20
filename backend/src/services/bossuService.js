@@ -1,5 +1,6 @@
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
+import axios from "axios";
 
 const BOSSU_BASE_URL = "https://bossudatahub.com/api.php";
 
@@ -54,29 +55,32 @@ const bossuRequest = async (payload) => {
     action: payload.action,
   });
 
-  const response = await fetch(BOSSU_BASE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": apiKey,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    logger.error("Bossu API HTTP error", {
-      status: response.status,
-      data,
+  try {
+    const response = await axios.post(BOSSU_BASE_URL, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": apiKey,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Application/DataGuyBackend",
+      },
+      timeout: 15000, // 15 seconds max
     });
+
+    return response.data;
+  } catch (error) {
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {};
+    
+    logger.error("Bossu API HTTP error", {
+      status,
+      data,
+      message: error.message,
+    });
+    
     throw new AppError(
-      data?.message || `Bossu API error (HTTP ${response.status})`,
-      response.status,
+      data?.message || `Bossu API error (${error.message})`,
+      status,
     );
   }
-
-  return data;
 };
 
 /**
