@@ -9,6 +9,7 @@ import {
   generateReportData,
 } from "../services/adminService.js";
 import { initiateHubnetOrder } from "../services/orderService.js";
+import { addCustomersManually } from "../services/customerService.js";
 import { checkBalance } from "../services/hubnetService.js";
 import {
   getDatabaseSize,
@@ -619,6 +620,31 @@ export const sendAdminSMS = asyncHandler(async (req, res) => {
 
   } catch (error) {
     logger.error("Error in sendAdminSMS", error);
+    throw error;
+  }
+});
+
+/**
+ * Manually insert or update customers allowing them to bypass web-order USSD limits
+ * POST /api/admin/customers
+ */
+export const addCustomers = asyncHandler(async (req, res) => {
+  const { phones } = req.body;
+
+  if (!Array.isArray(phones)) {
+    throw new AppError("Phones must be provided as an array of strings", 400);
+  }
+
+  try {
+    const count = await addCustomersManually(phones);
+    
+    res.status(200).json({
+      success: true,
+      message: `Successfully added ${count} new eligible customer(s).`,
+      count,
+    });
+  } catch (error) {
+    logger.error("Error adding customers manually", error);
     throw error;
   }
 });
