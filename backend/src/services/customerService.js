@@ -171,3 +171,55 @@ export const incrementCustomerSuccessfulOrders = async ({
     },
   });
 };
+
+/**
+ * Manually add a batch of customers from the admin panel ensuring they bypass USSD limits
+ * by receiving successfulOrdersCount = 1
+ */
+export const addCustomersManually = async (phones) => {
+  const prisma = getPrisma();
+  const now = new Date();
+  
+  // Clean, validate, and deduplicate
+  const sanitizedPhones = [...new Set(
+    (phones || [])
+      .map(p => typeof p === 'string' ? p.replace(/[^0-9]/g, "") : "")
+      .filter(p => /^0\d{9}$/.test(p) || /^233\d{9}$/.test(p) || /^\d{9}$/.test(p))
+  )];
+
+  if (sanitizedPhones.length === 0) return 0;
+  
+  let addedCount = 0;
+
+  for (let phone of sanitizedPhones) {
+    if (phone.length === 9) phone = "0" + phone;
+    if (phone.startsWith("233")) phone = "0" + phone.slice(3);
+
+    const existing = await prisma.customer.findUnique({ where: { phone } });
+
+    if (!existing) {
+      await prisma.customer.create({
+        data: {
+          phone,
+          name: "Admin Added",
+          totalOrdersCount: 1, 
+          successfulOrdersCount: 1, // Crucial for USSD bypass
+          firstOrderAt: now,
+          lastOrderAt: now
+        }
+      });
+      addedCount++;
+    } else if (existing.successfulOrdersCount === 0) {
+      await prisma.customer.update({
+        where: { phone },
+        data: { 
+          successfulOrdersCount: 1,
+          totalOrdersCount: existing.totalOrdersCount === 0 ? 1 : existing.totalOrdersCount
+        } 
+      });
+      addedCount++;
+    }
+  }
+
+  return addedCount;
+};
