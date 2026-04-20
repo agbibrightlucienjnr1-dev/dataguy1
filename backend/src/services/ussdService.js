@@ -2,7 +2,7 @@ import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 import { getActivePaymentProvider, getSystemSettings } from "./settingsService.js";
-import { chargeViaMobileMoney } from "./paystackService.js";
+import { chargeViaMobileMoney, submitPaystackOTP } from "./paystackService.js";
 import { initiateMoolrePayment } from "./moolreService.js";
 import { upsertCustomerOnOrderPlacement } from "./customerService.js";
 import { Prisma } from "@prisma/client";
@@ -174,6 +174,9 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
 
       case "CONFIRMATION":
         return await handleConfirmation(prisma, session, input, moolreNetwork);
+
+      case "AWAITING_PAYMENT_OTP":
+        return await handleAwaitingOTP(prisma, session, input);
 
       default:
         // Unknown stage, restart
@@ -561,7 +564,7 @@ async function handleConfirmation(prisma, session, input, moolreNetwork) {
       const callerNetworkKey =
         MOOLRE_NETWORK_MAP[moolreNetwork] || bundle.network;
 
-      await chargeViaMobileMoney({
+      const paystackResult = await chargeViaMobileMoney({
         amount: totalAmount,
         phone: payerPhone,          // local format: 0XXXXXXXXX
         network: callerNetworkKey,
@@ -569,8 +572,19 @@ async function handleConfirmation(prisma, session, input, moolreNetwork) {
         email: payerPhone + "@customer.dataguy.com",
       });
 
+      if (paystackResult.status === "send_otp" || paystackResult.status === "send_pin") {
+         await prisma.ussdSession.update({
+           where: { id: session.id },
+           data: { stage: "AWAITING_PAYMENT_OTP" }
+         });
+         return {
+           message: paystackResult.displayText || "Paystack has sent an SMS verification code to your number. Please enter it here directly:",
+           reply: true,
+         };
+      }
+
       return {
-        message: "Payment prompt sent to your phone.\nAuthorize to complete purchase or check approvals.",
+        message: "Payment prompt sent to your phone.\nAuthorize to complete purchase or check approvals (*170#).",
         reply: false,
       };
     }
@@ -583,6 +597,62 @@ async function handleConfirmation(prisma, session, input, moolreNetwork) {
 
     return {
       message: "Order created but payment failed.\nPlease try again.",
+      reply: false,
+    };
+  }
+}
+
+// ==========================================
+// STAGE HANDLERS
+// ==========================================
+
+/**
+ * Stage: AWAITING_PAYMENT_OTP
+ * User enters an SMS OTP for Paystack initial verification or network voucher.
+ */
+async function handleAwaitingOTP(prisma, session, input) {
+  if (!input) {
+    return {
+      message: "Input cannot be empty. Please enter the verification code sent to your phone:",
+      reply: true,
+    };
+  }
+
+  if (input === "0") {
+    // Cancel logic
+    await prisma.ussdSession.update({
+      where: { id: session.id },
+      data: { stage: "AWAIT_NETWORK", bundleId: null, recipient: null, orderId: null },
+    });
+    return {
+      message: "Payment cancelled. Select Network:\n1. MTN\n2. Telecel\n3. AirtelTigo",
+      reply: true,
+    };
+  }
+
+  // Submit OTP payload
+  try {
+    const otpResult = await submitPaystackOTP(session.orderId, input);
+
+    if (otpResult.status === "send_otp" || otpResult.status === "send_pin") {
+      return {
+        message: otpResult.message || "Incorrect code. Please enter the OTP again (0 to cancel):",
+        reply: true,
+      };
+    }
+
+    return {
+      message: "Verification successful! The payment prompt has been pushed to your phone. Please authorize to complete the purchase.",
+      reply: false,
+    };
+  } catch (error) {
+    logger.error("USSD Paystack OTP submission failed", {
+      orderId: session.orderId,
+      error: error.message,
+    });
+
+    return {
+      message: "Failed to verify the OTP. " + (error.message || "Please try placing the order again."),
       reply: false,
     };
   }

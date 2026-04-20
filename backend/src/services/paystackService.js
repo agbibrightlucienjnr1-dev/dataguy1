@@ -345,11 +345,12 @@ export const chargeViaMobileMoney = async ({
     }
 
     // "pay_offline" = prompt sent to phone ✓
-    // "pending"     = awaiting customer action ✓
+    // "send_otp" / "send_pin" = awaiting customer verification via SMS PIN ✓
     return {
       success: true,
       status: chargeStatus,
       reference,
+      displayText: data.data?.display_text || data.message || "Please complete authorization.",
     };
   } catch (error) {
     logger.error("Error initiating Paystack mobile money charge", {
@@ -362,3 +363,40 @@ export const chargeViaMobileMoney = async ({
   }
 };
 
+/**
+ * Submit an SMS OTP or voucher code required by Paystack for mobile money charges that return 'send_otp'
+ * @param {string} reference - The transaction reference (order id)
+ * @param {string} otp       - The one-time PIN or voucher code entered by the user
+ */
+export const submitPaystackOTP = async (reference, otp) => {
+  logger.info("Submitting Paystack OTP", { reference });
+
+  try {
+    const response = await fetch(`${PAYSTACK_BASE_URL}/charge/submit_otp`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getSecretKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reference, otp }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.status) {
+      throw new AppError(
+        data.message || "Failed to submit Paystack OTP",
+        response.status || 400,
+      );
+    }
+
+    return {
+      success: true,
+      status: data.data?.status || (data.status ? "success" : "failed"),
+      message: data.data?.display_text || data.message,
+    };
+  } catch (error) {
+    logger.error("Error submitting Paystack OTP", { reference, error: error.message });
+    throw error instanceof AppError ? error : new AppError("OTP submission failed", 500);
+  }
+};
