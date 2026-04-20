@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { useCustomers } from "../../hooks/useCustomers";
-import { customersApi } from "../../api";
+import { customersApi, adminApi } from "../../api";
 import toast from "react-hot-toast";
-import { Card, Input, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Input, EmptyState, SkeletonTable, Modal, Button } from "../../components/ui";
 import { formatDate } from "../../utils/formatters";
-import { Search, Download, User, Phone } from "lucide-react";
+import { Search, Download, User, Phone, UserPlus, ChevronLeft, ChevronRight } from "lucide-react";
 
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -18,8 +18,14 @@ function downloadBlob(blob, filename) {
 }
 
 export default function AdminCustomersPage() {
-  const { data, isLoading, isError } = useCustomers();
+  const { data, isLoading, isError, refetch } = useCustomers();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const customers = data?.customers || [];
 
   const handleExport = async () => {
@@ -34,6 +40,26 @@ export default function AdminCustomersPage() {
     }
   };
 
+  const handleImportSubmit = async (e) => {
+    e?.preventDefault();
+    if (!importText.trim()) return;
+
+    const rawPhones = importText.split(/[\s,]+/);
+    setIsImporting(true);
+    
+    try {
+      const result = await adminApi.addCustomers(rawPhones);
+      toast.success(result.message || `Successfully imported customers`);
+      setIsImportModalOpen(false);
+      setImportText("");
+      refetch();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add customers. Ensure valid input.");
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const filteredCustomers = useMemo(() => {
     if (!searchTerm) return customers;
     const lowerSearch = searchTerm.toLowerCase();
@@ -43,6 +69,12 @@ export default function AdminCustomersPage() {
         (c.phone && c.phone.includes(lowerSearch)),
     );
   }, [customers, searchTerm]);
+
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const paginatedCustomers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredCustomers, currentPage, itemsPerPage]);
 
   return (
     <div className="space-y-6">
@@ -58,9 +90,19 @@ export default function AdminCustomersPage() {
             icon={Search}
             placeholder="Search by name or phone..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full sm:w-64"
           />
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition shadow-sm whitespace-nowrap"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Customers</span>
+          </button>
           <button
             onClick={handleExport}
             className="flex items-center gap-2 rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-medium hover:bg-indigo-700 transition shadow-sm"
@@ -107,7 +149,7 @@ export default function AdminCustomersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {filteredCustomers.map((customer) => (
+                {paginatedCustomers.map((customer) => (
                   <tr
                     key={customer.phone}
                     className="hover:bg-slate-50 transition-colors"
@@ -149,7 +191,71 @@ export default function AdminCustomersPage() {
             </table>
           </div>
         )}
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-sm text-slate-500">
+              Page {currentPage} of {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
+
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Add USSD-Eligible Customers"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsImportModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isImporting}
+              disabled={!importText.trim()}
+              onClick={handleImportSubmit}
+            >
+              Import Customers
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleImportSubmit} className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Paste phone numbers separated by spaces, commas, or new lines. They will automatically bypass the USSD web-order block.
+          </p>
+          <textarea
+            className="w-full h-32 rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            placeholder="0241234567, 0557654321..."
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+          />
+        </form>
+      </Modal>
     </div>
   );
 }
