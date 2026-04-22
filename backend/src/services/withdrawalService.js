@@ -132,8 +132,8 @@ export const processAutomaticWithdrawal = async (userId, withdrawalData) => {
       where: { id: withdrawal.id },
       data: {
         status: newStatus,
-        paystackTransferCode: transferResponse.transferCode, 
-        paystackResponse: transferResponse.message, 
+        paystackTransferCode: transferResponse.transferCode || transferResponse.transactionid || null, 
+        paystackResponse: Array.isArray(transferResponse.message) ? transferResponse.message.join("; ") : transferResponse.message, 
         completedAt: newStatus === "completed" ? new Date() : null,
         processedAt: new Date()
       }
