@@ -6,18 +6,30 @@ const MOOLRE_API_URL = "https://api.moolre.com/open/transact";
 const getMoolreConfig = () => {
   const username = process.env.MOOLRE_USERNAME;
   const publicKey = process.env.MOOLRE_PUBLIC_KEY;
+  const privateKey = process.env.MOOLRE_API_KEY || process.env.MOOLRE_PUBLIC_KEY; // Fallback for now if not set
   const accountNumber = process.env.MOOLRE_ACCOUNT_NUMBER;
 
   if (!username || !publicKey || !accountNumber) {
     throw new AppError("Moolre configuration is missing in environment variables", 500);
   }
 
-  return { username, publicKey, accountNumber };
+  return { username, publicKey, privateKey, accountNumber };
 };
 
 const getNetworkCode = (network) => {
   const map = {
     "MTN": "13",
+    "TELECEL": "6",
+    "VODAFONE": "6",
+    "AT": "7",
+    "AIRTELTIGO": "7",
+  };
+  return map[network?.toUpperCase()] || "";
+};
+
+const getTransferNetworkCode = (network) => {
+  const map = {
+    "MTN": "1", // MTN implies 1 for Transfers
     "TELECEL": "6",
     "VODAFONE": "6",
     "AT": "7",
@@ -212,3 +224,110 @@ export const verifyMoolreTransaction = async (reference) => {
     throw error instanceof AppError ? error : new AppError("Transaction verification failed", 500);
   }
 };
+
+/**
+ * Validate Account Name
+ */
+export const validateAccountName = async ({ network, accountNumber }) => {
+  const { username, privateKey, accountNumber: moolreAccount } = getMoolreConfig();
+
+  logger.info("Validating Moolre account name", { network, accountNumber });
+
+  try {
+    const response = await fetch(`${MOOLRE_API_URL}/validate`, {
+      method: "POST",
+      headers: {
+        "X-API-USER": username,
+        "X-API-KEY": privateKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: 1,
+        channel: getTransferNetworkCode(network),
+        currency: "GHS",
+        receiver: accountNumber,
+        accountnumber: moolreAccount,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== 1) {
+      logger.error("Moolre account name validation failed", data);
+      throw new AppError(data.message || "Failed to validate account name", response.status || 400);
+    }
+
+    return {
+      success: true,
+      data: {
+        accountName: data.data,
+      },
+      message: data.message,
+    };
+  } catch (error) {
+    logger.error("Error validating Moolre account name", error);
+    throw error instanceof AppError ? error : new AppError("Account validation failed", 500);
+  }
+};
+
+/**
+ * Initiate Moolre Transfer
+ */
+export const initiateMoolreTransfer = async ({ amount, network, accountNumber, reference, reason }) => {
+  const { username, privateKey, accountNumber: moolreAccount } = getMoolreConfig();
+
+  const payload = {
+    type: 1,
+    channel: getTransferNetworkCode(network),
+    currency: "GHS",
+    amount: amount.toString(),
+    receiver: accountNumber,
+    externalref: reference,
+    reference: reason || "DataGuy Withdrawal",
+    accountnumber: moolreAccount,
+  };
+
+  logger.info("Initializing Moolre transfer", { reference, accountNumber, network, amount });
+
+  try {
+    const response = await fetch(`${MOOLRE_API_URL}/transfer`, {
+      method: "POST",
+      headers: {
+        "X-API-USER": username,
+        "X-API-KEY": privateKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      logger.error("Moolre transfer initialization failed (HTTP error)", data);
+      throw new AppError(data.message || "Failed to initiate Moolre transfer", response.status || 400);
+    }
+
+    const txstatus = data.data?.txstatus;
+    const isFailed = data.status === "0" || txstatus === 2 || (data.status !== 1 && data.status !== "1");
+
+    // Do not assume failure unless explicitly failed
+    if (isFailed && data.code !== "OBGH01") {
+       logger.error("Moolre transfer initiation returned failure", data);
+       throw new AppError(data.message?.[0] || data.message || "Transfer failed", 400);
+    }
+    
+    logger.info("Moolre transfer initiation response", { reference, txstatus, code: data.code });
+
+    return {
+      success: true,
+      status: txstatus === 1 ? "success" : txstatus === 2 ? "failed" : "pending",
+      data: data.data,
+      message: data.message,
+      transferCode: data.data?.transactionid,
+    };
+  } catch (error) {
+    logger.error("Error initializing Moolre transfer", error);
+    throw error instanceof AppError ? error : new AppError("Transfer initialization failed", 500);
+  }
+};
+

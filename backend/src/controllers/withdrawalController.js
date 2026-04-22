@@ -1,5 +1,5 @@
 import {
-  createWithdrawalRequest,
+  processAutomaticWithdrawal,
   getUserWithdrawals,
   getAllWithdrawals,
   approveWithdrawal,
@@ -7,10 +7,7 @@ import {
   completeWithdrawalManually,
   getWithdrawalStatistics,
 } from "../services/withdrawalService.js";
-import {
-  getBankList,
-  resolveAccountNumber,
-} from "../services/paystackTransferService.js";
+import { validateAccountName } from "../services/moolreService.js";
 
 /**
  * Create withdrawal request
@@ -20,43 +17,24 @@ export const createWithdrawal = async (req, res, next) => {
     const userId = req.user.id;
     const {
       amount,
-      accountType,
       accountNumber,
       accountName,
-      bankName,
       mobileNetwork,
     } = req.body;
 
     // Validate required fields
-    if (!amount || !accountType || !accountNumber || !accountName) {
+    if (!amount || !accountNumber || !accountName || !mobileNetwork) {
       return res.status(400).json({
         success: false,
         message:
-          "Amount, account type, account number, and account name are required",
+          "Amount, network, account number, and account name are required",
       });
     }
 
-    // Validate account type-specific fields
-    if (accountType === "bank_account" && !bankName) {
-      return res.status(400).json({
-        success: false,
-        message: "Bank name is required for bank account withdrawals",
-      });
-    }
-
-    if (accountType === "mobile_money" && !mobileNetwork) {
-      return res.status(400).json({
-        success: false,
-        message: "Mobile network is required for mobile money withdrawals",
-      });
-    }
-
-    const withdrawal = await createWithdrawalRequest(userId, {
+    const withdrawal = await processAutomaticWithdrawal(userId, {
       amount,
-      accountType,
       accountNumber,
       accountName,
-      bankName,
       mobileNetwork,
     });
 
@@ -269,20 +247,20 @@ export const getGhanaBanks = async (req, res, next) => {
  */
 export const verifyAccountNumber = async (req, res, next) => {
   try {
-    const { accountNumber, bankCode } = req.body;
+    const { accountNumber, mobileNetwork } = req.body;
 
-    if (!accountNumber || !bankCode) {
+    if (!accountNumber || !mobileNetwork) {
       return res.status(400).json({
         success: false,
-        message: "Account number and bank code are required",
+        message: "Account number and mobile network are required",
       });
     }
 
-    const accountDetails = await resolveAccountNumber(accountNumber, bankCode);
+    const accountDetails = await validateAccountName({ accountNumber, network: mobileNetwork });
 
     res.json({
       success: true,
-      data: accountDetails,
+      data: accountDetails.data,
     });
   } catch (error) {
     next(error);

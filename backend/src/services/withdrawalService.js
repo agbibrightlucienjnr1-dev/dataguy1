@@ -7,22 +7,22 @@ import {
   initiateTransfer,
   verifyTransfer,
 } from "./paystackTransferService.js";
+import { initiateMoolreTransfer } from "./moolreService.js";
+import { creditWallet } from "./walletService.js";
 import { createId } from "@paralleldrive/cuid2";
+import { Prisma } from "@prisma/client";
 
 const MINIMUM_WITHDRAWAL = 10; // 10 GHS
 
 /**
- * Create withdrawal request
+ * Handle automatic withdrawal via Moolre MMo Transfer
  */
-export const createWithdrawalRequest = async (userId, withdrawalData) => {
+export const processAutomaticWithdrawal = async (userId, withdrawalData) => {
   const prisma = getPrisma();
   const {
     amount,
-    accountType,
     accountNumber,
     accountName,
-    bankName,
-    bankCode,
     mobileNetwork,
   } = withdrawalData;
 
@@ -34,75 +34,155 @@ export const createWithdrawalRequest = async (userId, withdrawalData) => {
     );
   }
 
-  // Get user's wallet
-  const wallet = await prisma.wallet.findUnique({
-    where: { userId },
-  });
-
-  if (!wallet) {
-    throw new AppError("Wallet not found", 404);
-  }
-
-  // Check if user has sufficient balance
-  if (parseFloat(wallet.balance) < parseFloat(amount)) {
-    throw new AppError(
-      `Insufficient balance. Available: GH₵${wallet.balance}`,
-      400,
-    );
-  }
-
-  // Check for pending withdrawals
-  const pendingWithdrawal = await prisma.withdrawal.findFirst({
-    where: {
-      userId,
-      status: { in: ["pending", "approved", "processing"] },
-    },
-  });
-
-  if (pendingWithdrawal) {
-    throw new AppError(
-      "You have a pending withdrawal request. Please wait for it to be processed.",
-      400,
-    );
-  }
-
   // Generate unique reference
   const reference = `WDL-${createId()}`;
 
-  // Create withdrawal request
-  const withdrawal = await prisma.withdrawal.create({
-    data: {
-      userId,
-      amount,
-      accountType,
-      accountNumber,
-      accountName,
-      bankName,
-      mobileNetwork,
-      status: "pending",
+  // Execute safe debit and record creation in a transaction block
+  const withdrawal = await prisma.$transaction(async (tx) => {
+    // 1. Get user's wallet
+    let wallet = await tx.wallet.findUnique({
+      where: { userId },
+    });
+
+    if (!wallet) {
+      throw new AppError("Wallet not found", 404);
+    }
+
+    // 2. Check sufficient balance
+    if (parseFloat(wallet.balance) < parseFloat(amount)) {
+      throw new AppError(
+        `Insufficient balance. Available: GH₵${wallet.balance}`,
+        400,
+      );
+    }
+
+    // 3. Check for pending/processing withdrawals to prevent concurrent processing spam
+    const pendingWithdrawal = await tx.withdrawal.findFirst({
+      where: {
+        userId,
+        status: { in: ["pending", "processing"] },
+      },
+    });
+
+    if (pendingWithdrawal) {
+      throw new AppError(
+        "You have a pending withdrawal request being processed. Please wait.",
+        400,
+      );
+    }
+
+    // 4. Debit Wallet (Throws on insufficient balance)
+    await debitWalletInTransaction(tx, userId, new Prisma.Decimal(amount), {
+      type: "withdrawal",
       reference,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          role: true,
+      description: `Withdrawal to mobile money`,
+    });
+
+    // 5. Create processing withdrawal record
+    return await tx.withdrawal.create({
+      data: {
+        userId,
+        amount,
+        accountType: "mobile_money",
+        accountNumber,
+        accountName,
+        mobileNetwork,
+        status: "processing", 
+        reference,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+          },
         },
       },
-    },
+    });
   });
 
-  logger.info("Withdrawal request created", {
+  logger.info("Withdrawal request created, initiating auto-transfer", {
     withdrawalId: withdrawal.id,
     userId,
     amount,
     reference,
   });
 
-  return withdrawal;
+  // Call Moolre Transfer API
+  try {
+    const transferResponse = await initiateMoolreTransfer({
+      amount,
+      network: mobileNetwork,
+      accountNumber,
+      reference,
+      reason: `Commission Withdrawal for ${withdrawal.user.name}`
+    });
+
+    const newStatus = transferResponse.status === "success" 
+      ? "completed" 
+      : transferResponse.status === "failed" 
+        ? "failed" 
+        : "processing";
+
+    // Update Withdrawal Record
+    const updatedWithdrawal = await prisma.withdrawal.update({
+      where: { id: withdrawal.id },
+      data: {
+        status: newStatus,
+        paystackTransferCode: transferResponse.transferCode, 
+        paystackResponse: transferResponse.message, 
+        completedAt: newStatus === "completed" ? new Date() : null,
+        processedAt: new Date()
+      }
+    });
+
+    // If instantly failed (Status 2), Refund wallet
+    if (newStatus === "failed") {
+      logger.error("Moolre transfer aborted/failed instantly. Refunding wallet.", { reference });
+      await creditWallet(userId, amount, {
+        type: "refund",
+        reference: `REF-${reference}`,
+        description: `Refund for failed withdrawal ${reference}`
+      });
+    }
+
+    return updatedWithdrawal;
+  } catch (error) {
+    logger.error("Moolre transfer threw an exception.", error);
+    
+    // If Moolre explicitly rejected it (e.g., Insufficient Balance), we can safely refund immediately.
+    if (error.statusCode === 400) {
+      const failedWithdrawal = await prisma.withdrawal.update({
+        where: { id: withdrawal.id },
+        data: {
+          status: "failed",
+          adminNote: `Moolre Rejected: ${error.message}`
+        }
+      });
+      
+      await creditWallet(userId, amount, {
+        type: "refund",
+        reference: `REF-${reference}`,
+        description: `Refund for Moolre rejection: ${reference}`
+      });
+
+      // Pass the error back up to inform the UI that it failed completely
+      throw new AppError(`Transfer rejected: ${error.message}`, 400);
+    }
+
+    // For 500s or network timeouts, Moolre MIGHT still process it, so leave it as processing.
+    await prisma.withdrawal.update({
+      where: { id: withdrawal.id },
+      data: {
+        adminNote: `API Exception: ${error.message}`
+      }
+    });
+    
+    return withdrawal;
+  }
 };
 
 /**

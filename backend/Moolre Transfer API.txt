@@ -1,0 +1,331 @@
+Documentation / Transfer / Validate Name
+Validate Name
+POST
+https://api.moolre.com/open/transact/validate
+
+This endpoint is used to confirm the name on a Mobile Money or Bank Account.
+
+
+Headers
+X-API-USER stringrequired
+This is your Moolre username.
+
+Your Username
+X-API-KEY stringrequired
+This is your API Key Generated from your Account.
+
+YOUR_API_KEY
+Body Params
+type
+required
+ID of the function. Must be 1.
+
+1
+receiver
+required
+Mobile Money number or Bank Account number.
+
+channel
+required
+1=MTN, 6=Telecel, 7=AT, 2=Instant Bank Transfer
+
+
+Select Channel
+sublistid
+(Optional)
+Bank ID if channel is Bank Transfer.
+
+currency
+required
+e.g., GHS, NGN
+
+
+GHS
+accountnumber
+required
+Your Moolre Account Number.
+
+Responses
+
+200
+Success
+chevron_right
+RESPONSE BODY
+statusinteger
+1
+codestring
+messagestring
+datastring
+The name of the account holder.
+
+400
+Failed
+
+
+Shell Request:
+curl --request POST \
+     --url 'https://api.moolre.com/open/transact/validate' \
+     --header 'X-API-USER: Your Username' \
+     --header 'X-API-KEY: YOUR_API_KEY' \
+     --header 'Content-Type: application/json' \
+     --data '{
+  "type": 1,
+  "receiver": "",
+  "channel": "",
+  "sublistid": "",
+  "currency": "GHS",
+  "accountnumber": ""
+}'
+
+
+
+RESPONSE
+BODY
+
+
+{
+  "status": 1,
+  "code": "AVD01",
+  "message": "Successful",
+  "data": "BRIGHT BUAME",
+  "go": null
+}
+
+
+Documentation / Transfer / Initiate Transfer
+Initiate Transfer
+POST
+https://api.moolre.com/open/transact/transfer
+
+This endpoint allows you to send money from your account to a recipient's mobile money or bank account instantly.
+
+dangerous
+Do not Assume Transfer Failure
+Never assume a transfer has failed unless the transfer response or status check response txstatus indicates failure with a value of 2.
+
+lightbulb
+Validate Account Name before Transfer
+We recommend that you validate account name before initiating a transfer to ensure you are sending to the right recipient.
+
+
+X-API-USER stringrequired
+This is your Moolre username.
+
+Your Username
+X-API-KEY stringrequired
+This is your API Key Generated from your Account.
+
+YOUR_API_KEY
+Body Params
+type
+required
+ID of the function. Must be 1.
+
+1
+channel
+required
+1=MTN, 6=Telecel, 7=AT, 2=Instant Bank Transfer
+
+
+Select Channel
+currency
+required
+e.g., GHS, NGN
+
+
+GHS
+amount
+required
+Amount to be transferred.
+
+receiver
+required
+Mobile Money number or Bank Account number.
+
+sublistid
+(Optional)
+Bank ID if channel is Bank Transfer.
+
+externalref
+required
+Unique ID to identify the transfer.
+
+reference
+(Optional)
+Reference message for the transfer.
+
+accountnumber
+required
+Your Moolre Account Number.
+
+Responses
+
+200
+Success
+chevron_right
+RESPONSE BODY
+statusstring
+codestring
+messagearray
+dataobject
+txstatusinteger
+1=Successful, 0=Pending, 2=Failed, 3=Unknown
+transactionidstring
+externalrefstring
+receivernamestring
+amountdecimal
+
+400_INVALID_ACCOUNT
+Invalid Account
+chevron_right
+
+400_INSUFFICIENT_BALANCE
+Insufficient Balance
+
+Shell Request
+curl --request POST \
+     --url 'https://api.moolre.com/open/transact/transfer' \
+     --header 'X-API-USER: Your Username' \
+     --header 'X-API-KEY: YOUR_API_KEY' \
+     --header 'Content-Type: application/json' \
+     --data '{
+  "type": 1,
+  "channel": "",
+  "currency": "GHS",
+  "amount": "",
+  "receiver": "",
+  "sublistid": "",
+  "externalref": "",
+  "reference": "",
+  "accountnumber": ""
+}'
+
+RESPONSE
+BODY
+{
+  "status": "1",
+  "code": "OBGH01",
+  "message": [
+    "Pay out Successful",
+    "Click close to view transactions."
+  ],
+  "data": {
+    "txstatus": 1,
+    "receiver": "0246798993",
+    "transactionid": "32759150",
+    "externalref": "28171451",
+    "thirdpartyref": "901733241086",
+    "receivername": "YUSIF YA-ADZAGEY",
+    "amount": "1",
+    "amountfee": "1.01",
+    "networkfee": "0.00",
+    "fee": "0.01"
+  },
+  "go": null
+}
+
+
+
+
+
+Documentation / Transfer / Transfer Status
+Transfer Status
+POST
+https://api.moolre.com/open/transact/status
+
+This endpoint allows you to check the final status of a transaction.
+
+dangerous
+Do not Assume Transfer Failure
+Never assume a transfer has failed unless the transfer response or status check response txstatus indicates failure with a value of 2.
+
+
+Headers
+X-API-USER stringrequired
+This is your Moolre username.
+
+Your Username
+X-API-KEY stringrequired
+This is your API Key Generated from your Account.
+
+YOUR_API_KEY
+Body Params
+type
+required
+ID of the function. Must be 1.
+
+1
+idtype
+required
+1 = Unique externalref, 2 = Moolre Generated ID
+
+
+Select ID Type
+id
+required
+The externalref or Moolre ID to be checked.
+
+accountnumber
+required
+Your Moolre Account Number.
+
+Responses
+
+200
+Success
+chevron_right
+RESPONSE BODY
+statusinteger
+codestring
+messagestring
+dataobject
+txstatusinteger
+1=Successful, 0=Pending, 2=Failed, 3=Unknown
+transactionidstring
+externalrefstring
+tsstring
+
+200_NOT_FOUND
+Transaction Not Found
+
+
+Shell Request
+
+curl --request POST \
+     --url 'https://api.moolre.com/open/transact/status' \
+     --header 'X-API-USER: Your Username' \
+     --header 'X-API-KEY: YOUR_API_KEY' \
+     --header 'Content-Type: application/json' \
+     --data '{
+  "type": 1,
+  "idtype": "",
+  "id": "",
+  "accountnumber": ""
+}'
+
+RESPONSE
+BODY
+
+{
+  "status": 1,
+  "code": "SS01",
+  "message": "Transaction Successful",
+  "data": {
+    "txstatus": 1,
+    "txtype": 2,
+    "accountnumber": "100000100002",
+    "payer": "",
+    "payee": "0246798993",
+    "amount": "5",
+    "value": "5",
+    "transactionid": "31830714",
+    "externalref": "1231231-12985",
+    "thirdpartyref": "141704447750",
+    "ts": "2024-01-05 09:42:33"
+  },
+  "go": null
+}
+
+
+
+
