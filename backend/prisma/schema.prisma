@@ -202,6 +202,8 @@ model SystemSettings {
   paystackFeePercentage Decimal  @default(1.95) @map("paystack_fee_percentage") @db.Decimal(5, 2)
   paystackFlatFee      Decimal  @default(0.0) @map("paystack_flat_fee") @db.Decimal(10, 2)
   
+  allowAllUssdAccess    Boolean  @default(false) @map("allow_all_ussd_access")
+  
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")

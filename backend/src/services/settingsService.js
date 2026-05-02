@@ -20,7 +20,8 @@ export const getSystemSettings = async () => {
         moolreFeePercentage: 5.0,
         moolreFlatFee: 0.5,
         paystackFeePercentage: 1.95,
-        paystackFlatFee: 0.0
+        paystackFlatFee: 0.0,
+        allowAllUssdAccess: false
       }
     });
   }
@@ -59,7 +60,8 @@ export const updateSystemSettings = async (updates) => {
     "moolreFeePercentage", 
     "moolreFlatFee", 
     "paystackFeePercentage", 
-    "paystackFlatFee"
+    "paystackFlatFee",
+    "allowAllUssdAccess"
   ];
   const dataToUpdate = {};
   

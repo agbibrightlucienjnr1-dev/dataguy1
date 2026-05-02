@@ -60,37 +60,44 @@ export const handleUssdRequest = async ({ sessionId, isNew, msisdn, message, net
     const callerPhone = formatPhone(msisdn);               // 0XXXXXXXXX
     const callerPhoneIntl = toInternationalPhone(callerPhone); // 233XXXXXXXXX
 
-    // Pass 1: Customer table (fast path — both phone formats)
-    const existingCustomer = await prisma.customer.findFirst({
-      where: {
-        phone: { in: [callerPhone, callerPhoneIntl] },
-      },
-      select: { phone: true, successfulOrdersCount: true },
-    });
+    const settings = await getSystemSettings();
+    let isEligible = false;
 
-    let isEligible = (existingCustomer?.successfulOrdersCount ?? 0) > 0;
-
-    // Pass 2: Direct order lookup (fallback for stale/missing counters).
-    // Handles customers whose orders completed before the tracking counter
-    // was set up, or whose counter was never incremented due to a bug.
-    if (!isEligible) {
-      const completedOrder = await prisma.order.findFirst({
+    if (settings.allowAllUssdAccess) {
+      isEligible = true;
+    } else {
+      // Pass 1: Customer table (fast path — both phone formats)
+      const existingCustomer = await prisma.customer.findFirst({
         where: {
-          customerPhone: { in: [callerPhone, callerPhoneIntl] },
-          status: "completed",
+          phone: { in: [callerPhone, callerPhoneIntl] },
         },
-        select: { id: true },
+        select: { phone: true, successfulOrdersCount: true },
       });
-      isEligible = completedOrder !== null;
-    }
 
-    logger.info("USSD eligibility check", {
-      sessionId,
-      callerPhone,
-      customerRecordFound: !!existingCustomer,
-      successfulOrdersCount: existingCustomer?.successfulOrdersCount ?? null,
-      isEligible,
-    });
+      isEligible = (existingCustomer?.successfulOrdersCount ?? 0) > 0;
+
+      // Pass 2: Direct order lookup (fallback for stale/missing counters).
+      // Handles customers whose orders completed before the tracking counter
+      // was set up, or whose counter was never incremented due to a bug.
+      if (!isEligible) {
+        const completedOrder = await prisma.order.findFirst({
+          where: {
+            customerPhone: { in: [callerPhone, callerPhoneIntl] },
+            status: "completed",
+          },
+          select: { id: true },
+        });
+        isEligible = completedOrder !== null;
+      }
+
+      logger.info("USSD eligibility check", {
+        sessionId,
+        callerPhone,
+        customerRecordFound: !!existingCustomer,
+        successfulOrdersCount: existingCustomer?.successfulOrdersCount ?? null,
+        isEligible,
+      });
+    }
 
     if (!isEligible) {
       return {
