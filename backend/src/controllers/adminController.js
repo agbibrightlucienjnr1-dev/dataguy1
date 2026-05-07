@@ -561,7 +561,7 @@ export const getReportsData = asyncHandler(async (req, res) => {
  * POST /api/admin/sms/send
  */
 export const sendAdminSMS = asyncHandler(async (req, res) => {
-  const { target, customNumber, message } = req.body;
+  const { target, customNumber, message, orderStatus, startDate, endDate } = req.body;
 
   if (!message || message.trim() === "") {
     throw new AppError("Message cannot be empty", 400);
@@ -597,6 +597,31 @@ export const sendAdminSMS = asyncHandler(async (req, res) => {
         ...customers.map(c => c.phone),
         ...agents.map(a => a.phone)
       ].filter(Boolean);
+    } else if (target === "order_status") {
+      if (!orderStatus || !["processing", "pending", "completed", "failed", "cancelled"].includes(orderStatus)) {
+        throw new AppError("Valid order status is required", 400);
+      }
+      
+      const whereClause = { status: orderStatus };
+      if (startDate || endDate) {
+        whereClause.createdAt = {};
+        if (startDate) {
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          whereClause.createdAt.gte = start;
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          whereClause.createdAt.lte = end;
+        }
+      }
+
+      const orders = await prisma.order.findMany({
+        where: whereClause,
+        select: { customerPhone: true }
+      });
+      recipients = orders.map(o => o.customerPhone).filter(Boolean);
     } else {
       throw new AppError("Invalid target specified", 400);
     }

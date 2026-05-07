@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Send, Users, UserCheck, MessageSquare, Phone } from "lucide-react";
+import { Send, Users, UserCheck, MessageSquare, Phone, ListFilter } from "lucide-react";
 import { Card, Button, Input } from "../../components/ui";
 import { adminApi } from "../../api";
 import toast from "react-hot-toast";
@@ -8,6 +8,9 @@ import toast from "react-hot-toast";
 export default function AdminSmsPage() {
   const [target, setTarget] = useState("all_customers");
   const [customNumber, setCustomNumber] = useState("");
+  const [orderStatus, setOrderStatus] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [message, setMessage] = useState("");
 
   const sendSmsMutation = useMutation({
@@ -31,10 +34,17 @@ export default function AdminSmsPage() {
       toast.error("Please provide a specific phone number.");
       return;
     }
+    if (target === "order_status" && !orderStatus) {
+      toast.error("Please select an order status.");
+      return;
+    }
 
     sendSmsMutation.mutate({
       target,
       customNumber: target === "specific" ? customNumber : undefined,
+      orderStatus: target === "order_status" ? orderStatus : undefined,
+      startDate: target === "order_status" && startDate ? startDate : undefined,
+      endDate: target === "order_status" && endDate ? endDate : undefined,
       message,
     });
   };
@@ -59,12 +69,13 @@ export default function AdminSmsPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-3">
                   Select Recipients
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {[
                     { id: "all_customers", label: "All Customers", icon: Users },
                     { id: "all_agents", label: "All Agents", icon: UserCheck },
                     { id: "both", label: "Everyone (Both)", icon: MessageSquare },
                     { id: "specific", label: "Specific Number", icon: Phone },
+                    { id: "order_status", label: "By Order Status", icon: ListFilter },
                   ].map((option) => {
                     const Icon = option.icon;
                     const isActive = target === option.id;
@@ -97,6 +108,47 @@ export default function AdminSmsPage() {
                     onChange={(e) => setCustomNumber(e.target.value)}
                     required
                   />
+                </div>
+              )}
+
+              {/* Order Status Inputs */}
+              {target === "order_status" && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Select Order Status
+                    </label>
+                    <select
+                      value={orderStatus}
+                      onChange={(e) => setOrderStatus(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 p-2.5 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                      required
+                    >
+                      <option value="" disabled>Select a status</option>
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="completed">Completed</option>
+                      <option value="failed">Failed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      label="Start Date (Optional)"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                    <Input
+                      label="End Date (Optional)"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    If no dates are selected, it will send to all orders with this status.
+                  </p>
                 </div>
               )}
 
