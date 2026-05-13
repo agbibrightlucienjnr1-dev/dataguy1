@@ -10,13 +10,38 @@ export const trackEvent = async (eventData) => {
     const { sessionId, eventType, path, sellerId, device } = eventData;
     const prisma = getPrisma();
 
+    let actualSellerId = null;
+
+    if (sellerId) {
+      // It could be a UUID (id), an agentCode (number string), or a paymentLinkCode (string)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      let userQuery = {};
+      if (uuidRegex.test(sellerId)) {
+        userQuery = { id: sellerId };
+      } else if (!isNaN(sellerId) && String(sellerId).trim() !== "") {
+        userQuery = { agentCode: parseInt(sellerId, 10) };
+      } else {
+        userQuery = { paymentLinkCode: sellerId };
+      }
+
+      const seller = await prisma.user.findFirst({
+        where: userQuery,
+        select: { id: true }
+      });
+      
+      if (seller) {
+        actualSellerId = seller.id;
+      }
+    }
+
     // Fast-insert into Postgres
     await prisma.visitorLog.create({
       data: {
         sessionId,
         eventType,
         path,
-        sellerId: sellerId || null,
+        sellerId: actualSellerId,
         device,
       },
     });
