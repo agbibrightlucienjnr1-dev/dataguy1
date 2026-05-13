@@ -336,8 +336,8 @@ export default function AdminOrdersPage() {
                             )}
                           </Button>
                         )}
-                        {/* Mark as Completed button - show for processing orders */}
-                        {order.status === "processing" && (
+                        {/* Mark as Completed button - show for non-completed and non-pending orders */}
+                        {order.status !== "completed" && order.status !== "pending" && (
                           <Button
                             variant="success"
                             size="sm"
@@ -552,6 +552,30 @@ export default function AdminOrdersPage() {
                       "Failed to fulfill order"}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Mark as Completed Button - available for any non-completed, non-pending order */}
+            {selectedOrder.status !== "completed" && selectedOrder.status !== "pending" && (
+              <div className="pt-4 border-t border-slate-200">
+                <Button
+                  variant="success"
+                  className="w-full text-white"
+                  onClick={() => completeMutation.mutate(selectedOrder.id)}
+                  disabled={completeMutation.isPending}
+                >
+                  {completeMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Marking as Completed...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Mark as Completed (Manual Confirm)
+                    </>
+                  )}
+                </Button>
               </div>
             )}
           </div>

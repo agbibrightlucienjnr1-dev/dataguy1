@@ -362,10 +362,10 @@ export const markOrderCompleted = asyncHandler(async (req, res) => {
     throw new AppError("Order not found", 404);
   }
 
-  // Only allow completing orders that are in "processing" status
-  if (order.status !== "processing") {
+  // Do not allow completing orders that are already completed or still pending payment
+  if (order.status === "completed" || order.status === "pending") {
     throw new AppError(
-      `Cannot mark order as completed. Current status: ${order.status}. Only 'processing' orders can be marked as completed.`,
+      `Cannot mark order as completed. Current status: ${order.status}.`,
       400,
     );
   }
