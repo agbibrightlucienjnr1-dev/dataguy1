@@ -23,6 +23,7 @@ import { logger } from "../utils/logger.js";
 import { getPrisma } from "../config/database.js";
 import { sendSMS } from "../services/smsService.js";
 import { creditWallet, debitWallet } from "../services/walletService.js";
+import { Prisma } from "@prisma/client";
 
 /**
  * Get all users (agents and sub-agents)
@@ -720,13 +721,15 @@ export const adjustWalletBalance = asyncHandler(async (req, res) => {
 
   logger.info(`Admin adjusting wallet for user ${userId}`, { action, amount: parsedAmount, reason });
 
+  const decimalAmount = new Prisma.Decimal(parsedAmount);
+
   if (action === "add") {
-    result = await creditWallet(userId, parsedAmount, {
+    result = await creditWallet(userId, decimalAmount, {
       type: "adjustment",
       description: `Admin Adjustment (Add): ${reason.trim()}`,
     });
   } else if (action === "deduct") {
-    result = await debitWallet(userId, parsedAmount, {
+    result = await debitWallet(userId, decimalAmount, {
       type: "adjustment",
       description: `Admin Adjustment (Deduct): ${reason.trim()}`,
     });
