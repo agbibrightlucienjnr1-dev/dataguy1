@@ -21,6 +21,7 @@ import {
   sendAdminSMS,
   addCustomers,
   getAnalyticsDashboard,
+  adjustWalletBalance,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -48,6 +49,7 @@ router.get("/dashboard", getDashboardSummary);
  */
 router.get("/users", getUsers); // List all users with filters
 router.get("/users/:userId", getUserById); // Get user details
+router.post("/users/:userId/wallet/adjust", adjustWalletBalance); // Adjust wallet balance
 
 /**
  * Orders Management

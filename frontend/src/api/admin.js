@@ -27,6 +27,13 @@ export const adminApi = {
    */
   getUserById: (id) => apiClient.get(`/admin/users/${id}`),
 
+  /**
+   * Adjust user wallet balance
+   * @param {string} userId - User ID
+   * @param {Object} data - { action, amount, reason }
+   */
+  adjustWalletBalance: (userId, data) => apiClient.post(`/admin/users/${userId}/wallet/adjust`, data),
+
   // ========== Orders ==========
 
   /**

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   Users,
@@ -12,8 +12,13 @@ import {
   Calendar,
   ShoppingCart,
   Wallet,
+  Loader2,
+  Plus,
+  Minus,
+  Settings2
 } from "lucide-react";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import toast from "react-hot-toast";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Input } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -23,6 +28,48 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const queryClient = useQueryClient();
+
+  const [showAdjustForm, setShowAdjustForm] = useState(false);
+  const [adjustAmount, setAdjustAmount] = useState("");
+  const [adjustReason, setAdjustReason] = useState("");
+  const [adjustAction, setAdjustAction] = useState("add");
+
+  const adjustMutation = useMutation({
+    mutationFn: (data) => adminApi.adjustWalletBalance(selectedUser.id, data),
+    onSuccess: (res) => {
+      toast.success(res.data?.message || "Wallet adjusted successfully");
+      setShowAdjustForm(false);
+      setAdjustAmount("");
+      setAdjustReason("");
+      
+      if (res.data?.wallet) {
+        setSelectedUser((prev) => ({ ...prev, walletBalance: res.data.wallet.balance }));
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to adjust wallet");
+    }
+  });
+
+  const handleAdjustSubmit = (e) => {
+    e.preventDefault();
+    if (!adjustAmount || isNaN(adjustAmount) || parseFloat(adjustAmount) <= 0) {
+      toast.error("Please enter a valid positive amount");
+      return;
+    }
+    if (!adjustReason.trim()) {
+      toast.error("Please provide a reason");
+      return;
+    }
+    adjustMutation.mutate({
+      amount: parseFloat(adjustAmount),
+      action: adjustAction,
+      reason: adjustReason
+    });
+  };
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin", "users", { search, role: roleFilter, page }],
@@ -287,15 +334,95 @@ export default function AdminUsersPage() {
                     </p>
                   </div>
                   <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
-                    <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium mb-1">
-                      <Wallet className="w-4 h-4" />
-                      Wallet Balance
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
+                        <Wallet className="w-4 h-4" />
+                        Wallet Balance
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAdjustForm(!showAdjustForm)}
+                        className="h-6 w-6 p-0 bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
+                        title="Adjust Wallet"
+                      >
+                        <Settings2 className="w-3 h-3" />
+                      </Button>
                     </div>
                     <p className="text-3xl font-bold text-slate-900">
                       {formatCurrency(selectedUser.walletBalance || 0)}
                     </p>
                   </div>
                 </div>
+
+                {/* Adjust Wallet Form */}
+                {showAdjustForm && (
+                  <div className="mt-4 p-4 border border-slate-200 rounded-xl bg-white shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <h5 className="text-sm font-semibold text-slate-900 mb-3">Adjust Wallet Balance</h5>
+                    <form onSubmit={handleAdjustSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-700 mb-1">Action</label>
+                          <select
+                            value={adjustAction}
+                            onChange={(e) => setAdjustAction(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                          >
+                            <option value="add">Add Funds</option>
+                            <option value="deduct">Deduct Funds</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-700 mb-1">Amount</label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="0.00"
+                            value={adjustAmount}
+                            onChange={(e) => setAdjustAmount(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Reason / Note</label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. Refund for failed order #123"
+                          value={adjustReason}
+                          onChange={(e) => setAdjustReason(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowAdjustForm(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant={adjustAction === "add" ? "primary" : "danger"}
+                          disabled={adjustMutation.isPending}
+                        >
+                          {adjustMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : adjustAction === "add" ? (
+                            <Plus className="w-4 h-4 mr-2" />
+                          ) : (
+                            <Minus className="w-4 h-4 mr-2" />
+                          )}
+                          {adjustAction === "add" ? "Add Funds" : "Deduct Funds"}
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                )}
               </div>
 
               {/* Payment Link */}

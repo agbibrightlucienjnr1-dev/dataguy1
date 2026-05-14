@@ -22,6 +22,7 @@ import { asyncHandler, AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 import { getPrisma } from "../config/database.js";
 import { sendSMS } from "../services/smsService.js";
+import { creditWallet, debitWallet } from "../services/walletService.js";
 
 /**
  * Get all users (agents and sub-agents)
@@ -691,5 +692,50 @@ export const getAnalyticsDashboard = asyncHandler(async (req, res) => {
       stats,
       chartData
     }
+  });
+});
+
+/**
+ * Manually adjust (add or deduct) a user's wallet balance
+ * POST /api/admin/users/:userId/wallet/adjust
+ */
+export const adjustWalletBalance = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { amount, action, reason } = req.body;
+
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    throw new AppError("A valid positive amount is required", 400);
+  }
+
+  if (!action || !["add", "deduct"].includes(action)) {
+    throw new AppError("Action must be 'add' or 'deduct'", 400);
+  }
+
+  if (!reason || reason.trim() === "") {
+    throw new AppError("Reason for adjustment is required", 400);
+  }
+
+  let result;
+  const parsedAmount = parseFloat(amount);
+
+  logger.info(`Admin adjusting wallet for user ${userId}`, { action, amount: parsedAmount, reason });
+
+  if (action === "add") {
+    result = await creditWallet(userId, parsedAmount, {
+      type: "adjustment",
+      description: `Admin Adjustment (Add): ${reason.trim()}`,
+    });
+  } else if (action === "deduct") {
+    result = await debitWallet(userId, parsedAmount, {
+      type: "adjustment",
+      description: `Admin Adjustment (Deduct): ${reason.trim()}`,
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: `Successfully ${action === "add" ? "added to" : "deducted from"} wallet`,
+    wallet: result.wallet,
+    transaction: result.transaction,
   });
 });
