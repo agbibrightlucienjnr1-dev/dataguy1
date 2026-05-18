@@ -72,3 +72,34 @@ export const sendSMS = async (recipients, message) => {
     return { success: false, message: error.message || "SMS Provider API Error" };
   }
 };
+
+/**
+ * Notify administrators when an order fails to process
+ * @param {string} orderId - The order ID
+ * @param {string} provider - The delivery provider (e.g. 'Hubnet' or 'Bossu')
+ * @param {string} reason - The reason for failure
+ */
+export const notifyAdminOfFailedOrder = async (orderId, provider, reason) => {
+  try {
+    const prisma = getPrisma();
+    const admins = await prisma.user.findMany({ 
+      where: { role: "admin" },
+      select: { phone: true }
+    });
+
+    if (admins && admins.length > 0) {
+      const adminPhones = admins.map(admin => admin.phone).filter(Boolean);
+      const shortId = orderId ? orderId.toString().slice(-6).toUpperCase() : 'UNKNOWN';
+      const cleanReason = reason ? reason.substring(0, 50) : 'Unknown error';
+      
+      const message = `URGENT: Order ${shortId} failed at ${provider}. Reason: ${cleanReason}. Please check the dashboard to manually resolve it.`;
+      
+      // Dispatch asynchronously without awaiting to prevent blocking
+      sendSMS(adminPhones, message).catch(err => {
+        logger.error("Failed to send admin notification SMS", { error: err.message });
+      });
+    }
+  } catch (error) {
+    logger.error("Failed to lookup admins for failed order notification", { error: error.message });
+  }
+};

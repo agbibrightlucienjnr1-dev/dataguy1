@@ -178,6 +178,11 @@ export const hubnetWebhook = async (req, res) => {
     ) {
       newStatus = "failed";
       logger.error("Hubnet delivery failed", { orderId: order.id, status });
+      
+      // Notify Admin
+      import("../services/smsService.js").then(({ notifyAdminOfFailedOrder }) => {
+        notifyAdminOfFailedOrder(order.id, "Hubnet Webhook", status || "Failed");
+      }).catch(err => logger.error("Failed to load smsService", err));
     } else {
       // Unknown status, log but keep as processing
       logger.warn("Unknown Hubnet status received", {

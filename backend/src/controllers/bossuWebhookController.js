@@ -129,6 +129,11 @@ export const bossuWebhook = async (req, res) => {
         orderId: order.id,
         status,
       });
+
+      // Notify Admin
+      import("../services/smsService.js").then(({ notifyAdminOfFailedOrder }) => {
+        notifyAdminOfFailedOrder(order.id, "Bossu Webhook", status || "Failed");
+      }).catch(err => logger.error("Failed to load smsService", err));
     } else {
       logger.warn("Unknown Bossu status received", {
         orderId: order.id,

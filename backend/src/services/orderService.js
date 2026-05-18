@@ -487,6 +487,11 @@ export const initiateDeliveryOrder = async (orderId) => {
         },
       });
 
+      // Send SMS alert to Admin
+      import("./smsService.js").then(({ notifyAdminOfFailedOrder }) => {
+        notifyAdminOfFailedOrder(orderId, activeProvider, providerError.message);
+      }).catch(err => logger.error("Failed to load smsService for admin notification", err));
+
       throw providerError;
     }
   } catch (error) {
@@ -617,7 +622,7 @@ export const trackOrderById = async (orderId) => {
 
   return {
     orderId: order.id,
-    status: order.status,
+    status: order.status === "failed" ? "processing" : order.status,
     customerName: order.customerName,
     customerPhone: order.customerPhone,
     bundle: {
@@ -670,7 +675,7 @@ export const trackOrdersByPhone = async (phone) => {
 
   return orders.map((order) => ({
     orderId: order.id,
-    status: order.status,
+    status: order.status === "failed" ? "processing" : order.status,
     customerName: order.customerName,
     customerPhone: order.customerPhone,
     bundle: {
