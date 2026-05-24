@@ -32,14 +32,6 @@ const purchaseSchema = z.object({
       /^0\d{9}$/,
       "Enter a valid 10-digit phone number (e.g., 0241234567)",
     ),
-  paymentNumber: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || /^0\d{9}$/.test(val),
-      "Enter a valid 10-digit phone number",
-    ),
-  network: z.string().optional(),
   customerName: z.string().optional(),
 });
 
@@ -135,8 +127,6 @@ export default function BuyPage() {
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
       customerPhone: "",
-      paymentNumber: "",
-      network: "",
       customerName: "",
     },
   });
@@ -258,15 +248,13 @@ export default function BuyPage() {
     }
 
     // Get payment phone and network
-    const payPhone = data.paymentNumber
-      ? normalizePhone(data.paymentNumber)
-      : normalizePhone(data.customerPhone);
+    const payPhone = normalizePhone(data.customerPhone);
     const inferredNetwork = getNetworkFromPhone(payPhone);
-    const finalNetwork = data.network || inferredNetwork;
+    const finalNetwork = inferredNetwork;
 
     if (!finalNetwork) {
       toast.error(
-        "Could not detect network from the phone number. Please choose a network.",
+        "Could not detect network from the phone number. Please enter a valid Ghanaian phone number.",
       );
       return;
     }
@@ -275,9 +263,9 @@ export default function BuyPage() {
       (finalNetwork === "AIRTELTIGO" || finalNetwork === "AT") &&
       (selectedBundle.network === "AIRTELTIGO" || selectedBundle.network === "AT");
 
-    if (!data.paymentNumber && finalNetwork !== selectedBundle.network && !isAirtelTigoMatch) {
+    if (finalNetwork !== selectedBundle.network && !isAirtelTigoMatch) {
       toast.error(
-        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your number is ${finalNetwork === "AIRTELTIGO" ? "Big Time" : finalNetwork === "AT" ? "AT iSHARE" : finalNetwork}. Use a matching number or specify a different payment number.`,
+        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your number is ${finalNetwork === "AIRTELTIGO" ? "Big Time" : finalNetwork === "AT" ? "AT iSHARE" : finalNetwork}. Please enter a matching number.`,
       );
       return;
     }
@@ -690,41 +678,6 @@ export default function BuyPage() {
                       {errors.customerPhone.message}
                     </p>
                   )}
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                    Payment Number (Optional)
-                  </label>
-                  <div className="relative group">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                    <input
-                      type="tel"
-                      placeholder="Leave blank to use recipient number"
-                      className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 ${errors.paymentNumber ? "border-red-500" : "border-slate-200"}`}
-                      {...register("paymentNumber")}
-                    />
-                  </div>
-                  {errors.paymentNumber && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.paymentNumber.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                    Payment Network
-                  </label>
-                  <select
-                    {...register("network")}
-                    className="w-full h-12 px-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 border-slate-200"
-                  >
-                    <option value="">Auto-detect from number</option>
-                    <option value="MTN">MTN</option>
-                    <option value="TELECEL">Telecel</option>
-                    <option value="AT">AT iSHARE</option>
-                  </select>
                 </div>
 
                 <div className="space-y-1">
