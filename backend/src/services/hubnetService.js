@@ -36,6 +36,8 @@ const mapNetworkToHubnet = (network) => {
   const networkMap = {
     MTN: "mtn",
     AIRTELTIGO: "big-time",
+    AT: "at",
+    TELECEL: "telecel",
   };
 
   const hubnetNetwork = networkMap[network];
@@ -158,7 +160,7 @@ export const initiateDataTransaction = async (transactionData) => {
     const payload = {
       phone: formattedPhone,
       volume: volumeInMB.toString(),
-      reference: reference,
+      reference: reference.substring(0, 23),
     };
 
     // Add optional fields
