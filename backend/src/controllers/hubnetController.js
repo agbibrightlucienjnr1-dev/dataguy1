@@ -64,8 +64,8 @@ export const hubnetWebhook = async (req, res) => {
     let order;
 
     if (reference) {
-      order = await prisma.order.findUnique({
-        where: { id: reference },
+      order = await prisma.order.findFirst({
+        where: { id: { startsWith: reference } },
         include: {
           bundle: true,
           seller: {
@@ -276,6 +276,8 @@ const mapNetworkToHubnet = (network) => {
   const networkMap = {
     MTN: "mtn",
     AIRTELTIGO: "big-time",
+    AT: "at",
+    TELECEL: "telecel",
   };
   return networkMap[network] || network.toLowerCase();
 };
