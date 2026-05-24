@@ -7,37 +7,10 @@ import { getDataBundleById } from "./dataBundleService.js";
  */
 export const setAgentPrice = async (agentId, bundleId, priceData) => {
   const prisma = getPrisma();
-  const { customerPrice, subAgentPrice } = priceData;
-
-  // Validate prices
-  if (parseFloat(customerPrice) <= 0 || parseFloat(subAgentPrice) <= 0) {
-    throw new AppError("Prices must be greater than zero", 400);
-  }
-
-  if (parseFloat(subAgentPrice) > parseFloat(customerPrice)) {
-    throw new AppError(
-      "Sub-agent price cannot be higher than customer price",
-      400,
-    );
-  }
+  let { customerPrice, subAgentPrice } = priceData;
 
   // Get bundle to check admin price
   const bundle = await getDataBundleById(bundleId);
-
-  // Validate that agent prices are >= admin price
-  if (parseFloat(customerPrice) < parseFloat(bundle.adminPrice)) {
-    throw new AppError(
-      `Customer price must be at least GH₵ ${bundle.adminPrice} (admin price)`,
-      400,
-    );
-  }
-
-  if (parseFloat(subAgentPrice) < parseFloat(bundle.adminPrice)) {
-    throw new AppError(
-      `Sub-agent price must be at least GH₵ ${bundle.adminPrice} (admin price)`,
-      400,
-    );
-  }
 
   // Check if agent price already exists
   const existing = await prisma.agentPrice.findUnique({
@@ -48,6 +21,46 @@ export const setAgentPrice = async (agentId, bundleId, priceData) => {
       },
     },
   });
+
+  // Resolve missing price fields to existing price or admin default
+  if (customerPrice === undefined || customerPrice === null) {
+    customerPrice = existing ? parseFloat(existing.customerPrice) : parseFloat(bundle.adminPrice);
+  } else {
+    customerPrice = parseFloat(customerPrice);
+  }
+
+  if (subAgentPrice === undefined || subAgentPrice === null) {
+    subAgentPrice = existing ? parseFloat(existing.subAgentPrice) : parseFloat(bundle.adminPrice);
+  } else {
+    subAgentPrice = parseFloat(subAgentPrice);
+  }
+
+  // Validate prices
+  if (customerPrice <= 0 || subAgentPrice <= 0) {
+    throw new AppError("Prices must be greater than zero", 400);
+  }
+
+  if (subAgentPrice > customerPrice) {
+    throw new AppError(
+      "Sub-agent price cannot be higher than customer price",
+      400,
+    );
+  }
+
+  // Validate that agent prices are >= admin price
+  if (customerPrice < parseFloat(bundle.adminPrice)) {
+    throw new AppError(
+      `Customer price must be at least GH₵ ${bundle.adminPrice} (admin price)`,
+      400,
+    );
+  }
+
+  if (subAgentPrice < parseFloat(bundle.adminPrice)) {
+    throw new AppError(
+      `Sub-agent price must be at least GH₵ ${bundle.adminPrice} (admin price)`,
+      400,
+    );
+  }
 
   let agentPrice;
 
