@@ -5,15 +5,15 @@ export default function AuthLayout() {
   return (
     <div className="min-h-screen flex bg-slate-50 relative overflow-hidden">
       {/* Background Blobs for Mobile/Form Side */}
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob lg:hidden"></div>
-      <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-slate-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-4000 lg:hidden"></div>
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob lg:hidden pointer-events-none"></div>
+      <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-slate-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-4000 lg:hidden pointer-events-none"></div>
 
       {/* Left side - Branding Canvas */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-slate-900 border-r border-slate-800 shadow-2xl">
         {/* Animated Mesh Backing */}
         <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-slate-800 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob"></div>
-        <div className="absolute top-1/2 right-0 w-96 h-96 bg-slate-700 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-slate-800 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob pointer-events-none"></div>
+        <div className="absolute top-1/2 right-0 w-96 h-96 bg-slate-700 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
 
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-3 w-max group">
@@ -71,7 +71,7 @@ export default function AuthLayout() {
         {/* Form container */}
         <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative z-10">
           {/* Animated Background Blob for Desktop Form Side */}
-          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob hidden lg:block border border-slate-300/50"></div>
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob hidden lg:block border border-slate-300/50 pointer-events-none"></div>
           
           <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/60 relative z-10">
             <Outlet />

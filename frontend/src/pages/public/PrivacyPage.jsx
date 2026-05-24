@@ -8,8 +8,8 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Subtle Background Blobs */}
-      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
-      <div className="absolute top-1/3 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
+      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-35 pointer-events-none"></div>
+      <div className="absolute top-1/3 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35 pointer-events-none"></div>
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-30 shadow-sm">

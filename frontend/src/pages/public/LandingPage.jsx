@@ -24,9 +24,9 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Animated Background Blobs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-slate-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-slate-400 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-slate-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob pointer-events-none"></div>
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-slate-400 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000 pointer-events-none"></div>
 
       {/* Navigation */}
       <nav className="z-10 glass-panel border-b border-white/40 sticky top-0">
@@ -253,8 +253,8 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="py-24 relative z-10 overflow-hidden">
         <div className="absolute inset-0 bg-slate-900"></div>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-slate-700 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-slate-800 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-slate-700 rounded-full mix-blend-screen filter blur-3xl opacity-20 pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-slate-800 rounded-full mix-blend-screen filter blur-3xl opacity-20 pointer-events-none"></div>
         
         <div className="max-w-4xl mx-4 sm:mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 glass-panel-dark rounded-3xl p-12 mt-4 shadow-2xl">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">

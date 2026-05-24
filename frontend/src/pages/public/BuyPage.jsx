@@ -380,8 +380,8 @@ export default function BuyPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Animated Subtle Background */}
-      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
+      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-white/50 sticky top-0 z-30 shadow-sm">
@@ -409,7 +409,7 @@ export default function BuyPage() {
         {/* Seller Info Container */}
         <div className="p-8 mb-8 rounded-2xl bg-slate-900 shadow-2xl relative overflow-hidden border border-slate-800 animate-float-slow">
           <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-slate-700 rounded-full mix-blend-screen filter blur-2xl opacity-40"></div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-slate-700 rounded-full mix-blend-screen filter blur-2xl opacity-40 pointer-events-none"></div>
 
           <div className="relative z-10 flex items-center gap-5">
             <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
