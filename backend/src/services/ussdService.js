@@ -12,7 +12,8 @@ import { Prisma } from "@prisma/client";
 const NETWORKS = [
   { key: "MTN", label: "MTN", moolreChannel: "13" },
   { key: "TELECEL", label: "Telecel", moolreChannel: "6" },
-  { key: "AT", label: "AirtelTigo", moolreChannel: "7" },
+  { key: "AT", label: "AT", moolreChannel: "7" },
+  { key: "AIRTELTIGO", label: "Big Time", moolreChannel: "7" },
 ];
 
 const BUNDLES_PER_PAGE = 4; // Keep under 160 char USSD limit
@@ -641,8 +642,12 @@ async function handleAwaitingOTP(prisma, session, input) {
       where: { id: session.id },
       data: { stage: "AWAIT_NETWORK", bundleId: null, recipient: null, orderId: null },
     });
+    let msg = "Payment cancelled. Select Network:\n";
+    NETWORKS.forEach((n, i) => {
+      msg += `${i + 1}. ${n.label}\n`;
+    });
     return {
-      message: "Payment cancelled. Select Network:\n1. MTN\n2. Telecel\n3. AirtelTigo",
+      message: msg.trim(),
       reply: true,
     };
   }
@@ -767,8 +772,12 @@ async function showBundles(prisma, sessionId, agentId, networkKey, page) {
       where: { id: sessionId },
       data: { stage: "AWAIT_NETWORK", network: null, updatedAt: new Date() },
     });
+    let msg = "No bundles available.\nChoose Network:\n";
+    NETWORKS.forEach((n, i) => {
+      msg += `${i + 1}. ${n.label}\n`;
+    });
     return {
-      message: "No bundles available.\nChoose Network:\n1. MTN\n2. Telecel\n3. AirtelTigo",
+      message: msg.trim(),
       reply: true,
     };
   }
