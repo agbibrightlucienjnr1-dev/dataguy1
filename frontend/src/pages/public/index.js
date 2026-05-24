@@ -5,3 +5,6 @@ export { default as ForgotPasswordPage } from "./ForgotPasswordPage";
 export { default as BuyPage } from "./BuyPage";
 export { default as PaymentCallbackPage } from "./PaymentCallbackPage";
 export { default as OrderTrackingPage } from "./OrderTrackingPage";
+export { default as TermsPage } from "./TermsPage";
+export { default as PrivacyPage } from "./PrivacyPage";
+export { default as SupportPage } from "./SupportPage";

@@ -17,6 +17,9 @@ import {
   BuyPage,
   PaymentCallbackPage,
   OrderTrackingPage,
+  TermsPage,
+  PrivacyPage,
+  SupportPage,
 } from "./pages/public";
 
 // Dashboard Pages
@@ -57,6 +60,9 @@ function App() {
         <Route path="/buy/:code" element={<BuyPage />} />
         <Route path="/payment/callback" element={<PaymentCallbackPage />} />
         <Route path="/track" element={<OrderTrackingPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/support" element={<SupportPage />} />
 
         {/* Auth Routes - Only for non-authenticated users */}
         <Route element={<GuestOnly />}>

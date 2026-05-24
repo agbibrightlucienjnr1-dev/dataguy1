@@ -110,23 +110,23 @@ export default function LandingPage() {
             </div>
 
             {/* Stats */}
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto p-8 glass-panel rounded-2xl relative z-10 animate-float">
-              <div>
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
+            <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-2xl mx-auto p-8 glass-panel rounded-2xl relative z-10 animate-float">
+              <div className="text-center sm:text-left">
+                <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
                   {formatStatNumber(stats.activeAgents, "5K+")}
                 </div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Active Agents</div>
               </div>
-              <div className="border-x border-slate-200/50">
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
+              <div className="border-y sm:border-y-0 sm:border-x border-slate-200/50 py-4 sm:py-0 text-center">
+                <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
                   {formatStatNumber(stats.ordersDelivered, "100K+")}
                 </div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">
                   Orders Delivered
                 </div>
               </div>
-              <div>
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
+              <div className="text-center sm:text-right">
+                <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
                   {isLoading ? "..." : (stats.successRate !== undefined ? `${stats.successRate}%` : "99.9%")}
                 </div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Success Rate</div>
@@ -296,12 +296,9 @@ export default function LandingPage() {
               <Link to="/track" className="hover:text-slate-900">
                 Track Order
               </Link>
-              <a
-                href="mailto:support@dataguy.com"
-                className="hover:text-slate-900"
-              >
+              <Link to="/support" className="hover:text-slate-900">
                 Support
-              </a>
+              </Link>
             </div>
 
             <div className="text-sm text-slate-500">
