@@ -1,8 +1,26 @@
 import { Link } from "react-router-dom";
 import { Wifi, ArrowRight, Shield, Zap, Wallet, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../components/ui";
+import { ordersApi } from "../../api";
 
 export default function LandingPage() {
+  const { data: statsData, isLoading } = useQuery({
+    queryKey: ["publicStats"],
+    queryFn: () => ordersApi.getPublicStats(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const stats = statsData?.data || {};
+
+  const formatStatNumber = (value, fallback) => {
+    if (isLoading) return "...";
+    if (value === undefined || value === null) return fallback;
+    if (value >= 1000) {
+      return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K+";
+    }
+    return value;
+  };
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Animated Background Blobs */}
@@ -94,17 +112,23 @@ export default function LandingPage() {
             {/* Stats */}
             <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto p-8 glass-panel rounded-2xl relative z-10 animate-float">
               <div>
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">5K+</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
+                  {formatStatNumber(stats.activeAgents, "5K+")}
+                </div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Active Agents</div>
               </div>
               <div className="border-x border-slate-200/50">
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">100K+</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
+                  {formatStatNumber(stats.ordersDelivered, "100K+")}
+                </div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">
                   Orders Delivered
                 </div>
               </div>
               <div>
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">99.9%</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">
+                  {isLoading ? "..." : (stats.successRate !== undefined ? `${stats.successRate}%` : "99.9%")}
+                </div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Success Rate</div>
               </div>
             </div>

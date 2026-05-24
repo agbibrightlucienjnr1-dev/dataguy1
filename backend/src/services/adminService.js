@@ -177,10 +177,14 @@ export const getPlatformStatistics = async (filters = {}) => {
     }
   }
 
-  // Define today for specific metrics
+  // Define today and this month for specific metrics
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayFilter = { createdAt: { gte: today } };
+
+  const startOfMonth = new Date(today);
+  startOfMonth.setDate(1);
+  const thisMonthFilter = { createdAt: { gte: startOfMonth } };
 
   // Get order statistics
   const [
@@ -198,7 +202,9 @@ export const getPlatformStatistics = async (filters = {}) => {
     todayRevenueAgg,
     pendingWithdrawalsCount,
     pendingWithdrawalAmountAgg,
-    activeSellersGroups
+    activeSellersGroups,
+    thisMonthRevenueAgg,
+    thisMonthCommissionsPaidAgg
   ] = await Promise.all([
     prisma.order.count({ where: dateFilter }),
     prisma.order.count({ where: { ...dateFilter, status: "completed" } }),
@@ -236,23 +242,50 @@ export const getPlatformStatistics = async (filters = {}) => {
     prisma.order.groupBy({
       by: ["sellerId"],
       where: { ...dateFilter },
+    }),
+    prisma.order.aggregate({
+      where: { ...thisMonthFilter, status: { in: ["completed", "processing"] } },
+      _sum: { pricePaid: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        ...thisMonthFilter,
+        status: { in: ["completed", "processing"] },
+        commissionPaid: true,
+      },
+      _sum: { commissionAmount: true },
     })
   ]);
 
   // Get revenue breakdown by network (used for platformProfit too)
-  const revenueByNetwork = await prisma.order.groupBy({
-    by: ["bundleId"],
-    where: { ...dateFilter, status: { in: ["completed", "processing"] } },
-    _sum: {
-      pricePaid: true,
-    },
-    _count: true,
-  });
+  const [revenueByNetwork, thisMonthRevenueByNetwork] = await Promise.all([
+    prisma.order.groupBy({
+      by: ["bundleId"],
+      where: { ...dateFilter, status: { in: ["completed", "processing"] } },
+      _sum: {
+        pricePaid: true,
+      },
+      _count: true,
+    }),
+    prisma.order.groupBy({
+      by: ["bundleId"],
+      where: { ...thisMonthFilter, status: { in: ["completed", "processing"] } },
+      _sum: {
+        pricePaid: true,
+      },
+      _count: true,
+    }),
+  ]);
 
   // Get bundle info for revenue breakdown and hubnetCost
-  const bundleIds = revenueByNetwork.map((r) => r.bundleId);
+  const allBundleIds = [
+    ...revenueByNetwork.map((r) => r.bundleId),
+    ...thisMonthRevenueByNetwork.map((r) => r.bundleId),
+  ];
+  const uniqueBundleIds = [...new Set(allBundleIds)];
+
   const bundles = await prisma.dataBundle.findMany({
-    where: { id: { in: bundleIds } },
+    where: { id: { in: uniqueBundleIds } },
     select: { id: true, network: true, volume: true, hubnetCost: true },
   });
 
@@ -274,6 +307,14 @@ export const getPlatformStatistics = async (filters = {}) => {
       }
       networkRevenue[network].revenue += parseFloat(rev._sum.pricePaid || 0);
       networkRevenue[network].orders += rev._count;
+    }
+  });
+
+  let thisMonthHubnetCost = 0;
+  thisMonthRevenueByNetwork.forEach((rev) => {
+    const bundle = bundles.find((b) => b.id === rev.bundleId);
+    if (bundle) {
+      thisMonthHubnetCost += parseFloat(bundle.hubnetCost || 0) * rev._count;
     }
   });
 
@@ -313,7 +354,7 @@ export const getPlatformStatistics = async (filters = {}) => {
     };
   });
 
-  const successRate = totalOrders > 0 ? ((completedOrders / totalOrders) * 100).toFixed(1) : 0;
+  const successRate = (completedOrders + failedOrders) > 0 ? ((completedOrders / (completedOrders + failedOrders)) * 100).toFixed(1) : 0;
 
   return {
     overview: {
@@ -329,6 +370,11 @@ export const getPlatformStatistics = async (filters = {}) => {
         (parseFloat(totalRevenue._sum.pricePaid || 0) -
         parseFloat(totalCommissionsPaid._sum.commissionAmount || 0) -
         totalHubnetCost).toFixed(2),
+      thisMonthRevenue: thisMonthRevenueAgg._sum.pricePaid || "0.00",
+      thisMonthProfit:
+        (parseFloat(thisMonthRevenueAgg._sum.pricePaid || 0) -
+        parseFloat(thisMonthCommissionsPaidAgg._sum.commissionAmount || 0) -
+        thisMonthHubnetCost).toFixed(2),
       agentCount,
       subAgentCount,
       totalUsers: agentCount + subAgentCount,
@@ -671,7 +717,7 @@ export const generateReportData = async () => {
   }));
 
   // Combine top-level overview just as a quick snapshot
-  const [totalOrders, totalRevenue, completedOrders] = await Promise.all([
+  const [totalOrders, totalRevenue, completedOrders, failedOrders] = await Promise.all([
     prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
     prisma.order.aggregate({
       where: {
@@ -686,9 +732,15 @@ export const generateReportData = async () => {
         createdAt: { gte: thirtyDaysAgo },
       }
     }),
+    prisma.order.count({
+      where: {
+        status: 'failed',
+        createdAt: { gte: thirtyDaysAgo },
+      }
+    }),
   ]);
 
-  const successRate = totalOrders > 0 ? ((completedOrders / totalOrders) * 100).toFixed(1) : 0;
+  const successRate = (completedOrders + failedOrders) > 0 ? ((completedOrders / (completedOrders + failedOrders)) * 100).toFixed(1) : 0;
 
   return {
     salesTrend,

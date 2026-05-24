@@ -1,4 +1,5 @@
 import { asyncHandler } from "../middlewares/errorHandler.js";
+import { getPrisma } from "../config/database.js";
 import {
   createOrder,
   getOrderById,
@@ -224,5 +225,33 @@ export const trackOrdersByPhoneNumber = asyncHandler(async (req, res) => {
     success: true,
     count: orders.length,
     data: orders,
+  });
+});
+
+/**
+ * Get public platform stats (Public)
+ * GET /api/orders/public/stats
+ */
+export const getPublicStats = asyncHandler(async (req, res) => {
+  const prisma = getPrisma();
+
+  const [agentCount, subAgentCount, completedOrders, failedOrders] = await Promise.all([
+    prisma.user.count({ where: { role: "agent" } }),
+    prisma.user.count({ where: { role: "sub_agent" } }),
+    prisma.order.count({ where: { status: "completed" } }),
+    prisma.order.count({ where: { status: "failed" } }),
+  ]);
+
+  const successRate = (completedOrders + failedOrders) > 0
+    ? ((completedOrders / (completedOrders + failedOrders)) * 100).toFixed(1)
+    : "99.9";
+
+  res.status(200).json({
+    success: true,
+    data: {
+      activeAgents: agentCount + subAgentCount,
+      ordersDelivered: completedOrders,
+      successRate: parseFloat(successRate),
+    },
   });
 });

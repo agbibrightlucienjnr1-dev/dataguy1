@@ -10,6 +10,7 @@ import {
   purchaseFromLink,
   trackOrder,
   trackOrdersByPhoneNumber,
+  getPublicStats,
 } from "../controllers/orderController.js";
 import { authenticate, authorize } from "../middlewares/auth.js";
 import {
@@ -19,6 +20,9 @@ import {
 } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
+
+// Public routes - General Stats
+router.get("/public/stats", publicRateLimiter, getPublicStats);
 
 // Public routes - Order Tracking (no authentication required)
 router.get("/track/:orderId", publicRateLimiter, trackOrder);

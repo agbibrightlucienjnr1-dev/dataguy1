@@ -44,4 +44,9 @@ export const ordersApi = {
    * @param {string} code - Payment link code
    */
   getSellerInfo: (code) => apiClient.get(`/orders/link/${code}`),
+
+  /**
+   * Get public statistics for landing page
+   */
+  getPublicStats: () => apiClient.get("/orders/public/stats"),
 };

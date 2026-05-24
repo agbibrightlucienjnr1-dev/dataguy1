@@ -104,9 +104,9 @@ export default function AdminDashboardPage() {
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Total Revenue</p>
+              <p className="text-sm text-slate-500">Revenue (This Month)</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : formatCurrency(stats.totalRevenue || 0)}
+                {statsLoading ? "..." : formatCurrency(stats.thisMonthRevenue || 0)}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
@@ -114,16 +114,16 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500">
-            Today: {formatCurrency(stats.todayRevenue || 0)}
+            Today: {formatCurrency(stats.todayRevenue || 0)} • Lifetime: {formatCurrency(stats.totalRevenue || 0)}
           </div>
         </Card>
 
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Platform Profit</p>
+              <p className="text-sm text-slate-500">Platform Profit (This Month)</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : formatCurrency(stats.platformProfit || 0)}
+                {statsLoading ? "..." : formatCurrency(stats.thisMonthProfit || 0)}
               </p>
             </div>
             <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
@@ -131,7 +131,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500">
-            Net profit over all orders
+            Lifetime Profit: {formatCurrency(stats.platformProfit || 0)}
           </div>
         </Card>
 
