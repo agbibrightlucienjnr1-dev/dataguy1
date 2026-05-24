@@ -23,6 +23,7 @@ export default function AgentPricingPage() {
   const queryClient = useQueryClient();
   const [editedPrices, setEditedPrices] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState(null);
 
   // Fetch bundles with pricing
   const { data, isLoading, refetch, isFetching } = useQuery({
@@ -38,7 +39,7 @@ export default function AgentPricingPage() {
     mutationFn: async () => {
       const prices = Object.entries(editedPrices).map(([bundleId, prices]) => ({
         bundleId,
-        customerPrice: parseFloat(prices.customerPrice),
+        ...(prices.customerPrice !== undefined ? { customerPrice: parseFloat(prices.customerPrice) } : {}),
         ...(isAgent && prices.subAgentPrice !== undefined
           ? { subAgentPrice: parseFloat(prices.subAgentPrice) }
           : {}),
@@ -65,6 +66,18 @@ export default function AgentPricingPage() {
       );
     },
   });
+
+  const handleBackToNetworks = () => {
+    if (hasChanges) {
+      const confirmLeave = window.confirm(
+        "You have unsaved changes. Are you sure you want to leave? Your changes will be lost."
+      );
+      if (!confirmLeave) return;
+    }
+    setEditedPrices({});
+    setHasChanges(false);
+    setSelectedNetwork(null);
+  };
 
   // Handle price change
   const handlePriceChange = (bundleId, field, value) => {
@@ -230,7 +243,7 @@ export default function AgentPricingPage() {
         </div>
       </Card>
 
-      {/* Pricing Table */}
+      {/* Pricing Table / Network Cards */}
       {isLoading ? (
         <Card>
           <div className="overflow-x-auto">
@@ -261,12 +274,93 @@ export default function AgentPricingPage() {
               description="There are currently no active data bundles available for you to set pricing on."
            />
         </Card>
+      ) : !selectedNetwork ? (
+        <div className="space-y-6">
+          <div className="text-center max-w-xl mx-auto py-6">
+            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Select a Mobile Network</h2>
+            <p className="text-slate-500 mt-2 text-sm sm:text-base">
+              Choose a network to configure customer and sub-agent bundle pricing
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {["MTN", "TELECEL", "AT", "AIRTELTIGO"].map((networkKey) => {
+              const count = bundlesByNetwork[networkKey]?.length || 0;
+              const networkInfo = getNetworkData(networkKey);
+              
+              // Custom gradient card styles matching the branding colors
+              let cardGradient = "from-slate-500 to-slate-600 shadow-slate-100/50 hover:shadow-slate-200/80";
+              let badgeColor = "bg-slate-100 text-slate-800";
+              if (networkKey === "MTN") {
+                cardGradient = "from-amber-400 to-yellow-500 shadow-yellow-100/50 hover:shadow-yellow-200/80";
+                badgeColor = "bg-yellow-100 text-yellow-900";
+              } else if (networkKey === "TELECEL") {
+                cardGradient = "from-red-500 to-rose-600 shadow-red-100/50 hover:shadow-red-200/80";
+                badgeColor = "bg-red-100 text-red-900";
+              } else if (networkKey === "AT" || networkKey === "AIRTELTIGO") {
+                cardGradient = "from-blue-500 to-indigo-600 shadow-blue-100/50 hover:shadow-blue-200/80";
+                badgeColor = "bg-blue-100 text-blue-900";
+              }
+
+              return (
+                <button
+                  key={networkKey}
+                  onClick={() => setSelectedNetwork(networkKey)}
+                  className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${cardGradient} p-6 text-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 h-44 flex flex-col justify-between`}
+                >
+                  {/* Absolute decoration */}
+                  <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-10 transition-transform duration-500 group-hover:scale-110">
+                    <Wifi className="w-36 h-36" />
+                  </div>
+
+                  <div className="flex items-center justify-between z-10">
+                    <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                      <Wifi className="w-6 h-6" />
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor}`}>
+                      {count} {count === 1 ? "bundle" : "bundles"}
+                    </span>
+                  </div>
+
+                  <div className="z-10">
+                    <h3 className="text-2xl font-bold tracking-tight">{networkInfo.label}</h3>
+                    <p className="text-white/80 text-xs mt-1">Configure pricing & profit margins</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       ) : (
         <div className="space-y-6">
-          {Object.entries(bundlesByNetwork).map(([network, networkBundles]) => {
-            const networkData = getNetworkData(network);
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackToNetworks}
+              className="flex items-center gap-1.5"
+            >
+              ← Back to Networks
+            </Button>
+          </div>
+
+          {(() => {
+            const networkBundles = bundlesByNetwork[selectedNetwork] || [];
+            const networkData = getNetworkData(selectedNetwork);
+
+            if (networkBundles.length === 0) {
+              return (
+                <Card className="p-8">
+                  <EmptyState
+                    icon={Tag}
+                    title="No active bundles"
+                    description={`There are currently no active ${networkData.label} bundles available.`}
+                  />
+                </Card>
+              );
+            }
+
             return (
-              <Card key={network} className="overflow-hidden">
+              <Card className="overflow-hidden">
                 {/* Network Header */}
                 <div
                   className={`${networkData.color} text-white px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3`}
@@ -611,7 +705,7 @@ export default function AgentPricingPage() {
                 </div>
               </Card>
             );
-          })}
+          })()}
         </div>
       )}
 
