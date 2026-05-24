@@ -392,7 +392,13 @@ function OrderCard({ order, onCopy, onRefetch }) {
         <div className="flex-1">
           <p className="font-medium text-slate-900">{order.bundle?.volume}</p>
           <p className="text-sm text-slate-500">
-            {order.bundle?.network} • {order.customerPhone}
+            {order.bundle?.network === "AIRTELTIGO"
+              ? "Big Time"
+              : order.bundle?.network === "AT"
+              ? "AT iSHARE"
+              : order.bundle?.network === "TELECEL"
+              ? "Telecel"
+              : "MTN"} • {order.customerPhone}
           </p>
         </div>
         <p className="font-semibold text-slate-900">
