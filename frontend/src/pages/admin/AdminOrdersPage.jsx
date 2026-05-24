@@ -170,10 +170,22 @@ export default function AdminOrdersPage() {
             MTN
           </span>
         );
-      case "AirtelTigo":
+      case "TELECEL":
         return (
           <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">
-            AirtelTigo
+            Telecel
+          </span>
+        );
+      case "AT":
+        return (
+          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+            AT iSHARE
+          </span>
+        );
+      case "AIRTELTIGO":
+        return (
+          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+            Big Time
           </span>
         );
       default:
