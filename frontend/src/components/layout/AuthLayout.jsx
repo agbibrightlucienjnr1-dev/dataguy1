@@ -31,7 +31,7 @@ export default function AuthLayout() {
             Grow Your Business.
           </h1>
           <p className="text-slate-300 text-lg max-w-md leading-relaxed font-medium">
-            Join thousands of agents selling MTN and AirtelTigo data bundles
+            Join thousands of agents selling MTN, Telecel and AirtelTigo data bundles
             across Ghana. Start earning with every sale.
           </p>
 
