@@ -219,10 +219,22 @@ export default function AdminBundlesPage() {
             MTN
           </span>
         );
-      case "AirtelTigo":
+      case "TELECEL":
         return (
           <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">
-            AirtelTigo
+            Telecel
+          </span>
+        );
+      case "AT":
+        return (
+          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+            AT iSHARE
+          </span>
+        );
+      case "AIRTELTIGO":
+        return (
+          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+            Big Time
           </span>
         );
       default:
@@ -298,115 +310,223 @@ export default function AdminBundlesPage() {
           />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sortedBundles.map((bundle) => (
-            <Card
-              key={bundle.id}
-              className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
-            >
-              <div
-                className={`h-2 w-full ${
-                  bundle.network === "MTN"
-                    ? "bg-yellow-400"
-                    : bundle.network === "Telecel" || bundle.network === "Vodafone"
-                    ? "bg-red-500"
-                    : bundle.network === "AirtelTigo"
-                    ? "bg-blue-600"
-                    : "bg-slate-300"
-                }`}
-              />
-              <div className="p-5 flex flex-col flex-grow">
-                <div className="flex items-start justify-between mb-3">
-                {getNetworkBadge(bundle.network)}
-                <div className="flex items-center gap-1">
-                  {bundle.isActive ? (
-                    <Badge variant="success">Active</Badge>
-                  ) : (
-                    <Badge variant="secondary">Inactive</Badge>
-                  )}
+        <div className="space-y-10">
+          {["MTN", "TELECEL", "AT", "AIRTELTIGO"].map((networkKey) => {
+            const networkBundles = sortedBundles.filter((b) => b.network === networkKey);
+            if (networkBundles.length === 0) return null;
+
+            const networkConfig = NETWORKS.find((n) => n.value === networkKey) || {
+              label: networkKey,
+              color: "bg-slate-500",
+              textColor: "text-slate-700",
+            };
+
+            return (
+              <div key={networkKey} className="space-y-4">
+                <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
+                  <span className={`w-3.5 h-3.5 rounded-full ${
+                    networkKey === "MTN"
+                      ? "bg-yellow-400"
+                      : networkKey === "TELECEL"
+                      ? "bg-red-500"
+                      : "bg-blue-600"
+                  }`} />
+                  <h2 className="text-lg font-bold text-slate-800">
+                    {networkConfig.label} Bundles
+                  </h2>
+                  <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                    {networkBundles.length} {networkBundles.length === 1 ? "bundle" : "bundles"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {networkBundles.map((bundle) => (
+                    <Card
+                      key={bundle.id}
+                      className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
+                    >
+                      <div
+                        className={`h-2 w-full ${
+                          bundle.network === "MTN"
+                            ? "bg-yellow-400"
+                            : bundle.network === "TELECEL"
+                            ? "bg-red-500"
+                            : bundle.network === "AT" || bundle.network === "AIRTELTIGO"
+                            ? "bg-blue-600"
+                            : "bg-slate-300"
+                        }`}
+                      />
+                      <div className="p-5 flex flex-col flex-grow">
+                        <div className="flex items-start justify-between mb-3">
+                          {getNetworkBadge(bundle.network)}
+                          <div className="flex items-center gap-1">
+                            {bundle.isActive ? (
+                              <Badge variant="success">Active</Badge>
+                            ) : (
+                              <Badge variant="secondary">Inactive</Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <h3 className="text-xl font-bold text-slate-900 mb-1">
+                          {bundle.volume}
+                        </h3>
+                        <p className="text-slate-500 text-sm mb-4">
+                          Validity: {bundle.validity || "30 days"}
+                        </p>
+
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Hubnet Cost:</span>
+                            <span className="font-medium text-slate-900">
+                              {formatCurrency(bundle.hubnetCost)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Admin Price:</span>
+                            <span className="font-medium text-green-600">
+                              {formatCurrency(bundle.adminPrice)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
+                            <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
+                            <span className="font-bold text-indigo-600 text-lg">
+                              {formatCurrency(
+                                parseFloat(bundle.adminPrice || 0) -
+                                  parseFloat(bundle.hubnetCost || 0),
+                              )}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-auto pt-4 border-t border-slate-100 space-y-2">
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => openEditModal(bundle)}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-red-600 hover:bg-red-50"
+                              onClick={() => openDeleteModal(bundle)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                          <Button
+                            variant={bundle.isActive ? "secondary" : "primary"}
+                            size="sm"
+                            className="w-full"
+                            onClick={() =>
+                              toggleMutation.mutate({
+                                id: bundle.id,
+                                isActive: bundle.isActive,
+                              })
+                            }
+                            disabled={toggleMutation.isPending}
+                          >
+                            {bundle.isActive ? (
+                              <>
+                                <ToggleLeft className="w-4 h-4 mr-2" />
+                                Deactivate
+                              </>
+                            ) : (
+                              <>
+                                <ToggleRight className="w-4 h-4 mr-2" />
+                                Activate
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               </div>
+            );
+          })}
 
-              <h3 className="text-xl font-bold text-slate-900 mb-1">
-                {bundle.volume}
-              </h3>
-              <p className="text-slate-500 text-sm mb-4">
-                Validity: {bundle.validity || "30 days"}
-              </p>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Hubnet Cost:</span>
-                  <span className="font-medium text-slate-900">
-                    {formatCurrency(bundle.hubnetCost)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Admin Price:</span>
-                  <span className="font-medium text-green-600">
-                    {formatCurrency(bundle.adminPrice)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
-                  <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
-                  <span className="font-bold text-indigo-600 text-lg">
-                    {formatCurrency(
-                      parseFloat(bundle.adminPrice || 0) -
-                        parseFloat(bundle.hubnetCost || 0),
-                    )}
-                  </span>
-                </div>
+          {/* Fallback for other networks */}
+          {sortedBundles.filter((b) => !["MTN", "TELECEL", "AT", "AIRTELTIGO"].includes(b.network)).length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
+                <span className="w-3.5 h-3.5 rounded-full bg-slate-400" />
+                <h2 className="text-lg font-bold text-slate-800">Other Networks</h2>
               </div>
-
-              <div className="mt-auto pt-4 border-t border-slate-100 space-y-2">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openEditModal(bundle)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {sortedBundles.filter((b) => !["MTN", "TELECEL", "AT", "AIRTELTIGO"].includes(b.network)).map((bundle) => (
+                  <Card
+                    key={bundle.id}
+                    className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
                   >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-red-600 hover:bg-red-50"
-                    onClick={() => openDeleteModal(bundle)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-                <Button
-                  variant={bundle.isActive ? "secondary" : "primary"}
-                  size="sm"
-                  className="w-full"
-                  onClick={() =>
-                    toggleMutation.mutate({
-                      id: bundle.id,
-                      isActive: bundle.isActive,
-                    })
-                  }
-                  disabled={toggleMutation.isPending}
-                >
-                  {bundle.isActive ? (
-                    <>
-                      <ToggleLeft className="w-4 h-4 mr-2" />
-                      Deactivate
-                    </>
-                  ) : (
-                    <>
-                      <ToggleRight className="w-4 h-4 mr-2" />
-                      Activate
-                    </>
-                  )}
-                </Button>
+                    <div className="h-2 w-full bg-slate-300" />
+                    <div className="p-5 flex flex-col flex-grow">
+                      <div className="flex items-start justify-between mb-3">
+                        {getNetworkBadge(bundle.network)}
+                        <div className="flex items-center gap-1">
+                          {bundle.isActive ? (
+                            <Badge variant="success">Active</Badge>
+                          ) : (
+                            <Badge variant="secondary">Inactive</Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      <h3 className="text-xl font-bold text-slate-900 mb-1">{bundle.volume}</h3>
+                      <p className="text-slate-500 text-sm mb-4">Validity: {bundle.validity || "30 days"}</p>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Hubnet Cost:</span>
+                          <span className="font-medium text-slate-900">{formatCurrency(bundle.hubnetCost)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Admin Price:</span>
+                          <span className="font-medium text-green-600">{formatCurrency(bundle.adminPrice)}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
+                          <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
+                          <span className="font-bold text-indigo-600 text-lg">
+                            {formatCurrency(parseFloat(bundle.adminPrice || 0) - parseFloat(bundle.hubnetCost || 0))}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto pt-4 border-t border-slate-100 space-y-2">
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditModal(bundle)}>
+                            <Edit className="w-4 h-4 mr-1" /> Edit
+                          </Button>
+                          <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:bg-red-50" onClick={() => openDeleteModal(bundle)}>
+                            <Trash2 className="w-4 h-4 mr-1" /> Delete
+                          </Button>
+                        </div>
+                        <Button
+                          variant={bundle.isActive ? "secondary" : "primary"}
+                          size="sm"
+                          className="w-full"
+                          onClick={() => toggleMutation.mutate({ id: bundle.id, isActive: bundle.isActive })}
+                          disabled={toggleMutation.isPending}
+                        >
+                          {bundle.isActive ? (
+                            <><ToggleLeft className="w-4 h-4 mr-2" /> Deactivate</>
+                          ) : (
+                            <><ToggleRight className="w-4 h-4 mr-2" /> Activate</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-              </div>
-            </Card>
-          ))}
+            </div>
+          )}
         </div>
       )}
 
