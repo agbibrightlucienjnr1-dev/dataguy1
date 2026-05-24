@@ -367,14 +367,14 @@ export const getPlatformStatistics = async (filters = {}) => {
       totalCommissionsPaid:
         totalCommissionsPaid._sum.commissionAmount || "0.00",
       platformProfit:
-        (parseFloat(totalRevenue._sum.pricePaid || 0) -
+        ((parseFloat(totalRevenue._sum.pricePaid || 0) -
         parseFloat(totalCommissionsPaid._sum.commissionAmount || 0) -
-        totalHubnetCost).toFixed(2),
+        totalHubnetCost) * 0.97).toFixed(2),
       thisMonthRevenue: thisMonthRevenueAgg._sum.pricePaid || "0.00",
       thisMonthProfit:
-        (parseFloat(thisMonthRevenueAgg._sum.pricePaid || 0) -
+        ((parseFloat(thisMonthRevenueAgg._sum.pricePaid || 0) -
         parseFloat(thisMonthCommissionsPaidAgg._sum.commissionAmount || 0) -
-        thisMonthHubnetCost).toFixed(2),
+        thisMonthHubnetCost) * 0.97).toFixed(2),
       agentCount,
       subAgentCount,
       totalUsers: agentCount + subAgentCount,
