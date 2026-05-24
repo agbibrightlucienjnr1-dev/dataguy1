@@ -45,7 +45,7 @@ maximum
 Between 1 and 100
 Strictly 10 digits
 Description
-Allowed networks mtn, at, big-time
+Allowed networks mtn, at, big-time, telecel
 The number of megabyte(s) to be
 transferred
 A valid telephone number formatted in
