@@ -68,13 +68,31 @@ const NETWORK_STYLES = {
     text: "text-yellow-700",
     border: "border-yellow-200",
     gradient: "from-yellow-400 to-yellow-600",
+    ring: "ring-yellow-500/20",
   },
-  AIRTELTIGO: {
-    bg: "bg-red-500",
+  TELECEL: {
+    bg: "bg-red-600",
     bgLight: "bg-red-50",
     text: "text-red-700",
     border: "border-red-200",
-    gradient: "from-red-400 to-red-600",
+    gradient: "from-red-500 to-red-700",
+    ring: "ring-red-500/20",
+  },
+  AT: {
+    bg: "bg-blue-600",
+    bgLight: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+    gradient: "from-blue-500 to-blue-700",
+    ring: "ring-blue-500/20",
+  },
+  AIRTELTIGO: {
+    bg: "bg-blue-600",
+    bgLight: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+    gradient: "from-blue-500 to-blue-700",
+    ring: "ring-blue-500/20",
   },
 };
 
@@ -253,9 +271,13 @@ export default function BuyPage() {
       return;
     }
 
-    if (!data.paymentNumber && finalNetwork !== selectedBundle.network) {
+    const isAirtelTigoMatch =
+      (finalNetwork === "AIRTELTIGO" || finalNetwork === "AT") &&
+      (selectedBundle.network === "AIRTELTIGO" || selectedBundle.network === "AT");
+
+    if (!data.paymentNumber && finalNetwork !== selectedBundle.network && !isAirtelTigoMatch) {
       toast.error(
-        `The selected bundle is for ${selectedBundle.network} but your number is ${finalNetwork}. Use a matching number or specify a different payment number.`,
+        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your number is ${finalNetwork === "AIRTELTIGO" ? "Big Time" : finalNetwork === "AT" ? "AT iSHARE" : finalNetwork}. Use a matching number or specify a different payment number.`,
       );
       return;
     }
@@ -419,108 +441,141 @@ export default function BuyPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Bundle Selection */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Network Filter */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={networkFilter === "" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setNetworkFilter("")}
-                className={`transition-all rounded-full px-5 ${networkFilter === "" ? "bg-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"}`}
-              >
-                All Networks
-              </Button>
-              {networks.map((network) => {
-                const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
-                const isActive = networkFilter === network;
-                return (
-                  <Button
-                    key={network}
-                    variant={isActive ? "primary" : "outline"}
-                    size="sm"
-                    onClick={() => setNetworkFilter(network)}
-                    className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"}`}
-                  >
-                    {network}
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Bundles Grid */}
-            {Object.entries(bundlesByNetwork).map(
-              ([network, networkBundles]) => {
-                const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
-                return (
-                  <div
-                    key={network}
-                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-                  >
-                    <div className="flex items-center gap-2 mb-4">
-                      <div
-                        className={`w-4 h-4 rounded shadow-sm ${style.bg}`}
-                      />
-                      <h3 className="font-bold text-slate-900 text-lg tracking-tight">
-                        {network}
-                      </h3>
-                      <Badge
-                        variant="secondary"
-                        size="sm"
-                        className="bg-slate-200 text-slate-700 ml-1"
+            {/* Network Filter / Initial Selection Screen */}
+            {networkFilter === "" ? (
+              <div className="glass-panel p-8 rounded-3xl border border-white/50 space-y-6 bg-white/70 backdrop-blur-md shadow-lg">
+                <h3 className="text-xl font-extrabold text-slate-800 tracking-tight text-center">
+                  Select a Network/Bundle Type to view available packages
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {networks.map((network) => {
+                    const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
+                    const label = network === "AIRTELTIGO" ? "Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
+                    return (
+                      <button
+                        key={network}
+                        onClick={() => setNetworkFilter(network)}
+                        className={`p-6 rounded-2xl border-2 text-center transition-all duration-300 hover:scale-102 hover:shadow-lg ${style.border} bg-white hover:${style.bgLight} flex flex-col items-center justify-center gap-3`}
                       >
-                        {networkBundles.length} bundles
-                      </Badge>
-                    </div>
+                        <div className={`w-12 h-12 rounded-full ${style.bg} flex items-center justify-center text-white shadow-md`}>
+                          <Wifi className="w-6 h-6" />
+                        </div>
+                        <span className="font-extrabold text-lg text-slate-900">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2 flex-wrap mb-6">
+                  {networks.map((network) => {
+                    const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
+                    const isActive = networkFilter === network;
+                    const label = network === "AIRTELTIGO" ? "Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
+                    return (
+                      <Button
+                        key={network}
+                        variant={isActive ? "primary" : "outline"}
+                        size="sm"
+                        onClick={() => setNetworkFilter(network)}
+                        className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"}`}
+                      >
+                        {label}
+                      </Button>
+                    );
+                  })}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setNetworkFilter("");
+                      setSelectedBundle(null);
+                    }}
+                    className="transition-all rounded-full px-5 bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+                  >
+                    Back to Selection
+                  </Button>
+                </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {networkBundles.map((bundle) => {
-                        const isSelected = selectedBundle?.id === bundle.id;
-                        return (
-                          <button
-                            key={bundle.id}
-                            onClick={() => setSelectedBundle(bundle)}
-                            className={`p-5 rounded-2xl border-2 text-left transition-all duration-300 relative overflow-hidden group ${
-                              isSelected
-                                ? `${style.border} ${style.bgLight} ring-4 ring-offset-2 ring-${network === "MTN" ? "yellow" : "red"}-500/20 shadow-lg -translate-y-1`
-                                : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
-                            }`}
+                {/* Bundles Grid */}
+                {Object.entries(bundlesByNetwork).map(
+                  ([network, networkBundles]) => {
+                    const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
+                    const label = network === "AIRTELTIGO" ? "Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
+                    return (
+                      <div
+                        key={network}
+                        className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                      >
+                        <div className="flex items-center gap-2 mb-4">
+                          <div
+                            className={`w-4 h-4 rounded shadow-sm ${style.bg}`}
+                          />
+                          <h3 className="font-bold text-slate-900 text-lg tracking-tight">
+                            {label}
+                          </h3>
+                          <Badge
+                            variant="secondary"
+                            size="sm"
+                            className="bg-slate-200 text-slate-700 ml-1"
                           >
-                            {isSelected && (
-                              <div
-                                className={`absolute top-0 right-0 w-16 h-16 transform translate-x-8 -translate-y-8 rotate-45 ${style.bg} opacity-10`}
-                              ></div>
-                            )}
-                            <div className="flex items-center justify-between mb-3 relative z-10">
-                              <Wifi
-                                className={`w-5 h-5 transition-colors ${isSelected ? style.text : "text-slate-400 group-hover:text-slate-600"}`}
-                              />
-                              {isSelected && (
-                                <CheckCircle
-                                  className={`w-5 h-5 ${style.text} animate-in zoom-in duration-200`}
-                                />
-                              )}
-                            </div>
-                            <div className="relative z-10">
-                              <p
-                                className={`font-extrabold text-2xl transition-colors ${isSelected ? "text-slate-900" : "text-slate-800"}`}
+                            {networkBundles.length} bundles
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                          {networkBundles.map((bundle) => {
+                            const isSelected = selectedBundle?.id === bundle.id;
+                            return (
+                              <button
+                                key={bundle.id}
+                                onClick={() => setSelectedBundle(bundle)}
+                                className={`p-5 rounded-2xl border-2 text-left transition-all duration-300 relative overflow-hidden group ${
+                                  isSelected
+                                    ? `${style.border} ${style.bgLight} ring-4 ring-offset-2 ${style.ring} shadow-lg -translate-y-1`
+                                    : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
+                                }`}
                               >
-                                {bundle.volume}
-                              </p>
-                              <p className="text-slate-500 text-sm font-medium mb-3">
-                                {bundle.validity}
-                              </p>
-                              <p
-                                className={`font-bold tracking-tight text-lg ${isSelected ? style.text : "text-slate-700"}`}
-                              >
-                                {formatCurrency(bundle.price)}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              },
+                                {isSelected && (
+                                  <div
+                                    className={`absolute top-0 right-0 w-16 h-16 transform translate-x-8 -translate-y-8 rotate-45 ${style.bg} opacity-10`}
+                                  ></div>
+                                )}
+                                <div className="flex items-center justify-between mb-3 relative z-10">
+                                  <Wifi
+                                    className={`w-5 h-5 transition-colors ${isSelected ? style.text : "text-slate-400 group-hover:text-slate-600"}`}
+                                  />
+                                  {isSelected && (
+                                    <CheckCircle
+                                      className={`w-5 h-5 ${style.text} animate-in zoom-in duration-200`}
+                                    />
+                                  )}
+                                </div>
+                                <div className="relative z-10">
+                                  <p
+                                    className={`font-extrabold text-2xl transition-colors ${isSelected ? "text-slate-900" : "text-slate-800"}`}
+                                  >
+                                    {bundle.volume}
+                                  </p>
+                                  <p className="text-slate-500 text-sm font-medium mb-3">
+                                    {bundle.validity || "30 days"}
+                                  </p>
+                                  <p
+                                    className={`font-bold tracking-tight text-lg ${isSelected ? style.text : "text-slate-700"}`}
+                                  >
+                                    {formatCurrency(bundle.price)}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                )}
+              </>
             )}
 
             {bundles.length === 0 && (
@@ -564,7 +619,13 @@ export default function BuyPage() {
                         "bg-slate-500"
                       }
                     >
-                      {selectedBundle.network}
+                      {selectedBundle.network === "AIRTELTIGO"
+                        ? "Big Time"
+                        : selectedBundle.network === "AT"
+                        ? "AT iSHARE"
+                        : selectedBundle.network === "TELECEL"
+                        ? "Telecel"
+                        : "MTN"}
                     </Badge>
                   </div>
                   <p className="font-extrabold text-2xl text-slate-900">
@@ -662,7 +723,7 @@ export default function BuyPage() {
                     <option value="">Auto-detect from number</option>
                     <option value="MTN">MTN</option>
                     <option value="TELECEL">Telecel</option>
-                    <option value="AT">AT</option>
+                    <option value="AT">AT iSHARE</option>
                   </select>
                 </div>
 
