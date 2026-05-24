@@ -305,7 +305,7 @@ export default function AgentPricingPage() {
                 <button
                   key={networkKey}
                   onClick={() => setSelectedNetwork(networkKey)}
-                  className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${cardGradient} p-6 text-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 h-44 flex flex-col justify-between`}
+                  className={`group relative overflow-hidden rounded-2xl bg-linear-to-br ${cardGradient} p-6 text-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 h-44 flex flex-col justify-between`}
                 >
                   {/* Absolute decoration */}
                   <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-10 transition-transform duration-500 group-hover:scale-110">

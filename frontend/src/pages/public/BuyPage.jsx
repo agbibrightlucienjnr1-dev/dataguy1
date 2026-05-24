@@ -782,7 +782,7 @@ export default function BuyPage() {
               className="gap-2 rounded-full border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-6 py-2 h-auto shadow-sm transition-all hover:shadow-md"
             >
               <User className="w-4 h-4" />
-              Become an Agent under this Seller
+              Become an Agent
             </Button>
           </Link>
         </div>

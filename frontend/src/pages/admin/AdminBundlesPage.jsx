@@ -294,7 +294,7 @@ export default function AdminBundlesPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
-            <SkeletonCard key={i} className="h-[250px]" />
+            <SkeletonCard key={i} className="h-62.5" />
           ))}
         </div>
       ) : bundles.length === 0 ? (
@@ -355,7 +355,7 @@ export default function AdminBundlesPage() {
                             : "bg-slate-300"
                         }`}
                       />
-                      <div className="p-5 flex flex-col flex-grow">
+                      <div className="p-5 flex flex-col grow">
                         <div className="flex items-start justify-between mb-3">
                           {getNetworkBadge(bundle.network)}
                           <div className="flex items-center gap-1">
@@ -466,7 +466,7 @@ export default function AdminBundlesPage() {
                     className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
                   >
                     <div className="h-2 w-full bg-slate-300" />
-                    <div className="p-5 flex flex-col flex-grow">
+                    <div className="p-5 flex flex-col grow">
                       <div className="flex items-start justify-between mb-3">
                         {getNetworkBadge(bundle.network)}
                         <div className="flex items-center gap-1">

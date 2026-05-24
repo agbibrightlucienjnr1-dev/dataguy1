@@ -11,14 +11,14 @@ export default function LandingPage() {
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-slate-400 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
 
       {/* Navigation */}
-      <nav className="relative z-10 glass-panel border-b border-white/40 sticky top-0">
+      <nav className="z-10 glass-panel border-b border-white/40 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-all">
+              <div className="w-10 h-10 bg-linear-to-br from-slate-800 to-slate-900 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-all">
                 <Wifi className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">DataGuy</span>
+              <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-700 tracking-tight">DataGuy</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
@@ -94,17 +94,17 @@ export default function LandingPage() {
             {/* Stats */}
             <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto p-8 glass-panel rounded-2xl relative z-10 animate-float">
               <div>
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">5K+</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">5K+</div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Active Agents</div>
               </div>
               <div className="border-x border-slate-200/50">
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">100K+</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">100K+</div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">
                   Orders Delivered
                 </div>
               </div>
               <div>
-                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">99.9%</div>
+                <div className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 to-slate-700">99.9%</div>
                 <div className="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wide">Success Rate</div>
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function LandingPage() {
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-slate-700 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-slate-800 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
         
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 glass-panel-dark rounded-3xl p-12 mt-4 mx-4 shadow-2xl">
+        <div className="max-w-4xl mx-4 sm:mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 glass-panel-dark rounded-3xl p-12 mt-4 shadow-2xl">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
             Ready to Start Earning?
           </h2>
