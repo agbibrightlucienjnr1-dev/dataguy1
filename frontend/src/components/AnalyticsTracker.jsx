@@ -14,7 +14,7 @@ export const AnalyticsTracker = () => {
 
   useEffect(() => {
     // We only want to track unique page navigations, blocking raw React StrictMode double mounts
-    if (process.env.NODE_ENV === 'development' && !initialized.current) {
+    if (import.meta.env.DEV && !initialized.current) {
         initialized.current = true;
         return;
     }

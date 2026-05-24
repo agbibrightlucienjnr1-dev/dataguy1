@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 // Layouts
 import { AuthLayout, DashboardLayout } from "./components/layout";
 import { AnalyticsTracker } from "./components/AnalyticsTracker";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Auth Guards
 import { RequireAuth, RequireAdmin, GuestOnly } from "./components/auth";
@@ -53,6 +54,7 @@ import {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AnalyticsTracker />
       <Routes>
         {/* Public Routes */}
