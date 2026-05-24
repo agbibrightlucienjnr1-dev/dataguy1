@@ -7,19 +7,32 @@ export const NETWORKS = [
     textColor: "text-yellow-700",
   },
   {
-    value: "AIRTELTIGO",
-    label: "AirtelTigo",
-    color: "bg-red-500",
+    value: "TELECEL",
+    label: "Telecel",
+    color: "bg-red-600",
     textColor: "text-red-700",
+  },
+  {
+    value: "AT",
+    label: "AT iSHARE",
+    color: "bg-blue-600",
+    textColor: "text-blue-700",
+  },
+  {
+    value: "AIRTELTIGO",
+    label: "Big Time",
+    color: "bg-blue-600",
+    textColor: "text-blue-700",
   },
 ];
 
-export const MOBILE_MONEY_NETWORKS = ["MTN", "VODAFONE", "AIRTELTIGO"];
+export const MOBILE_MONEY_NETWORKS = ["MTN", "TELECEL", "AIRTELTIGO"];
 
 export const NETWORK_PHONE_PREFIXES = {
   MTN: ["024", "054", "055", "059", "025", "053"],
-  VODAFONE: ["020", "050"],
-  AIRTELTIGO: ["027", "057"],
+  TELECEL: ["020", "050"],
+  AIRTELTIGO: ["027", "057", "026", "056"],
+  AT: ["027", "057", "026", "056"],
 };
 
 // ========== Order Statuses ==========

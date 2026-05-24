@@ -86,7 +86,7 @@ export const withdrawalSchema = z
       .min(1, "Account name is required")
       .min(2, "Please enter a valid account name"),
     bankName: z.string().optional(),
-    mobileNetwork: z.enum(["MTN", "VODAFONE", "AIRTELTIGO"]).optional(),
+    mobileNetwork: z.enum(["MTN", "VODAFONE", "TELECEL", "AIRTELTIGO"]).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.accountType === "bank_account" && !data.bankName) {
