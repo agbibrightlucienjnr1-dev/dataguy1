@@ -22,6 +22,7 @@ export const getSellerByCode = async (code) => {
       phone: true,
       role: true,
       paymentLinkCode: true,
+      parentAgentId: true,
     },
   });
 
@@ -80,11 +81,35 @@ export const getBundlesWithSellerPricing = async (sellerCode) => {
     });
   }
 
+  // Get parent agent prices if seller is sub_agent
+  let parentPricesMap = new Map();
+  if (seller.role === "sub_agent" && seller.parentAgentId) {
+    const parentPrices = await prisma.agentPrice.findMany({
+      where: { agentId: seller.parentAgentId },
+      select: {
+        bundleId: true,
+        subAgentPrice: true,
+      },
+    });
+
+    parentPrices.forEach((price) => {
+      parentPricesMap.set(price.bundleId, price.subAgentPrice);
+    });
+  }
+
   // Map bundles with seller's pricing
   const bundlesWithPricing = bundles
     .map((bundle) => {
-      const price = pricesMap.get(bundle.id);
-      if (!price) return null; // Skip bundles without pricing
+      let price = pricesMap.get(bundle.id);
+      
+      // If not set, apply fallbacks:
+      if (!price) {
+        if (seller.role === "agent") {
+          price = bundle.adminPrice;
+        } else if (seller.role === "sub_agent") {
+          price = parentPricesMap.get(bundle.id) || bundle.adminPrice;
+        }
+      }
 
       return {
         id: bundle.id,
@@ -94,7 +119,7 @@ export const getBundlesWithSellerPricing = async (sellerCode) => {
         isActive: bundle.isActive,
       };
     })
-    .filter(Boolean); // Remove null entries
+    .filter(Boolean); // Keep all active bundles
 
   // Group by network
   const grouped = bundlesWithPricing.reduce((acc, bundle) => {
@@ -163,11 +188,7 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
       },
     });
 
-    if (!agentPrice) {
-      throw new AppError("This bundle is not available from this seller", 400);
-    }
-
-    pricePaid = agentPrice.customerPrice;
+    pricePaid = agentPrice ? agentPrice.customerPrice : bundle.adminPrice;
   } else if (seller.role === "sub_agent") {
     const subAgentPrice = await prisma.subAgentPrice.findUnique({
       where: {
@@ -178,11 +199,24 @@ export const createOrderFromLink = async (sellerCode, orderData) => {
       },
     });
 
-    if (!subAgentPrice) {
-      throw new AppError("This bundle is not available from this seller", 400);
+    if (subAgentPrice) {
+      pricePaid = subAgentPrice.customerPrice;
+    } else {
+      // Fallback to parent agent's subAgentPrice
+      let parentPrice = null;
+      if (seller.parentAgentId) {
+        const parentAgentPrice = await prisma.agentPrice.findUnique({
+          where: {
+            agentId_bundleId: {
+              agentId: seller.parentAgentId,
+              bundleId,
+            },
+          },
+        });
+        parentPrice = parentAgentPrice ? parentAgentPrice.subAgentPrice : null;
+      }
+      pricePaid = parentPrice || bundle.adminPrice;
     }
-
-    pricePaid = subAgentPrice.customerPrice;
   }
 
   // Check for recent duplicate order (same customer phone + bundle + seller within last 30 seconds)
