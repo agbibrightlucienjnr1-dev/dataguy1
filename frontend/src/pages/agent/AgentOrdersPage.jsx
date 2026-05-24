@@ -226,7 +226,13 @@ export default function AgentOrdersPage() {
                           )}`}
                         />
                         <span className="text-sm text-slate-900">
-                          {order.bundle?.network} {order.bundle?.volume}
+                          {order.bundle?.network === "AIRTELTIGO"
+                            ? "Big Time"
+                            : order.bundle?.network === "AT"
+                            ? "AT iSHARE"
+                            : order.bundle?.network === "TELECEL"
+                            ? "Telecel"
+                            : "MTN"} {order.bundle?.volume}
                         </span>
                       </div>
                     </td>
@@ -359,7 +365,13 @@ export default function AgentOrdersPage() {
                   Bundle
                 </p>
                 <p className="text-sm mt-1">
-                  {selectedOrder.bundle?.network} {selectedOrder.bundle?.volume}
+                  {selectedOrder.bundle?.network === "AIRTELTIGO"
+                    ? "Big Time"
+                    : selectedOrder.bundle?.network === "AT"
+                    ? "AT iSHARE"
+                    : selectedOrder.bundle?.network === "TELECEL"
+                    ? "Telecel"
+                    : "MTN"} {selectedOrder.bundle?.volume}
                 </p>
               </div>
               <div>
