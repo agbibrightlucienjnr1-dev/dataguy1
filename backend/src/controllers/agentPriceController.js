@@ -23,9 +23,9 @@ export const setPrice = asyncHandler(async (req, res) => {
     throw new AppError("Only agents can set their own prices", 403);
   }
 
-  // Validate required fields
-  if (!customerPrice || !subAgentPrice) {
-    throw new AppError("Customer price and sub-agent price are required", 400);
+  // Validate that at least one price field is provided
+  if (customerPrice === undefined && subAgentPrice === undefined) {
+    throw new AppError("At least one price field (customerPrice or subAgentPrice) must be provided", 400);
   }
 
   const agentPrice = await setAgentPrice(agentId, bundleId, {
