@@ -69,7 +69,7 @@ export default function LandingPage() {
               <span className="text-slate-600">Earn More Daily.</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Become a DataGuy agent and start selling MTN & AirtelTigo data
+              Become a DataGuy agent and start selling MTN, Telecel & AirtelTigo data
               bundles. Set your own prices, earn commissions, and grow your
               business.
             </p>
