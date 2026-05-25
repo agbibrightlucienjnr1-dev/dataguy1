@@ -235,7 +235,7 @@ export default function AdminBundlesPage() {
       case "AIRTELTIGO":
         return (
           <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
-            Big Time
+            AT Big Time
           </span>
         );
       default:
