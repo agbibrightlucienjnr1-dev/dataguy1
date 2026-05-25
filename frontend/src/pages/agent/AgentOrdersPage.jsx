@@ -227,7 +227,7 @@ export default function AgentOrdersPage() {
                         />
                         <span className="text-sm text-slate-900">
                           {order.bundle?.network === "AIRTELTIGO"
-                            ? "Big Time"
+                            ? "AT Big Time"
                             : order.bundle?.network === "AT"
                             ? "AT iSHARE"
                             : order.bundle?.network === "TELECEL"
@@ -366,7 +366,7 @@ export default function AgentOrdersPage() {
                 </p>
                 <p className="text-sm mt-1">
                   {selectedOrder.bundle?.network === "AIRTELTIGO"
-                    ? "Big Time"
+                    ? "AT Big Time"
                     : selectedOrder.bundle?.network === "AT"
                     ? "AT iSHARE"
                     : selectedOrder.bundle?.network === "TELECEL"
