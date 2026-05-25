@@ -266,7 +266,7 @@ export default function BuyPage() {
 
     if (finalNetwork !== selectedBundle.network && !isAirtelTigoMatch) {
       toast.error(
-        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your number is ${finalNetwork === "AIRTELTIGO" ? "Big Time" : finalNetwork === "AT" ? "AT iSHARE" : finalNetwork}. Please enter a matching number.`,
+        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "AT Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your number is ${finalNetwork === "AIRTELTIGO" ? "AT Big Time" : finalNetwork === "AT" ? "AT iSHARE" : finalNetwork}. Please enter a matching number.`,
       );
       return;
     }
@@ -439,7 +439,7 @@ export default function BuyPage() {
                 <div className="grid grid-cols-2 gap-4">
                   {networks.map((network) => {
                     const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
-                    const label = network === "AIRTELTIGO" ? "Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
+                    const label = network === "AIRTELTIGO" ? "AT Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
                     return (
                       <button
                         key={network}
@@ -461,7 +461,7 @@ export default function BuyPage() {
                   {networks.map((network) => {
                     const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
                     const isActive = networkFilter === network;
-                    const label = network === "AIRTELTIGO" ? "Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
+                    const label = network === "AIRTELTIGO" ? "AT Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
                     return (
                       <Button
                         key={network}
@@ -491,7 +491,7 @@ export default function BuyPage() {
                 {Object.entries(bundlesByNetwork).map(
                   ([network, networkBundles]) => {
                     const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
-                    const label = network === "AIRTELTIGO" ? "Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
+                    const label = network === "AIRTELTIGO" ? "AT Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
                     return (
                       <div
                         key={network}
@@ -609,7 +609,7 @@ export default function BuyPage() {
                       }
                     >
                       {selectedBundle.network === "AIRTELTIGO"
-                        ? "Big Time"
+                        ? "AT Big Time"
                         : selectedBundle.network === "AT"
                         ? "AT iSHARE"
                         : selectedBundle.network === "TELECEL"
