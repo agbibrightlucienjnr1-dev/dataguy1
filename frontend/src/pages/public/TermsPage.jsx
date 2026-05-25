@@ -70,7 +70,7 @@ export default function TermsPage() {
                 2. Data Sales & Delivery
               </h2>
               <p>
-                DataGuy facilitates the purchasing and reselling of mobile data bundles (MTN, Telecel, AT iSHARE, Big Time). While most bundle deliveries are processed instantly, processing speeds depend on the cellular networks' uptime and our wholesale supplier's connection. DataGuy is not liable for delayed delivery due to third-party telecommunication operator downtimes or connection timeouts.
+                DataGuy facilitates the purchasing and reselling of mobile data bundles (MTN, Telecel, AT iSHARE, AT Big Time). While most bundle deliveries are processed instantly, processing speeds depend on the cellular networks' uptime and our wholesale supplier's connection. DataGuy is not liable for delayed delivery due to third-party telecommunication operator downtimes or connection timeouts.
               </p>
             </section>
 
