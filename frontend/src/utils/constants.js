@@ -20,7 +20,7 @@ export const NETWORKS = [
   },
   {
     value: "AIRTELTIGO",
-    label: "Big Time",
+    label: "AT Big Time",
     color: "bg-blue-600",
     textColor: "text-blue-700",
   },
