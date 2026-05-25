@@ -393,7 +393,7 @@ function OrderCard({ order, onCopy, onRefetch }) {
           <p className="font-medium text-slate-900">{order.bundle?.volume}</p>
           <p className="text-sm text-slate-500">
             {order.bundle?.network === "AIRTELTIGO"
-              ? "Big Time"
+              ? "AT Big Time"
               : order.bundle?.network === "AT"
               ? "AT iSHARE"
               : order.bundle?.network === "TELECEL"
