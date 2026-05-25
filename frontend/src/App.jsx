@@ -29,7 +29,6 @@ import { DashboardPage, ProfilePage, SettingsPage } from "./pages/dashboard";
 // Agent Pages
 import {
   AgentOrdersPage,
-  AgentBundlesPage,
   AgentWalletPage,
   AgentWithdrawalsPage,
   AgentPricingPage,
@@ -81,7 +80,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/orders" element={<AgentOrdersPage />} />
-            <Route path="/bundles" element={<AgentBundlesPage />} />
+            <Route path="/bundles" element={<Navigate to="/pricing" replace />} />
             <Route path="/wallet" element={<AgentWalletPage />} />
             <Route path="/withdrawals" element={<AgentWithdrawalsPage />} />
             <Route path="/pricing" element={<AgentPricingPage />} />

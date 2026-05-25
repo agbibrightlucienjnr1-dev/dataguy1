@@ -36,7 +36,7 @@ const agentNavGroups = [
   {
     title: "Store",
     items: [
-      { to: "/bundles", icon: Package, label: "Data Bundles" },
+      { to: "/pricing", icon: Tag, label: "Pricing Setup" },
       { to: "/orders", icon: ShoppingCart, label: "My Orders" },
     ],
   },
@@ -45,7 +45,6 @@ const agentNavGroups = [
     items: [
       { to: "/wallet", icon: Wallet, label: "Wallet" },
       { to: "/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
-      { to: "/pricing", icon: Tag, label: "Pricing Setup" },
     ],
   },
   {
