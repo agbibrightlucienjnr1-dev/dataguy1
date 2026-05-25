@@ -204,7 +204,8 @@ export default function BuyPage() {
 
   // Helper function to parse volume string to number (e.g., "1GB" -> 1, "500MB" -> 0.5)
   const parseVolume = (volume) => {
-    const match = volume.match(/^([\d.]+)\s*(GB|MB|TB)$/i);
+    if (!volume) return 0;
+    const match = volume.toString().match(/([\d.]+)\s*(GB|MB|TB)/i);
     if (!match) return 0;
     const value = parseFloat(match[1]);
     const unit = match[2].toUpperCase();

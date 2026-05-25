@@ -690,11 +690,13 @@ async function handleAwaitingOTP(prisma, session, input) {
  */
 function parseVolumeToMB(volume) {
   if (!volume) return 0;
-  const str = volume.toString().toUpperCase().trim();
-  const match = str.match(/^([\d.]+)\s*(GB|MB)$/);
+  const match = volume.toString().match(/([\d.]+)\s*(GB|MB|TB)/i);
   if (!match) return 0;
   const num = parseFloat(match[1]);
-  return match[2] === "GB" ? num * 1024 : num;
+  const unit = match[2].toUpperCase();
+  if (unit === "MB") return num;
+  if (unit === "TB") return num * 1024 * 1024;
+  return num * 1024; // GB -> MB
 }
 
 /**
