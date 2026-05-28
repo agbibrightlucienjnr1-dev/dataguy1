@@ -50,9 +50,7 @@ export default function AgentWithdrawalsPage() {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verifiedName, setVerifiedName] = useState("");
-  const [allowManualName, setAllowManualName] = useState(false);
+
 
   const limit = 10;
   const queryClient = useQueryClient();
@@ -90,7 +88,6 @@ export default function AgentWithdrawalsPage() {
     reset,
     getValues,
     setValue,
-    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(momoWithdrawalSchema),
@@ -101,9 +98,6 @@ export default function AgentWithdrawalsPage() {
       mobileNetwork: "MTN",
     },
   });
-
-  const watchedAccountName = watch("accountName");
-  const hasName = !!(verifiedName || (allowManualName && watchedAccountName && watchedAccountName.trim().length >= 2));
 
   // Withdraw mutation
   const withdrawMutation = useMutation({
@@ -117,11 +111,9 @@ export default function AgentWithdrawalsPage() {
       return withdrawalsApi.create(payload);
     },
     onSuccess: () => {
-      toast.success("Withdrawal automatically processed");
+      toast.success("Withdrawal request submitted successfully");
       setShowWithdrawModal(false);
       reset();
-      setVerifiedName("");
-      setAllowManualName(false);
       queryClient.invalidateQueries({ queryKey: ["myWithdrawals"] });
       queryClient.invalidateQueries({ queryKey: ["wallet"] });
     },
@@ -135,40 +127,7 @@ export default function AgentWithdrawalsPage() {
     },
   });
 
-  const verifyAccountName = async () => {
-    const { accountNumber, mobileNetwork } = getValues();
-    if (!accountNumber || !mobileNetwork) {
-       toast.error("Please enter network and phone number first");
-       return;
-    }
-    
-    // Quick regex validation
-    if (!(/^0[235]\d{8}$/.test(accountNumber))) {
-       toast.error("Valid 10-digit number required");
-       return;
-    }
 
-    try {
-       setIsVerifying(true);
-       setVerifiedName("");
-       setValue("accountName", "");
-       setAllowManualName(false);
-       const res = await withdrawalsApi.verifyAccount({ accountNumber, mobileNetwork });
-       if (res.data?.accountName) {
-          setVerifiedName(res.data.accountName);
-          setValue("accountName", res.data.accountName, { shouldValidate: true });
-          toast.success("Name verified successfully");
-       } else {
-          toast.error("Could not verify name. You can enter it manually below.");
-          setAllowManualName(true);
-       }
-    } catch (err) {
-       toast.error(getErrorMessage(err, "Failed to verify account name. You can enter it manually below."));
-       setAllowManualName(true);
-    } finally {
-       setIsVerifying(false);
-    }
-  };
 
   const onSubmit = (data) => {
     if (parseFloat(data.amount) > balance) {
@@ -371,14 +330,12 @@ export default function AgentWithdrawalsPage() {
         onClose={() => {
           setShowWithdrawModal(false);
           reset();
-          setVerifiedName("");
-          setAllowManualName(false);
         }}
-        title="Request Auto-Withdrawal"
+        title="Request Withdrawal"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <p className="text-sm text-slate-600 pb-2 border-b border-slate-100">
-            Your withdrawal will be processed instantly via Mobile Money.
+            Submit a request to withdraw your funds. The admin will process your request manually.
           </p>
 
           {/* Mobile Money Fields */}
@@ -388,13 +345,6 @@ export default function AgentWithdrawalsPage() {
             </label>
             <select
               {...register("mobileNetwork")}
-              onChange={(e) => {
-                const val = e.target.value;
-                setValue("mobileNetwork", val);
-                setVerifiedName("");
-                setValue("accountName", "");
-                setAllowManualName(false);
-              }}
               className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
             >
               {MOBILE_MONEY_NETWORKS.map((network) => (
@@ -409,93 +359,47 @@ export default function AgentWithdrawalsPage() {
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Phone Number
             </label>
-            <div className="flex gap-2">
-              <Input
-                {...register("accountNumber")}
-                placeholder="0241234567"
-                onChange={(e) => {
-                   const val = e.target.value;
-                   setValue("accountNumber", val);
-                   setVerifiedName("");
-                   setValue("accountName", "");
-                   setAllowManualName(false);
-                }}
-                className="flex-1"
-                error={errors.accountNumber?.message}
-              />
-              <Button 
-                 type="button"
-                 variant="secondary"
-                 disabled={isVerifying || !!verifiedName}
-                 onClick={verifyAccountName}
-              >
-                 {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Name"}
-              </Button>
-            </div>
+            <Input
+              {...register("accountNumber")}
+              placeholder="0241234567"
+              error={errors.accountNumber?.message}
+            />
           </div>
 
-          {verifiedName && (
-             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-               <p className="text-xs text-green-700 uppercase tracking-wide">Verified Name</p>
-               <p className="text-sm font-medium text-green-900 mt-1">{verifiedName}</p>
-             </div>
-          )}
-
-          {allowManualName && !verifiedName && (
-             <div className="space-y-3">
-               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-2">
-                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                 <div>
-                   <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
-                     Verification Offline
-                   </p>
-                   <p className="text-xs text-amber-700 mt-1">
-                     We couldn't verify the name automatically. Please enter the name registered on this mobile money account manually.
-                   </p>
-                 </div>
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                   Account Name (Manual Entry)
-                 </label>
-                 <Input
-                   {...register("accountName")}
-                   placeholder="Enter registered account name"
-                   onChange={(e) => {
-                     const val = e.target.value;
-                     setValue("accountName", val, { shouldValidate: true });
-                   }}
-                   error={errors.accountName?.message}
-                 />
-               </div>
-             </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Account Name
+            </label>
+            <Input
+              {...register("accountName")}
+              placeholder="Enter registered account name"
+              error={errors.accountName?.message}
+            />
+          </div>
 
           {/* Amount */}
-          {hasName && (
-             <div>
-               <label className="block text-sm font-medium text-slate-700 mb-1">
-                 Amount (GHS)
-               </label>
-               <Input
-                 {...register("amount")}
-                 type="number"
-                 step="0.01"
-                 placeholder="Enter amount"
-                 error={errors.amount?.message}
-               />
-               <p className="text-xs text-slate-500 mt-1">
-                 Available: {formatCurrency(balance)}
-               </p>
-               {errors.amount &&
-                 parseFloat(getValues("amount") || "0") > balance && (
-                   <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                     <AlertTriangle className="w-3 h-3" />
-                     Insufficient balance
-                   </p>
-                 )}
-             </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Amount (GHS)
+            </label>
+            <Input
+              {...register("amount")}
+              type="number"
+              step="0.01"
+              placeholder="Enter amount"
+              error={errors.amount?.message}
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Available: {formatCurrency(balance)}
+            </p>
+            {errors.amount &&
+              parseFloat(getValues("amount") || "0") > balance && (
+                <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  Insufficient balance
+                </p>
+              )}
+          </div>
 
           {/* Submit */}
           <div className="flex gap-3 pt-4">
@@ -506,8 +410,6 @@ export default function AgentWithdrawalsPage() {
               onClick={() => {
                 setShowWithdrawModal(false);
                 reset();
-                setVerifiedName("");
-                setAllowManualName(false);
               }}
             >
               Cancel
@@ -515,7 +417,7 @@ export default function AgentWithdrawalsPage() {
             <Button
               type="submit"
               className="flex-1"
-              disabled={withdrawMutation.isPending || !hasName}
+              disabled={withdrawMutation.isPending}
             >
               {withdrawMutation.isPending ? "Processing..." : "Confirm & Withdraw"}
             </Button>

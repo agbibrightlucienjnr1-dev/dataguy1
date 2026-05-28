@@ -1,5 +1,5 @@
 import {
-  processAutomaticWithdrawal,
+  createWithdrawalRequest,
   getUserWithdrawals,
   getAllWithdrawals,
   approveWithdrawal,
@@ -31,7 +31,7 @@ export const createWithdrawal = async (req, res, next) => {
       });
     }
 
-    const withdrawal = await processAutomaticWithdrawal(userId, {
+    const withdrawal = await createWithdrawalRequest(userId, {
       amount,
       accountNumber,
       accountName,
