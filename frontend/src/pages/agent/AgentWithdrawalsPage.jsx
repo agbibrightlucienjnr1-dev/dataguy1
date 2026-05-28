@@ -41,7 +41,7 @@ const momoWithdrawalSchema = z.object({
   accountNumber: z
     .string()
     .regex(/^0[235]\d{8}$/, "Enter a valid Ghana phone number"),
-  accountName: z.string().min(2, "Account name must be verified"),
+  accountName: z.string().min(2, "Account name is required"),
 });
 
 export default function AgentWithdrawalsPage() {
@@ -52,6 +52,7 @@ export default function AgentWithdrawalsPage() {
   
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifiedName, setVerifiedName] = useState("");
+  const [allowManualName, setAllowManualName] = useState(false);
 
   const limit = 10;
   const queryClient = useQueryClient();
@@ -89,6 +90,7 @@ export default function AgentWithdrawalsPage() {
     reset,
     getValues,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(momoWithdrawalSchema),
@@ -99,6 +101,9 @@ export default function AgentWithdrawalsPage() {
       mobileNetwork: "MTN",
     },
   });
+
+  const watchedAccountName = watch("accountName");
+  const hasName = !!(verifiedName || (allowManualName && watchedAccountName && watchedAccountName.trim().length >= 2));
 
   // Withdraw mutation
   const withdrawMutation = useMutation({
@@ -116,6 +121,7 @@ export default function AgentWithdrawalsPage() {
       setShowWithdrawModal(false);
       reset();
       setVerifiedName("");
+      setAllowManualName(false);
       queryClient.invalidateQueries({ queryKey: ["myWithdrawals"] });
       queryClient.invalidateQueries({ queryKey: ["wallet"] });
     },
@@ -146,16 +152,19 @@ export default function AgentWithdrawalsPage() {
        setIsVerifying(true);
        setVerifiedName("");
        setValue("accountName", "");
+       setAllowManualName(false);
        const res = await withdrawalsApi.verifyAccount({ accountNumber, mobileNetwork });
        if (res.data?.accountName) {
           setVerifiedName(res.data.accountName);
           setValue("accountName", res.data.accountName, { shouldValidate: true });
           toast.success("Name verified successfully");
        } else {
-          toast.error("Could not verify name");
+          toast.error("Could not verify name. You can enter it manually below.");
+          setAllowManualName(true);
        }
     } catch (err) {
-       toast.error(getErrorMessage(err, "Failed to verify account name"));
+       toast.error(getErrorMessage(err, "Failed to verify account name. You can enter it manually below."));
+       setAllowManualName(true);
     } finally {
        setIsVerifying(false);
     }
@@ -363,6 +372,7 @@ export default function AgentWithdrawalsPage() {
           setShowWithdrawModal(false);
           reset();
           setVerifiedName("");
+          setAllowManualName(false);
         }}
         title="Request Auto-Withdrawal"
       >
@@ -379,8 +389,11 @@ export default function AgentWithdrawalsPage() {
             <select
               {...register("mobileNetwork")}
               onChange={(e) => {
+                const val = e.target.value;
+                setValue("mobileNetwork", val);
                 setVerifiedName("");
                 setValue("accountName", "");
+                setAllowManualName(false);
               }}
               className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
             >
@@ -401,8 +414,11 @@ export default function AgentWithdrawalsPage() {
                 {...register("accountNumber")}
                 placeholder="0241234567"
                 onChange={(e) => {
+                   const val = e.target.value;
+                   setValue("accountNumber", val);
                    setVerifiedName("");
                    setValue("accountName", "");
+                   setAllowManualName(false);
                 }}
                 className="flex-1"
                 error={errors.accountNumber?.message}
@@ -425,8 +441,38 @@ export default function AgentWithdrawalsPage() {
              </div>
           )}
 
+          {allowManualName && !verifiedName && (
+             <div className="space-y-3">
+               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-2">
+                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                 <div>
+                   <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
+                     Verification Offline
+                   </p>
+                   <p className="text-xs text-amber-700 mt-1">
+                     We couldn't verify the name automatically. Please enter the name registered on this mobile money account manually.
+                   </p>
+                 </div>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-1">
+                   Account Name (Manual Entry)
+                 </label>
+                 <Input
+                   {...register("accountName")}
+                   placeholder="Enter registered account name"
+                   onChange={(e) => {
+                     const val = e.target.value;
+                     setValue("accountName", val, { shouldValidate: true });
+                   }}
+                   error={errors.accountName?.message}
+                 />
+               </div>
+             </div>
+          )}
+
           {/* Amount */}
-          {verifiedName && (
+          {hasName && (
              <div>
                <label className="block text-sm font-medium text-slate-700 mb-1">
                  Amount (GHS)
@@ -461,6 +507,7 @@ export default function AgentWithdrawalsPage() {
                 setShowWithdrawModal(false);
                 reset();
                 setVerifiedName("");
+                setAllowManualName(false);
               }}
             >
               Cancel
@@ -468,7 +515,7 @@ export default function AgentWithdrawalsPage() {
             <Button
               type="submit"
               className="flex-1"
-              disabled={withdrawMutation.isPending || !verifiedName}
+              disabled={withdrawMutation.isPending || !hasName}
             >
               {withdrawMutation.isPending ? "Processing..." : "Confirm & Withdraw"}
             </Button>
