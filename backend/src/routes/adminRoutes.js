@@ -22,6 +22,9 @@ import {
   addCustomers,
   getAnalyticsDashboard,
   adjustWalletBalance,
+  getProfitAnalysis,
+  createExpense,
+  deleteExpense,
 } from "../controllers/adminController.js";
 import { authenticate } from "../middlewares/auth.js";
 import { requireAdmin } from "../utils/authorization.js";
@@ -60,9 +63,16 @@ router.post("/orders/:orderId/fulfill", fulfillOrder); // Manually fulfill order
 router.post("/orders/:orderId/complete", markOrderCompleted); // Manually mark order as completed
 
 /**
- * Statistics
+ * Statistics & Profit Analysis
  */
 router.get("/statistics", getStatistics); // Platform statistics
+router.get("/profit-analysis", getProfitAnalysis);
+
+/**
+ * Expenses Management
+ */
+router.post("/expenses", createExpense);
+router.delete("/expenses/:id", deleteExpense);
 
 /**
  * Wallets
