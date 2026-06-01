@@ -74,6 +74,7 @@ const adminNavGroups = [
       { to: "/admin/withdrawals", icon: ArrowDownToLine, label: "Withdrawals" },
       { to: "/admin/reports", icon: BarChart3, label: "Reports" },
       { to: "/admin/analytics", icon: BarChart3, label: "Analytics" },
+      { to: "/admin/profit", icon: Wallet, label: "Profit Analysis" },
     ],
   },
   {
