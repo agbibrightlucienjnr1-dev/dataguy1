@@ -145,6 +145,17 @@ export default function AdminProfitPage() {
     totalNetProfit: "0.00"
   };
 
+  const overall = analysisData?.overall || {
+    totalGrossCollected: "0.00",
+    totalGatewayFees: "0.00",
+    totalNetSettlement: "0.00",
+    totalWholesaleCosts: "0.00",
+    totalCommissions: "0.00",
+    totalExpenses: "0.00",
+    totalWithdrawalFees: "0.00",
+    totalNetProfit: "0.00"
+  };
+
   const ledger = analysisData?.ledger || [];
   const expensesList = analysisData?.expenses || [];
   const networkBreakdown = analysisData?.networkBreakdown || [];
@@ -328,8 +339,8 @@ export default function AdminProfitPage() {
               </p>
             </Card>
 
-            {/* Net Platform Profit */}
-            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-2 lg:col-span-3 ${
+            {/* Net Platform Profit (This Month) */}
+            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-1 lg:col-span-1 ${
               isProfitPositive 
                 ? "bg-gradient-to-br from-indigo-600 to-indigo-800 shadow-indigo-200/50" 
                 : "bg-gradient-to-br from-red-600 to-red-800 shadow-red-200/50"
@@ -341,7 +352,7 @@ export default function AdminProfitPage() {
                   <ArrowDownRight className="w-6 h-6 text-white" />
                 )}
               </div>
-              <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Net Platform Profit</div>
+              <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Net Platform Profit (This Month)</div>
               <div className="text-3xl font-black mt-2">
                 {formatCurrency(overview.totalNetProfit)}
               </div>
@@ -350,9 +361,34 @@ export default function AdminProfitPage() {
               </p>
               <p className="text-xs opacity-90 mt-3 flex items-center gap-1 font-medium">
                 {isProfitPositive ? (
-                  <span>🚀 Positive profitability margins</span>
+                  <span>🚀 Positive monthly margin</span>
                 ) : (
-                  <span>⚠️ Loss / Negative margin detected</span>
+                  <span>⚠️ Monthly loss detected</span>
+                )}
+              </p>
+            </Card>
+
+            {/* Overall Net Profit (All Months) */}
+            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-1 lg:col-span-2 ${
+              parseFloat(overall.totalNetProfit) >= 0 
+                ? "bg-gradient-to-br from-emerald-600 to-teal-800 shadow-emerald-200/50" 
+                : "bg-gradient-to-br from-rose-600 to-rose-900 shadow-rose-200/50"
+            }`}>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full flex items-start justify-end p-4">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Overall Net Profit (All Months)</div>
+              <div className="text-3xl font-black mt-2">
+                {formatCurrency(overall.totalNetProfit)}
+              </div>
+              <p className="text-[10px] opacity-75 mt-1 font-mono">
+                Lifetime Platform Profit across all registered months
+              </p>
+              <p className="text-xs opacity-90 mt-3 flex items-center gap-1 font-medium">
+                {parseFloat(overall.totalNetProfit) >= 0 ? (
+                  <span>🚀 Positive lifetime growth</span>
+                ) : (
+                  <span>⚠️ Negative lifetime balance</span>
                 )}
               </p>
             </Card>
