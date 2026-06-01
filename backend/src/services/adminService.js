@@ -809,6 +809,17 @@ export const getProfitAnalysisData = async (month, year) => {
     }
   });
 
+  // 3.5 Fetch completed withdrawals in that month
+  const withdrawals = await prisma.withdrawal.findMany({
+    where: {
+      status: "completed",
+      completedAt: {
+        gte: startDate,
+        lt: endDate
+      }
+    }
+  });
+
   // 4. Calculate individual order costs & profit
   let totalGrossCollected = 0;
   let totalGatewayFees = 0;
@@ -889,7 +900,16 @@ export const getProfitAnalysisData = async (month, year) => {
   });
 
   const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0);
-  const totalNetProfit = totalNetSettlement - totalWholesaleCosts - totalCommissions - totalExpenses;
+  
+  let totalWithdrawalFees = 0;
+  withdrawals.forEach((w) => {
+    const amount = parseFloat(w.amount || 0);
+    // Moolre charges 0.5 or 1% depending on which is higher
+    const fee = Math.max(0.5, amount * 0.01);
+    totalWithdrawalFees += fee;
+  });
+
+  const totalNetProfit = totalNetSettlement - totalWholesaleCosts - totalCommissions - totalExpenses - totalWithdrawalFees;
 
   // Format network breakdown decimals
   const networkBreakdownArray = Object.values(networkBreakdown).map((net) => ({
@@ -910,6 +930,7 @@ export const getProfitAnalysisData = async (month, year) => {
     totalWholesaleCosts: totalWholesaleCosts.toFixed(2),
     totalCommissions: totalCommissions.toFixed(2),
     totalExpenses: totalExpenses.toFixed(2),
+    totalWithdrawalFees: totalWithdrawalFees.toFixed(2),
     totalNetProfit: totalNetProfit.toFixed(2)
   };
 

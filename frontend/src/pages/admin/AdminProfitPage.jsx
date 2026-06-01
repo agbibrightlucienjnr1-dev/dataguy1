@@ -50,7 +50,7 @@ const MONTHS = [
   { value: 12, label: "December" }
 ];
 
-const PIE_COLORS = ["#6366f1", "#f43f5e", "#fbbf24", "#ec4899", "#10b981"];
+const PIE_COLORS = ["#6366f1", "#f43f5e", "#fbbf24", "#ec4899", "#8b5cf6", "#10b981"];
 
 export default function AdminProfitPage() {
   const queryClient = useQueryClient();
@@ -141,6 +141,7 @@ export default function AdminProfitPage() {
     totalWholesaleCosts: "0.00",
     totalCommissions: "0.00",
     totalExpenses: "0.00",
+    totalWithdrawalFees: "0.00",
     totalNetProfit: "0.00"
   };
 
@@ -162,10 +163,11 @@ export default function AdminProfitPage() {
 
   // Recharts: Donut chart data for cost breakdown
   const pieData = [
-    { name: "Supplier Wholesale Cost", value: parseFloat(overview.totalWholesaleCosts) },
-    { name: "Gateway Fees", value: parseFloat(overview.totalGatewayFees) },
-    { name: "Agent Commissions", value: parseFloat(overview.totalCommissions) },
-    { name: "Platform Expenses", value: parseFloat(overview.totalExpenses) }
+    { name: "Supplier Wholesale Cost", value: parseFloat(overview.totalWholesaleCosts || 0) },
+    { name: "Gateway Fees", value: parseFloat(overview.totalGatewayFees || 0) },
+    { name: "Agent Commissions", value: parseFloat(overview.totalCommissions || 0) },
+    { name: "Platform Expenses", value: parseFloat(overview.totalExpenses || 0) },
+    { name: "Withdrawal Fees", value: parseFloat(overview.totalWithdrawalFees || 0) }
   ];
   
   const netProfitVal = parseFloat(overview.totalNetProfit);
@@ -192,7 +194,7 @@ export default function AdminProfitPage() {
             System Profit Analysis
           </h1>
           <p className="text-slate-600 mt-1">
-            Track gross collections, gateway fees, supplier costs, expenses, and net profit margins
+            Track gross collections, gateway fees, supplier costs, expenses, withdrawal fees, and net profit margins
           </p>
         </div>
 
@@ -311,8 +313,23 @@ export default function AdminProfitPage() {
               </p>
             </Card>
 
+            {/* Withdrawal Fees */}
+            <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50/50 rounded-bl-full flex items-start justify-end p-4">
+                <TrendingDown className="w-5 h-5 text-pink-500" />
+              </div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Withdrawal Fees</div>
+              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+                {formatCurrency(overview.totalWithdrawalFees)}
+              </div>
+              <p className="text-xs text-pink-600 mt-3 flex items-center gap-1 font-medium">
+                <TrendingDown className="w-3.5 h-3.5" />
+                Moolre withdrawal payout charges
+              </p>
+            </Card>
+
             {/* Net Platform Profit */}
-            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white ${
+            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-2 lg:col-span-3 ${
               isProfitPositive 
                 ? "bg-gradient-to-br from-indigo-600 to-indigo-800 shadow-indigo-200/50" 
                 : "bg-gradient-to-br from-red-600 to-red-800 shadow-red-200/50"
@@ -328,6 +345,9 @@ export default function AdminProfitPage() {
               <div className="text-3xl font-black mt-2">
                 {formatCurrency(overview.totalNetProfit)}
               </div>
+              <p className="text-[10px] opacity-75 mt-1 font-mono">
+                Formula: Net Settlement - Wholesale Costs - Commissions - Platform Expenses - Withdrawal Fees
+              </p>
               <p className="text-xs opacity-90 mt-3 flex items-center gap-1 font-medium">
                 {isProfitPositive ? (
                   <span>🚀 Positive profitability margins</span>
