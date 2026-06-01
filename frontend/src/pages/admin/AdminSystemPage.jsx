@@ -234,6 +234,28 @@ export default function AdminSystemPage() {
                 </p>
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-tight">
+                  Hubnet Deposit Fee (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  value={settingsData?.data?.hubnetDepositFeePercentage ?? 3.0}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                      updateSettingsMutation.mutate({ hubnetDepositFeePercentage: val });
+                    }
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                />
+                <p className="text-xs text-slate-500 mt-2">
+                  Markup percentage applied when calculating real wholesale costs for supplier wallet deposits (Default: 3.0%).
+                </p>
+              </div>
+
               <div>
                 <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
