@@ -1,6 +1,7 @@
 import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
+import { Prisma } from "@prisma/client";
 
 /**
  * Get all users (agents and sub-agents)
@@ -751,4 +752,208 @@ export const generateReportData = async () => {
       successRate: parseFloat(successRate)
     }
   };
+};
+
+/**
+ * Get system profit analysis data for a given month and year
+ */
+export const getProfitAnalysisData = async (month, year) => {
+  const prisma = getPrisma();
+  
+  // Construct dates for the selected month
+  const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
+  const endDate = new Date(year, month, 1, 0, 0, 0, 0); // exclusive boundary
+
+  // 1. Fetch system settings
+  const settings = await prisma.systemSettings.findUnique({
+    where: { id: "global" }
+  }) || {
+    hubnetDepositFeePercentage: 3.0
+  };
+
+  const hubnetDepositFeePercentage = parseFloat(settings.hubnetDepositFeePercentage?.toString() || "3.0");
+
+  // 2. Fetch completed/processing orders in that month
+  const orders = await prisma.order.findMany({
+    where: {
+      status: { in: ["completed", "processing"] },
+      createdAt: {
+        gte: startDate,
+        lt: endDate
+      }
+    },
+    include: {
+      bundle: {
+        select: {
+          network: true,
+          volume: true,
+          hubnetCost: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  // 3. Fetch PlatformExpenses in that month
+  const expenses = await prisma.platformExpense.findMany({
+    where: {
+      date: {
+        gte: startDate,
+        lt: endDate
+      }
+    },
+    orderBy: {
+      date: "desc"
+    }
+  });
+
+  // 4. Calculate individual order costs & profit
+  let totalGrossCollected = 0;
+  let totalGatewayFees = 0;
+  let totalNetSettlement = 0;
+  let totalWholesaleCosts = 0;
+  let totalCommissions = 0;
+
+  const networkBreakdown = {};
+
+  const ledger = orders.map((order) => {
+    const pricePaid = parseFloat(order.pricePaid || 0);
+    const transactionFee = parseFloat(order.transactionFee || 0);
+    const grossCollected = pricePaid + transactionFee;
+    
+    // Calculate Gateway Fee
+    // Paystack charges 2% for each transaction.
+    // Moolre charges 0.5 or 1% depending on which is higher.
+    let gatewayFee = 0;
+    const provider = (order.paymentProvider || "paystack").toLowerCase();
+    if (provider === "paystack") {
+      gatewayFee = grossCollected * 0.02;
+    } else {
+      // moolre or other
+      gatewayFee = Math.max(0.5, grossCollected * 0.01);
+    }
+
+    const netSettlement = grossCollected - gatewayFee;
+    const commission = parseFloat(order.commissionAmount || 0);
+    const hubnetCost = parseFloat(order.bundle?.hubnetCost || 0);
+    
+    // Apply wholesale deposit markup
+    const hubnetDepositFee = hubnetCost * (hubnetDepositFeePercentage / 100);
+    const actualHubnetCost = hubnetCost + hubnetDepositFee;
+
+    const netProfit = netSettlement - actualHubnetCost - commission;
+
+    totalGrossCollected += grossCollected;
+    totalGatewayFees += gatewayFee;
+    totalNetSettlement += netSettlement;
+    totalWholesaleCosts += actualHubnetCost;
+    totalCommissions += commission;
+
+    // Accumulate Network Breakdown
+    const network = order.bundle?.network || "UNKNOWN";
+    if (!networkBreakdown[network]) {
+      networkBreakdown[network] = {
+        network,
+        orders: 0,
+        grossCollected: 0,
+        gatewayFee: 0,
+        netSettlement: 0,
+        actualHubnetCost: 0,
+        commission: 0,
+        netProfit: 0
+      };
+    }
+    networkBreakdown[network].orders += 1;
+    networkBreakdown[network].grossCollected += grossCollected;
+    networkBreakdown[network].gatewayFee += gatewayFee;
+    networkBreakdown[network].netSettlement += netSettlement;
+    networkBreakdown[network].actualHubnetCost += actualHubnetCost;
+    networkBreakdown[network].commission += commission;
+    networkBreakdown[network].netProfit += netProfit;
+
+    return {
+      id: order.id,
+      createdAt: order.createdAt,
+      customerPhone: order.customerPhone,
+      network,
+      volume: order.bundle?.volume || "N/A",
+      paymentProvider: order.paymentProvider,
+      grossCollected: grossCollected.toFixed(2),
+      gatewayFee: gatewayFee.toFixed(2),
+      commission: commission.toFixed(2),
+      actualHubnetCost: actualHubnetCost.toFixed(2),
+      netProfit: netProfit.toFixed(2)
+    };
+  });
+
+  const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0);
+  const totalNetProfit = totalNetSettlement - totalWholesaleCosts - totalCommissions - totalExpenses;
+
+  // Format network breakdown decimals
+  const networkBreakdownArray = Object.values(networkBreakdown).map((net) => ({
+    ...net,
+    grossCollected: net.grossCollected.toFixed(2),
+    gatewayFee: net.gatewayFee.toFixed(2),
+    netSettlement: net.netSettlement.toFixed(2),
+    actualHubnetCost: net.actualHubnetCost.toFixed(2),
+    commission: net.commission.toFixed(2),
+    netProfit: net.netProfit.toFixed(2)
+  }));
+
+  // Clean formatted overview
+  const overview = {
+    totalGrossCollected: totalGrossCollected.toFixed(2),
+    totalGatewayFees: totalGatewayFees.toFixed(2),
+    totalNetSettlement: totalNetSettlement.toFixed(2),
+    totalWholesaleCosts: totalWholesaleCosts.toFixed(2),
+    totalCommissions: totalCommissions.toFixed(2),
+    totalExpenses: totalExpenses.toFixed(2),
+    totalNetProfit: totalNetProfit.toFixed(2)
+  };
+
+  return {
+    overview,
+    expenses: expenses.map(exp => ({
+      ...exp,
+      amount: parseFloat(exp.amount || 0).toFixed(2)
+    })),
+    networkBreakdown: networkBreakdownArray,
+    ledger
+  };
+};
+
+/**
+ * Create a new platform expense
+ */
+export const createPlatformExpense = async (data) => {
+  const prisma = getPrisma();
+  const { category, amount, description, date } = data;
+
+  const expense = await prisma.platformExpense.create({
+    data: {
+      category,
+      amount: new Prisma.Decimal(amount.toString()),
+      description,
+      date: date ? new Date(date) : new Date(),
+    }
+  });
+
+  logger.info("Platform expense created", { id: expense.id, category, amount });
+  return expense;
+};
+
+/**
+ * Delete a platform expense
+ */
+export const deletePlatformExpense = async (id) => {
+  const prisma = getPrisma();
+  
+  const expense = await prisma.platformExpense.delete({
+    where: { id }
+  });
+
+  logger.info("Platform expense deleted", { id });
+  return expense;
 };
