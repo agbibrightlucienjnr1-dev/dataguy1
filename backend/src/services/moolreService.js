@@ -250,42 +250,7 @@ export const validateAccountName = async ({ network, accountNumber }) => {
       }),
     });
 
-    const text = await response.text();
-    let data;
-
-    try {
-      // 1. Try standard JSON parsing
-      data = JSON.parse(text);
-    } catch (e) {
-      // 2. If it fails, check for standard JSON embedded inside debug output (e.g. string(45) "..."{"status": 1, ...})
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          data = JSON.parse(jsonMatch[0]);
-        } catch (jsonErr) {
-          // Fall through to regex extraction
-        }
-      }
-
-      // 3. Fallback: Parse name directly from PHP var_dump output string (e.g. string(45) "ARHIN BADA LUCIEN")
-      if (!data) {
-        const phpDumpMatch = text.match(/string\(\d+\)\s*"([^"]+)"/i);
-        if (phpDumpMatch) {
-          const accountName = phpDumpMatch[1];
-          logger.info("Successfully extracted account name from Moolre debug dump output", { accountName });
-          return {
-            success: true,
-            data: {
-              accountName,
-            },
-            message: "Account validated successfully",
-          };
-        }
-
-        logger.error("Failed to parse Moolre validation response text", { text, error: e.message });
-        throw new AppError("Invalid validation response format from provider", 500);
-      }
-    }
+    const data = await response.json();
 
     if (!response.ok || data.status !== 1) {
       logger.error("Moolre account name validation failed", data);
