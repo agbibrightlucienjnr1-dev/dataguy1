@@ -7,6 +7,9 @@ import {
   updateBundleStatus,
   getFailedOrders,
   generateReportData,
+  getProfitAnalysisData,
+  createPlatformExpense,
+  deletePlatformExpense,
 } from "../services/adminService.js";
 import { initiateHubnetOrder } from "../services/orderService.js";
 import { addCustomersManually } from "../services/customerService.js";
@@ -742,3 +745,74 @@ export const adjustWalletBalance = asyncHandler(async (req, res) => {
     transaction: result.transaction,
   });
 });
+
+/**
+ * Get system profit analysis for a given month and year
+ * GET /api/admin/profit-analysis
+ */
+export const getProfitAnalysis = asyncHandler(async (req, res) => {
+  const { month, year } = req.query;
+
+  if (!month || !year) {
+    throw new AppError("Month and year are required parameters", 400);
+  }
+
+  const parsedMonth = parseInt(month);
+  const parsedYear = parseInt(year);
+
+  if (isNaN(parsedMonth) || parsedMonth < 1 || parsedMonth > 12) {
+    throw new AppError("Invalid month. Must be between 1 and 12", 400);
+  }
+
+  if (isNaN(parsedYear) || parsedYear < 2000) {
+    throw new AppError("Invalid year", 400);
+  }
+
+  const result = await getProfitAnalysisData(parsedMonth, parsedYear);
+
+  res.status(200).json({
+    success: true,
+    data: result
+  });
+});
+
+/**
+ * Log a new platform expense
+ * POST /api/admin/expenses
+ */
+export const createExpense = asyncHandler(async (req, res) => {
+  const { category, amount, description, date } = req.body;
+
+  if (!category || !amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    throw new AppError("Valid category and positive amount are required", 400);
+  }
+
+  const expense = await createPlatformExpense({
+    category,
+    amount: parseFloat(amount),
+    description,
+    date
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Expense logged successfully",
+    expense
+  });
+});
+
+/**
+ * Delete a platform expense
+ * DELETE /api/admin/expenses/:id
+ */
+export const deleteExpense = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  await deletePlatformExpense(id);
+
+  res.status(200).json({
+    success: true,
+    message: "Expense deleted successfully"
+  });
+});
+// Trigger reload after Prisma generate
