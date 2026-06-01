@@ -204,6 +204,8 @@ model SystemSettings {
   
   allowAllUssdAccess    Boolean  @default(false) @map("allow_all_ussd_access")
   
+  hubnetDepositFeePercentage Decimal  @default(3.0) @map("hubnet_deposit_fee_percentage") @db.Decimal(5, 2)
+  
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
@@ -306,4 +308,15 @@ model VisitorLog {
   @@index([createdAt])
   @@index([sessionId])
   @@map("visitor_logs")
+}
+
+model PlatformExpense {
+  id          String   @id @default(uuid())
+  category    String   // e.g., "SMS", "Hosting", "Other"
+  amount      Decimal  @db.Decimal(10, 2)
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("platform_expenses")
 }
