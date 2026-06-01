@@ -219,4 +219,23 @@ export const adminApi = {
    * Fetch robust DB-driven traffic telemetry
    */
   getAnalyticsDashboard: () => apiClient.get("/admin/analytics"),
+
+  // ========== Profit Analysis & Expenses ==========
+  /**
+   * Get system profit analysis
+   * @param {Object} params - { month, year }
+   */
+  getProfitAnalysis: (params) => apiClient.get("/admin/profit-analysis", { params }),
+
+  /**
+   * Log a new platform expense
+   * @param {Object} data - { category, amount, description, date }
+   */
+  createExpense: (data) => apiClient.post("/admin/expenses", data),
+
+  /**
+   * Delete a platform expense
+   * @param {string} id - Expense ID
+   */
+  deleteExpense: (id) => apiClient.delete(`/admin/expenses/${id}`),
 };
