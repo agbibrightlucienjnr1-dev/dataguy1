@@ -934,8 +934,95 @@ export const getProfitAnalysisData = async (month, year) => {
     totalNetProfit: totalNetProfit.toFixed(2)
   };
 
+  // Calculate overall/all-time stats
+  const allOrders = await prisma.order.findMany({
+    where: {
+      status: { in: ["completed", "processing"] }
+    },
+    select: {
+      pricePaid: true,
+      transactionFee: true,
+      paymentProvider: true,
+      commissionAmount: true,
+      bundle: {
+        select: {
+          hubnetCost: true
+        }
+      }
+    }
+  });
+
+  const allExpensesSum = await prisma.platformExpense.aggregate({
+    _sum: {
+      amount: true
+    }
+  });
+  const totalAllTimeExpenses = parseFloat(allExpensesSum._sum.amount || 0);
+
+  const allWithdrawals = await prisma.withdrawal.findMany({
+    where: {
+      status: "completed"
+    },
+    select: {
+      amount: true
+    }
+  });
+
+  let overallGrossCollected = 0;
+  let overallGatewayFees = 0;
+  let overallNetSettlement = 0;
+  let overallWholesaleCosts = 0;
+  let overallCommissions = 0;
+
+  allOrders.forEach((order) => {
+    const pricePaid = parseFloat(order.pricePaid || 0);
+    const transactionFee = parseFloat(order.transactionFee || 0);
+    const grossCollected = pricePaid + transactionFee;
+
+    let gatewayFee = 0;
+    const provider = (order.paymentProvider || "paystack").toLowerCase();
+    if (provider === "paystack") {
+      gatewayFee = grossCollected * 0.02;
+    } else {
+      gatewayFee = Math.max(0.5, grossCollected * 0.01);
+    }
+
+    const netSettlement = grossCollected - gatewayFee;
+    const commission = parseFloat(order.commissionAmount || 0);
+    const hubnetCost = parseFloat(order.bundle?.hubnetCost || 0);
+    const hubnetDepositFee = hubnetCost * (hubnetDepositFeePercentage / 100);
+    const actualHubnetCost = hubnetCost + hubnetDepositFee;
+
+    overallGrossCollected += grossCollected;
+    overallGatewayFees += gatewayFee;
+    overallNetSettlement += netSettlement;
+    overallWholesaleCosts += actualHubnetCost;
+    overallCommissions += commission;
+  });
+
+  let overallWithdrawalFees = 0;
+  allWithdrawals.forEach((w) => {
+    const amount = parseFloat(w.amount || 0);
+    const fee = Math.max(0.5, amount * 0.01);
+    overallWithdrawalFees += fee;
+  });
+
+  const overallNetProfit = overallNetSettlement - overallWholesaleCosts - overallCommissions - totalAllTimeExpenses - overallWithdrawalFees;
+
+  const overall = {
+    totalGrossCollected: overallGrossCollected.toFixed(2),
+    totalGatewayFees: overallGatewayFees.toFixed(2),
+    totalNetSettlement: overallNetSettlement.toFixed(2),
+    totalWholesaleCosts: overallWholesaleCosts.toFixed(2),
+    totalCommissions: overallCommissions.toFixed(2),
+    totalExpenses: totalAllTimeExpenses.toFixed(2),
+    totalWithdrawalFees: overallWithdrawalFees.toFixed(2),
+    totalNetProfit: overallNetProfit.toFixed(2)
+  };
+
   return {
     overview,
+    overall,
     expenses: expenses.map(exp => ({
       ...exp,
       amount: parseFloat(exp.amount || 0).toFixed(2)
