@@ -17,7 +17,7 @@ import {
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 import { getPrisma } from "../config/database.js";
-import { submitMoolreOtp, verifyMoolreTransaction } from "../services/moolreService.js";
+import { submitMoolreOtp, verifyMoolreTransaction, validateAccountName } from "../services/moolreService.js";
 
 /**
  * Paystack webhook endpoint
@@ -679,3 +679,24 @@ export const moolreWebhook = asyncHandler(async (req, res) => {
     res.status(500).json({ received: true });
   }
 });
+
+/**
+ * Validate recipient name using Moolre (Public)
+ * POST /api/payments/moolre/validate-name
+ */
+export const moolreValidateName = asyncHandler(async (req, res) => {
+  const { accountNumber, network } = req.body;
+
+  if (!accountNumber || !network) {
+    throw new AppError("Account number and network are required", 400);
+  }
+
+  const result = await validateAccountName({ accountNumber, network });
+
+  res.status(200).json({
+    success: true,
+    data: result.data,
+    message: result.message
+  });
+});
+
