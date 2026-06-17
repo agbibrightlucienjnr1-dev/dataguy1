@@ -122,6 +122,8 @@ export default function BuyPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(purchaseSchema),
@@ -130,6 +132,65 @@ export default function BuyPage() {
       customerName: "",
     },
   });
+
+  const customerPhone = watch("customerPhone");
+  const [isValidatingName, setIsValidatingName] = useState(false);
+  const [nameValidationSuccess, setNameValidationSuccess] = useState(null);
+
+  // Watch phone input to automatically validate recipient name using Moolre
+  useEffect(() => {
+    const phone = normalizePhone(customerPhone || "");
+    const detectedNetwork = getNetworkFromPhone(phone);
+
+    // Only validate if a bundle is selected, it's a valid 10-digit number, and the network matches the bundle's network
+    if (selectedBundle && phone.match(/^0\d{9}$/)) {
+      const isAirtelTigoMatch =
+        (detectedNetwork === "AIRTELTIGO" || detectedNetwork === "AT") &&
+        (selectedBundle.network === "AIRTELTIGO" || selectedBundle.network === "AT");
+      
+      const isNetworkMatch = detectedNetwork === selectedBundle.network || isAirtelTigoMatch;
+
+      if (isNetworkMatch) {
+        let active = true;
+        const performValidation = async () => {
+          setIsValidatingName(true);
+          setNameValidationSuccess(null);
+          try {
+            const res = await paymentsApi.validateRecipientName({
+              accountNumber: phone,
+              network: detectedNetwork,
+            });
+            if (active && res?.success && res?.data?.accountName) {
+              setValue("customerName", res.data.accountName, { shouldValidate: true });
+              setNameValidationSuccess(res.data.accountName);
+              toast.success(`Recipient verified: ${res.data.accountName}`);
+            } else if (active) {
+              setNameValidationSuccess(false);
+            }
+          } catch (err) {
+            if (active) {
+              console.error("Name validation error", err);
+              setNameValidationSuccess(false);
+            }
+          } finally {
+            if (active) {
+              setIsValidatingName(false);
+            }
+          }
+        };
+
+        performValidation();
+
+        return () => {
+          active = false;
+        };
+      } else {
+        setNameValidationSuccess(null);
+      }
+    } else {
+      setNameValidationSuccess(null);
+    }
+  }, [customerPhone, selectedBundle, setValue]);
 
   const seller = sellerData?.seller;
 
@@ -679,11 +740,29 @@ export default function BuyPage() {
                       {errors.customerPhone.message}
                     </p>
                   )}
+                  {isValidatingName && (
+                    <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1 font-medium animate-pulse">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Verifying recipient name...
+                    </p>
+                  )}
+                  {!isValidatingName && typeof nameValidationSuccess === "string" && (
+                    <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1 font-semibold">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Verified: {nameValidationSuccess}
+                    </p>
+                  )}
+                  {!isValidatingName && nameValidationSuccess === false && (
+                    <p className="text-xs text-amber-600 mt-1 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      Unable to auto-verify recipient name
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                    Your Name (Optional)
+                    Recipient Name (Auto-filled)
                   </label>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
