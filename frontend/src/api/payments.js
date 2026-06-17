@@ -34,4 +34,10 @@ export const paymentsApi = {
    */
   verifyMoolreOtp: (data) =>
     apiClient.post(`/payments/moolre/verify-otp`, data),
+
+  /**
+   * Validate recipient mobile network account name using Moolre (Public)
+   */
+  validateRecipientName: (data) =>
+    apiClient.post(`/payments/moolre/validate-name`, data),
 };
