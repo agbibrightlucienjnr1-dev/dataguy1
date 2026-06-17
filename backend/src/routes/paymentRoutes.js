@@ -8,6 +8,7 @@ import {
   forceVerifyPayment,
   moolreWebhook,
   moolreVerifyOtp,
+  moolreValidateName,
 } from "../controllers/paymentController.js";
 import {
   paymentRateLimiter,
@@ -25,6 +26,9 @@ router.post("/moolre/webhook", paymentRateLimiter, moolreWebhook);
 
 // Moolre OTP Verification
 router.post("/moolre/verify-otp", publicRateLimiter, moolreVerifyOtp);
+
+// Validate recipient name using Moolre (Public)
+router.post("/moolre/validate-name", publicRateLimiter, moolreValidateName);
 
 // Callback endpoint for payment redirect
 router.get("/callback", publicRateLimiter, paymentCallback);
