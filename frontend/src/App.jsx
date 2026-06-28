@@ -21,6 +21,7 @@ import {
   TermsPage,
   PrivacyPage,
   SupportPage,
+  MaintenancePage,
 } from "./pages/public";
 
 // Dashboard Pages
@@ -52,6 +53,12 @@ import {
 } from "./pages/admin";
 
 function App() {
+  const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === "true";
+
+  if (isMaintenanceMode) {
+    return <MaintenancePage />;
+  }
+
   return (
     <BrowserRouter>
       <ScrollToTop />
