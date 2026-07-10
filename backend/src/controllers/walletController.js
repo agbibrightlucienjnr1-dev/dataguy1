@@ -4,6 +4,7 @@ import {
   getWalletTransactions,
   getWalletSummary,
 } from "../services/walletService.js";
+import { getSystemSettings } from "../services/settingsService.js";
 
 /**
  * Get current user's wallet
@@ -14,10 +15,14 @@ export const getMyWallet = asyncHandler(async (req, res) => {
 
   // Get or create wallet (creates if doesn't exist)
   const wallet = await getOrCreateWallet(userId);
+  const settings = await getSystemSettings();
 
   res.status(200).json({
     success: true,
-    data: { wallet },
+    data: { 
+      wallet,
+      disableWithdrawals: settings.disableWithdrawals
+    },
   });
 });
 

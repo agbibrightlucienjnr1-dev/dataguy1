@@ -22,7 +22,8 @@ export const getSystemSettings = async () => {
         paystackFeePercentage: 1.95,
         paystackFlatFee: 0.0,
         allowAllUssdAccess: false,
-        hubnetDepositFeePercentage: 3.0
+        hubnetDepositFeePercentage: 3.0,
+        disableWithdrawals: false
       }
     });
   }
@@ -63,7 +64,8 @@ export const updateSystemSettings = async (updates) => {
     "paystackFeePercentage", 
     "paystackFlatFee",
     "allowAllUssdAccess",
-    "hubnetDepositFeePercentage"
+    "hubnetDepositFeePercentage",
+    "disableWithdrawals"
   ];
   const dataToUpdate = {};
   

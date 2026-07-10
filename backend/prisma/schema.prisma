@@ -206,6 +206,8 @@ model SystemSettings {
   
   hubnetDepositFeePercentage Decimal  @default(3.0) @map("hubnet_deposit_fee_percentage") @db.Decimal(5, 2)
   
+  disableWithdrawals    Boolean  @default(false) @map("disable_withdrawals")
+  
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")

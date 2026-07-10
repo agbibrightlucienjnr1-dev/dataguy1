@@ -72,6 +72,7 @@ export async function seedAdmin(shouldDisconnect = false) {
           paystackFeePercentage: 1.95,
           paystackFlatFee: 0.0,
           hubnetDepositFeePercentage: 3.0,
+          disableWithdrawals: false,
         }
       });
       logger.info("Default system settings created");

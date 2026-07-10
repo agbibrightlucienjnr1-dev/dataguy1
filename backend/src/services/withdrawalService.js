@@ -2,6 +2,7 @@ import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 import { debitWalletInTransaction } from "./walletService.js";
+import { getSystemSettings } from "./settingsService.js";
 import {
   createTransferRecipient,
   initiateTransfer,
@@ -19,6 +20,13 @@ const MINIMUM_WITHDRAWAL = 10; // 10 GHS
  */
 export const processAutomaticWithdrawal = async (userId, withdrawalData) => {
   const prisma = getPrisma();
+
+  // Check if withdrawals are temporarily disabled due to network disruptions
+  const settings = await getSystemSettings();
+  if (settings.disableWithdrawals) {
+    throw new AppError("Withdrawals are temporarily disabled due to current network disruptions. You cannot request new payouts at this time.", 403);
+  }
+
   const {
     amount,
     accountNumber,

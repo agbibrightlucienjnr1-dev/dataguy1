@@ -63,6 +63,7 @@ export default function AgentWithdrawalsPage() {
   });
 
   const balance = walletData?.data?.wallet?.balance || 0;
+  const disableWithdrawals = walletData?.data?.disableWithdrawals || false;
 
   // Fetch withdrawals
   const { data, isLoading, refetch, isFetching } = useQuery({
@@ -207,12 +208,24 @@ export default function AgentWithdrawalsPage() {
             />
             Refresh
           </Button>
-          <Button onClick={() => setShowWithdrawModal(true)}>
+          <Button onClick={() => setShowWithdrawModal(true)} disabled={disableWithdrawals}>
             <Plus className="w-4 h-4 mr-2" />
             Withdraw
           </Button>
         </div>
       </div>
+
+      {disableWithdrawals && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <h4 className="font-semibold text-amber-800 text-sm">Withdrawals Disabled</h4>
+            <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+              Withdrawals are temporarily disabled due to current network disruptions. You cannot request new payouts at this time.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Balance Card */}
       <Card className="p-6 bg-linear-to-br from-slate-900 to-slate-800 text-white">
@@ -225,6 +238,7 @@ export default function AgentWithdrawalsPage() {
             variant="secondary"
             onClick={() => setShowWithdrawModal(true)}
             className="bg-white text-slate-900 hover:bg-slate-100"
+            disabled={disableWithdrawals}
           >
             <ArrowDownToLine className="w-4 h-4 mr-2" />
             Withdraw Funds
