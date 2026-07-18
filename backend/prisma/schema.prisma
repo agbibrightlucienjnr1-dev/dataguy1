@@ -164,6 +164,7 @@ model Withdrawal {
   id                    String           @id @default(uuid())
   userId                String           @map("user_id")
   amount                Decimal          @db.Decimal(10, 2)
+  fee                   Decimal          @default(0.0) @db.Decimal(10, 2)
   accountType           BankAccountType  @map("account_type")
   accountNumber         String           @map("account_number")
   accountName           String           @map("account_name")
@@ -207,6 +208,9 @@ model SystemSettings {
   hubnetDepositFeePercentage Decimal  @default(3.0) @map("hubnet_deposit_fee_percentage") @db.Decimal(5, 2)
   
   disableWithdrawals    Boolean  @default(false) @map("disable_withdrawals")
+  
+  withdrawalFlatFee      Decimal  @default(0.5) @map("withdrawal_flat_fee") @db.Decimal(10, 2)
+  withdrawalFeePercentage Decimal  @default(2.0) @map("withdrawal_fee_percentage") @db.Decimal(5, 2)
   
   updatedAt             DateTime @updatedAt @map("updated_at")
 
