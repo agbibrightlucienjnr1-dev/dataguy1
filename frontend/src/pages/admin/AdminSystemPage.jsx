@@ -331,6 +331,35 @@ export default function AdminSystemPage() {
                   </div>
                 </div>
               </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  Withdrawal Network Charges (Payouts)
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Flat Fee (GHS)</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={settingsData?.data?.withdrawalFlatFee ?? 0.5}
+                      onChange={(e) => updateSettingsMutation.mutate({ withdrawalFlatFee: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Percentage (%)</label>
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={settingsData?.data?.withdrawalFeePercentage ?? 2.0}
+                      onChange={(e) => updateSettingsMutation.mutate({ withdrawalFeePercentage: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
         )}
       </Card>
