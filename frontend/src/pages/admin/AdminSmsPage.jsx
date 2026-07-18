@@ -69,10 +69,11 @@ export default function AdminSmsPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-3">
                   Select Recipients
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {[
                     { id: "all_customers", label: "All Customers", icon: Users },
-                    { id: "all_agents", label: "All Agents", icon: UserCheck },
+                    { id: "all_agents", label: "All Agents", icon: Users },
+                    { id: "active_agents", label: "Active Agents", icon: UserCheck },
                     { id: "both", label: "Everyone (Both)", icon: MessageSquare },
                     { id: "specific", label: "Specific Number", icon: Phone },
                     { id: "order_status", label: "By Order Status", icon: ListFilter },
