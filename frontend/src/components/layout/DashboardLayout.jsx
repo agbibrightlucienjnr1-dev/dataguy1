@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Modal, Button } from "../ui";
 import {
   Wifi,
   LayoutDashboard,
@@ -145,7 +146,14 @@ function NavGroup({ group, setSidebarOpen }) {
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showWhatsAppPopup, setShowWhatsAppPopup] = useState(false);
   const { user, isAdmin } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      setShowWhatsAppPopup(true);
+    }
+  }, [isAdmin]);
   const logout = useLogout();
 
   const navGroups = isAdmin() ? adminNavGroups : agentNavGroups;
@@ -475,6 +483,41 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+
+      <Modal
+        isOpen={showWhatsAppPopup}
+        onClose={() => setShowWhatsAppPopup(false)}
+        title="Join WhatsApp Channel"
+      >
+        <div className="space-y-4 text-center">
+          <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+            <MessageCircle className="w-8 h-8" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900">Join our WhatsApp Channel</h3>
+          <p className="text-sm text-slate-500">
+            Get instant updates, network notifications, and important announcements directly in our official WhatsApp channel.
+          </p>
+          <div className="pt-4 flex flex-col gap-2">
+            <a
+              href="https://whatsapp.com/channel/0029Vb7gnkoKbYMFemxIZF2w"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setShowWhatsAppPopup(false)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-colors bg-green-600 hover:bg-green-700 text-white shadow-md shadow-green-600/10"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Join WhatsApp Channel
+            </a>
+            <Button
+              variant="ghost"
+              onClick={() => setShowWhatsAppPopup(false)}
+              className="w-full"
+            >
+              Maybe Later
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
