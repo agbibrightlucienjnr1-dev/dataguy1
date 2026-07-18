@@ -410,6 +410,109 @@ export const markOrderCompleted = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Update order status to any status (Admin override)
+ * PUT /api/admin/orders/:orderId/status
+ */
+export const updateOrderStatusAdmin = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+  const prisma = getPrisma();
+
+  logger.info("Admin overriding order status", { orderId, targetStatus: status });
+
+  // Validate status input
+  const validStatuses = ["pending", "payment_confirmed", "processing", "completed", "failed", "cancelled"];
+  if (!validStatuses.includes(status)) {
+    throw new AppError(`Invalid order status: ${status}`, 400);
+  }
+
+  // Fetch the order
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      bundle: true,
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          role: true,
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  // Side-effect: If moving from pending to a paid/active state, confirm payment first to trigger commissions
+  const activePaidStates = ["payment_confirmed", "processing", "completed"];
+  if (order.status === "pending" && activePaidStates.includes(status)) {
+    logger.info("Order moving from pending to paid state. Running payment confirmation...", { orderId });
+    const { confirmPayment } = await import("../services/orderService.js");
+    await confirmPayment(orderId, `MANUAL-${Date.now()}`);
+  }
+
+  // Side-effect: If the target status is completed and it wasn't completed before, update completedAt and successful count
+  const isNewlyCompleted = status === "completed" && order.status !== "completed";
+  
+  const updateData = {
+    status,
+    providerResponse: JSON.stringify({
+      ...JSON.parse(order.providerResponse || "{}"),
+      adminStatusOverride: true,
+      overriddenBy: "admin",
+      previousStatus: order.status,
+      overriddenAt: new Date().toISOString(),
+    }),
+  };
+
+  if (status === "completed") {
+    updateData.completedAt = new Date();
+  }
+
+  // Update order status in the DB
+  const updatedOrder = await prisma.order.update({
+    where: { id: orderId },
+    data: updateData,
+    include: {
+      bundle: true,
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          role: true,
+        },
+      },
+    },
+  });
+
+  // Track customer metrics if completed
+  if (isNewlyCompleted) {
+    try {
+      const { incrementCustomerSuccessfulOrders } = await import("../services/customerService.js");
+      await incrementCustomerSuccessfulOrders({
+        customerPhone: updatedOrder.customerPhone,
+        customerName: updatedOrder.customerName,
+      });
+      logger.success("Customer metrics updated for override completion", { customerPhone: updatedOrder.customerPhone });
+    } catch (err) {
+      logger.error("Failed to increment customer successful orders in override", err);
+    }
+  }
+
+  logger.success("Order status overridden successfully by admin", { orderId, newStatus: status });
+
+  res.status(200).json({
+    success: true,
+    message: `Order status updated to ${status} successfully`,
+    order: updatedOrder,
+  });
+});
+
+/**
  * Get database size and statistics
  * GET /api/admin/database/stats
  * Cached for 2 minutes to reduce database load
