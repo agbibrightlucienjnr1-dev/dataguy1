@@ -21,7 +21,9 @@ export const getMyWallet = asyncHandler(async (req, res) => {
     success: true,
     data: { 
       wallet,
-      disableWithdrawals: settings.disableWithdrawals
+      disableWithdrawals: settings.disableWithdrawals,
+      withdrawalFlatFee: settings.withdrawalFlatFee,
+      withdrawalFeePercentage: settings.withdrawalFeePercentage
     },
   });
 });
