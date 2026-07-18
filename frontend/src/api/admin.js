@@ -60,6 +60,14 @@ export const adminApi = {
   markOrderCompleted: (orderId) =>
     apiClient.post(`/admin/orders/${orderId}/complete`),
 
+  /**
+   * Update order status to any status
+   * @param {string} orderId - Order ID
+   * @param {string} status - New order status
+   */
+  updateOrderStatus: (orderId, status) =>
+    apiClient.put(`/admin/orders/${orderId}/status`, { status }),
+
   // ========== Bundles ==========
 
   /**
