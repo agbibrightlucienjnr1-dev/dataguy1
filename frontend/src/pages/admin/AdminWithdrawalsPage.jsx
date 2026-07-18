@@ -231,7 +231,9 @@ export default function AdminWithdrawalsPage() {
               <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Amount</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Requested</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Charges</th>
+                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Net Payout</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Account Details</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Status</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
@@ -262,8 +264,18 @@ export default function AdminWithdrawalsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-lg font-bold text-slate-900">
+                      <span className="text-sm text-slate-500 font-medium">
                         {formatCurrency(withdrawal.amount)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-slate-500 font-medium">
+                        {formatCurrency(withdrawal.fee || 0)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-lg font-bold text-slate-900">
+                        {formatCurrency(parseFloat(withdrawal.amount) - parseFloat(withdrawal.fee || 0))}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -379,9 +391,21 @@ export default function AdminWithdrawalsPage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Amount:</span>
-                <span className="font-bold text-lg text-slate-900">
+                <span className="text-slate-500">Requested Amount:</span>
+                <span className="font-medium text-slate-900">
                   {formatCurrency(selectedWithdrawal.amount)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Network Charges:</span>
+                <span className="font-medium text-slate-900">
+                  {formatCurrency(selectedWithdrawal.fee || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200 pt-2">
+                <span className="text-slate-700 font-semibold">Net Payout Amount:</span>
+                <span className="font-bold text-lg text-emerald-600">
+                  {formatCurrency(parseFloat(selectedWithdrawal.amount) - parseFloat(selectedWithdrawal.fee || 0))}
                 </span>
               </div>
               <div className="flex justify-between">
