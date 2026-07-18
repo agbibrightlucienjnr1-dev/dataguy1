@@ -64,6 +64,8 @@ export default function AgentWithdrawalsPage() {
 
   const balance = walletData?.data?.wallet?.balance || 0;
   const disableWithdrawals = walletData?.data?.disableWithdrawals || false;
+  const withdrawalFlatFee = parseFloat(walletData?.data?.withdrawalFlatFee || 0.5);
+  const withdrawalFeePercentage = parseFloat(walletData?.data?.withdrawalFeePercentage || 2.0);
 
   // Fetch withdrawals
   const { data, isLoading, refetch, isFetching } = useQuery({
@@ -90,6 +92,7 @@ export default function AgentWithdrawalsPage() {
     reset,
     getValues,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(momoWithdrawalSchema),
@@ -100,6 +103,13 @@ export default function AgentWithdrawalsPage() {
       mobileNetwork: "MTN",
     },
   });
+
+  const amountVal = watch("amount");
+  const inputAmt = parseFloat(amountVal || "0");
+  const calculatedFee = isNaN(inputAmt) || inputAmt <= 0
+    ? 0
+    : Math.max(withdrawalFlatFee, inputAmt * (withdrawalFeePercentage / 100));
+  const netPayout = Math.max(0, inputAmt - calculatedFee);
 
   // Withdraw mutation
   const withdrawMutation = useMutation({
@@ -462,6 +472,22 @@ export default function AgentWithdrawalsPage() {
                      Insufficient balance
                    </p>
                  )}
+               {inputAmt > 0 && (
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-sm mt-3">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Gross Withdrawal:</span>
+                      <span className="font-medium text-slate-950">{formatCurrency(inputAmt)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Network Charges (Fee):</span>
+                      <span className="font-medium text-amber-700">-{formatCurrency(calculatedFee)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold">
+                      <span className="text-slate-800">You Will Receive (Net Payout):</span>
+                      <span className="text-emerald-600 font-bold text-base">{formatCurrency(netPayout)}</span>
+                    </div>
+                  </div>
+               )}
              </div>
           )}
 
@@ -501,10 +527,26 @@ export default function AgentWithdrawalsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
-                  Amount
+                  Requested Amount (Gross)
                 </p>
-                <p className="text-lg font-semibold mt-1">
+                <p className="text-sm font-semibold mt-1">
                   {formatCurrency(selectedWithdrawal.amount)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 uppercase tracking-wide">
+                  Network Charges
+                </p>
+                <p className="text-sm font-semibold mt-1">
+                  {formatCurrency(selectedWithdrawal.fee || 0)}
+                </p>
+              </div>
+              <div className="col-span-2 border-t border-slate-100 pt-3">
+                <p className="text-xs text-slate-500 uppercase tracking-wide">
+                  Net Payout (Amount to Receive)
+                </p>
+                <p className="text-xl font-bold text-emerald-600 mt-1">
+                  {formatCurrency(parseFloat(selectedWithdrawal.amount) - parseFloat(selectedWithdrawal.fee || 0))}
                 </p>
               </div>
               <div>
