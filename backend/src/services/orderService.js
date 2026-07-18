@@ -232,7 +232,7 @@ export const confirmPayment = async (orderId, paymentReference) => {
       };
       const displayNetworkName = networkDisplayMap[order.bundle.network] || order.bundle.network;
 
-      const message = `Your payment for ${displayNetworkName} ${order.bundle.volume} is confirmed! We truly appreciate your trust in DataGuy. Keep enjoying seamless connectivity. Reorder anytime on our website: ${agentUrl}. USSD is currently under maintenance`;
+      const message = `Your payment for ${displayNetworkName} ${order.bundle.volume} is confirmed! We truly appreciate your trust in DataGuy. Keep enjoying seamless connectivity. Reorder anytime on our website: ${agentUrl}.`;
 
       // Dispatch asynchronously without awaiting to prevent blocking the flow
       sendSMS(order.customerPhone, message).catch(err => {
