@@ -693,6 +693,19 @@ export const sendAdminSMS = asyncHandler(async (req, res) => {
         select: { phone: true } 
       });
       recipients = agents.map(a => a.phone).filter(Boolean);
+    } else if (target === "active_agents") {
+      const agents = await prisma.user.findMany({ 
+        where: { 
+          role: { in: ["agent", "sub_agent"] },
+          orders: {
+            some: {
+              status: "completed"
+            }
+          }
+        },
+        select: { phone: true } 
+      });
+      recipients = agents.map(a => a.phone).filter(Boolean);
     } else if (target === "both") {
       const [customers, agents] = await Promise.all([
         prisma.customer.findMany({ select: { phone: true } }),
