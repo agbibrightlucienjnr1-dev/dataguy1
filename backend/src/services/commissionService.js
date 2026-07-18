@@ -2,6 +2,7 @@ import { getPrisma } from "../config/database.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { getOrCreateWallet } from "./walletService.js";
 import { logger } from "../utils/logger.js";
+import { Prisma } from "@prisma/client";
 
 /**
  * Calculate commission for an order
@@ -93,12 +94,15 @@ export const calculateCommission = async (order) => {
     throw new AppError("Invalid seller type", 400);
   }
 
-  // Validate seller commission is non-negative
+  // Handle negative commission (e.g. if adminPrice was increased above seller's customerPrice)
   if (parseFloat(commission.toString()) < 0) {
-    throw new AppError(
-      "Invalid pricing: calculated commission is negative",
-      400,
-    );
+    logger.warn("Seller commission is negative due to admin price updates, defaulting to 0", {
+      orderId: order.id,
+      pricePaid: pricePaid.toString(),
+      adminPrice: adminPrice.toString(),
+      calculatedCommission: commission.toString(),
+    });
+    commission = new Prisma.Decimal(0);
   }
 
   return {
