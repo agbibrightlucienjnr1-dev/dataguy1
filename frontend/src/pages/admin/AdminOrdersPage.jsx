@@ -27,7 +27,14 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [statusUpdateValue, setStatusUpdateValue] = useState("");
   const queryClient = useQueryClient();
+
+  const handleOpenOrderModal = (order) => {
+    setSelectedOrder(order);
+    setStatusUpdateValue(order.status);
+    setShowOrderModal(true);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: [
@@ -97,6 +104,29 @@ export default function AdminOrdersPage() {
         error.response?.data?.message ||
         error.message ||
         "Failed to mark order as completed";
+      toast.error(errorMessage, { duration: 5000 });
+    },
+  });
+
+  // Mutation for updating order status to any status
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }) => adminApi.updateOrderStatus(orderId, status),
+    onSuccess: (data) => {
+      toast.success("Order status updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+      if (data?.data?.order) {
+        setSelectedOrder(data.data.order);
+        setStatusUpdateValue(data.data.order.status);
+      } else if (data?.order) {
+        setSelectedOrder(data.order);
+        setStatusUpdateValue(data.order.status);
+      }
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update order status";
       toast.error(errorMessage, { duration: 5000 });
     },
   });
@@ -367,10 +397,7 @@ export default function AdminOrdersPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setShowOrderModal(true);
-                          }}
+                          onClick={() => handleOpenOrderModal(order)}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -590,6 +617,34 @@ export default function AdminOrdersPage() {
                 </Button>
               </div>
             )}
+
+            {/* Status Override Control */}
+            <div className="pt-4 border-t border-slate-200 space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Admin Status Override
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={statusUpdateValue}
+                  onChange={(e) => setStatusUpdateValue(e.target.value)}
+                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="payment_confirmed">Payment Confirmed</option>
+                  <option value="processing">Processing</option>
+                  <option value="completed">Completed</option>
+                  <option value="failed">Failed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <Button
+                  variant="primary"
+                  onClick={() => updateStatusMutation.mutate({ orderId: selectedOrder.id, status: statusUpdateValue })}
+                  disabled={updateStatusMutation.isPending || statusUpdateValue === selectedOrder.status}
+                >
+                  {updateStatusMutation.isPending ? "Saving..." : "Update Status"}
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </Modal>
