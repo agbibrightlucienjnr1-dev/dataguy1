@@ -4,7 +4,7 @@ import { logger } from "../utils/logger.js";
 
 // Configure VAPID details
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-  webpush.setVAPIDDetails(
+  webpush.setVapidDetails(
     `mailto:${process.env.VAPID_EMAIL || "admin@dataguy.shop"}`,
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
