@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Modal, Button } from "../ui";
+import { Modal, Button, PushNotificationPrompt } from "../ui";
 import {
   Wifi,
   LayoutDashboard,
@@ -23,6 +23,7 @@ import {
   Server,
   MessageCircle,
   PlayCircle,
+  Bell,
 } from "lucide-react";
 import { useAuthStore } from "../../stores";
 import { useLogout } from "../../hooks";
@@ -89,6 +90,7 @@ const adminNavGroups = [
     title: "Platform",
     items: [
       { to: "/admin/sms", icon: MessageCircle, label: "SMS Notifications" },
+      { to: "/admin/push", icon: Bell, label: "Push Notifications" },
       { to: "/admin/system", icon: Server, label: "System Settings" }
     ],
   },
@@ -518,6 +520,12 @@ export default function DashboardLayout() {
           </div>
         </div>
       </Modal>
+
+      <PushNotificationPrompt 
+        title="Enable Commission Alerts"
+        description="Get instant browser notifications whenever you earn commissions or process withdrawals."
+        role={user?.role || "agent"}
+      />
     </div>
   );
 }
