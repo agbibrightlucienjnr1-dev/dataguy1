@@ -218,6 +218,13 @@ export const adminApi = {
   sendSMS: (data) => apiClient.post("/admin/sms/send", data),
 
   /**
+   * Broadcast push notification to targets
+   * @param {Object} data - { target: string, title: string, body: string, url?: string }
+   */
+  sendPushNotification: (data) =>
+    apiClient.post("/notifications/push", data),
+
+  /**
    * Manually add or update customers
    * @param {string[]} phones - Array of phone numbers
    */
