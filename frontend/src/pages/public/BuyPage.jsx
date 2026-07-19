@@ -15,7 +15,7 @@ import {
   Package,
   Lock,
 } from "lucide-react";
-import { Card, Button, Input, Badge } from "../../components/ui";
+import { Card, Button, Input, Badge, PushNotificationPrompt } from "../../components/ui";
 import { useSellerInfo, usePaymentLinkBundles } from "../../hooks";
 import { useCreateOrder } from "../../hooks";
 import { formatCurrency } from "../../utils/formatters";
@@ -889,6 +889,12 @@ export default function BuyPage() {
           </Card>
         </div>
       )}
+      
+      <PushNotificationPrompt 
+        title="Get Delivery Alerts"
+        description="Enable notifications to receive instant, real-time alerts when your data bundle is successfully delivered."
+        role="customer"
+      />
     </div>
   );
 }
