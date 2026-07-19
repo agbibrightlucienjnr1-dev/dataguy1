@@ -29,6 +29,7 @@ import { useAuthStore } from "../../stores";
 import { useLogout } from "../../hooks";
 import { adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
+import { isPushSupported, getNotificationPermissionState, subscribeUserToPush } from "../../utils/pushNotifications";
 
 const agentNavGroups = [
   {
@@ -156,6 +157,14 @@ export default function DashboardLayout() {
       setShowWhatsAppPopup(true);
     }
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (isPushSupported() && getNotificationPermissionState() === "granted") {
+      subscribeUserToPush(null, user?.role || "agent").catch((err) => {
+        console.warn("Silent push subscription update failed:", err);
+      });
+    }
+  }, [user]);
   const logout = useLogout();
 
   const navGroups = isAdmin() ? adminNavGroups : agentNavGroups;

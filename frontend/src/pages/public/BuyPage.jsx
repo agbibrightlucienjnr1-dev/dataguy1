@@ -22,6 +22,7 @@ import { formatCurrency } from "../../utils/formatters";
 import { NETWORK_PHONE_PREFIXES } from "../../utils/constants";
 import { paymentsApi } from "../../api/payments";
 import toast from "react-hot-toast";
+import { isPushSupported, getNotificationPermissionState, subscribeUserToPush } from "../../utils/pushNotifications";
 
 // Validation schema
 const purchaseSchema = z.object({
@@ -350,6 +351,11 @@ export default function BuyPage() {
       },
       {
         onSuccess: (response) => {
+          if (isPushSupported() && getNotificationPermissionState() === "granted") {
+            subscribeUserToPush(payPhone, "customer").catch((err) => {
+              console.warn("Silent push subscription update failed:", err);
+            });
+          }
           const payment = response.data?.payment;
           if (payment?.otpRequired) {
             // TP14: OTP was sent — show OTP verification modal

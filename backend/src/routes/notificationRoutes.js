@@ -5,6 +5,7 @@ import { requireAdmin } from "../utils/authorization.js";
 import { asyncHandler, AppError } from "../middlewares/errorHandler.js";
 import { logger } from "../utils/logger.js";
 import { getPrisma } from "../config/database.js";
+import { verifyToken } from "../utils/jwt.js";
 
 const router = express.Router();
 
@@ -32,8 +33,7 @@ router.post(
     if (authHeader && authHeader.startsWith("Bearer ")) {
       try {
         const token = authHeader.split(" ")[1];
-        const jwt = await import("jsonwebtoken");
-        const decoded = jwt.default.verify(token, process.env.JWT_SECRET);
+        const decoded = verifyToken(token);
         
         if (decoded && decoded.id) {
           userId = decoded.id;
