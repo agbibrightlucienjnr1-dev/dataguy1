@@ -17,7 +17,7 @@ export default function AdminPushPage() {
   const sendPushMutation = useMutation({
     mutationFn: (data) => adminApi.sendPushNotification(data),
     onSuccess: (res) => {
-      const stats = res?.data?.data || {};
+      const stats = res?.data || {};
       toast.success(
         `Push notification broadcast initiated! Successfully sent to ${stats.successCount || 0} browser(s).`
       );
