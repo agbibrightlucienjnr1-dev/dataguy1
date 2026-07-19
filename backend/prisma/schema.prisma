@@ -28,6 +28,7 @@ model User {
   approvedWithdrawals Withdrawal[]    @relation("ApprovedWithdrawals")
   withdrawals         Withdrawal[]    @relation("UserWithdrawals")
   visitorLogs         VisitorLog[]    @relation("SellerVisitorLogs")
+  pushSubscriptions   PushSubscription[]
 
   @@map("users")
 }
@@ -325,4 +326,20 @@ model PlatformExpense {
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("platform_expenses")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String?  @map("user_id")
+  phone     String?
+  role      String   @default("customer") // "agent", "sub_agent", "customer"
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([role])
+  @@map("push_subscriptions")
 }
