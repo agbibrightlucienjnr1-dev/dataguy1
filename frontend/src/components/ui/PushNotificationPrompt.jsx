@@ -85,7 +85,7 @@ export default function PushNotificationPrompt({
           <Button
             variant="outline"
             onClick={() => setIsOpen(false)}
-            className="flex-1 order-2 sm:order-1"
+            className="w-full sm:flex-1 order-2 sm:order-1"
             disabled={isPending}
           >
             No thanks
@@ -93,7 +93,7 @@ export default function PushNotificationPrompt({
           <Button
             variant="primary"
             onClick={handleSubscribe}
-            className="flex-1 order-1 sm:order-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="w-full sm:flex-1 order-1 sm:order-2 bg-indigo-600 hover:bg-indigo-700 text-white"
             disabled={isPending}
           >
             {isPending ? "Enabling..." : "Enable Notifications"}
