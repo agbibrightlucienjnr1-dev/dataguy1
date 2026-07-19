@@ -20,3 +20,4 @@ export {
   SkeletonTable,
 } from "./Skeleton";
 export { default as Modal, ConfirmModal } from "./Modal";
+export { default as PushNotificationPrompt } from "./PushNotificationPrompt";
