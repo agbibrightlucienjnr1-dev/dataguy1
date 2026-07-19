@@ -54,7 +54,7 @@ export default function Modal({
       <div
         ref={modalRef}
         className={cn(
-          "relative z-10 w-full rounded-xl bg-white shadow-xl",
+          "relative z-10 w-[calc(100%-2rem)] mx-4 sm:mx-auto rounded-xl bg-white shadow-xl",
           "max-h-[90vh] overflow-hidden",
           sizes[size],
           className,

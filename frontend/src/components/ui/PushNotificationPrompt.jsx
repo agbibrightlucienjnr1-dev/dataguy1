@@ -60,6 +60,7 @@ export default function PushNotificationPrompt({
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
       title="Enable Alerts"
+      size="sm"
     >
       <div className="space-y-5 text-center p-2">
         <div className="mx-auto w-14 h-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 animate-bounce">
