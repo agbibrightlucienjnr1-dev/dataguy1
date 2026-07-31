@@ -34,6 +34,14 @@ const purchaseSchema = z.object({
       "Enter a valid 10-digit phone number (e.g., 0241234567)",
     ),
   customerName: z.string().optional(),
+  paymentPhone: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || val === "" || /^0\d{9}$/.test(val),
+      "Enter a valid 10-digit payment phone number (e.g., 0201234567)",
+    ),
+  sameAsRecipientPhone: z.boolean().optional(),
 });
 
 // Normalize and detect network from phone prefix
@@ -131,10 +139,27 @@ export default function BuyPage() {
     defaultValues: {
       customerPhone: "",
       customerName: "",
+      paymentPhone: "",
+      sameAsRecipientPhone: true,
     },
   });
 
   const customerPhone = watch("customerPhone");
+  const paymentPhoneInput = watch("paymentPhone");
+  const sameAsRecipientPhone = watch("sameAsRecipientPhone");
+
+  // Effective payment phone & auto-detected network
+  const effectivePaymentPhone = useMemo(() => {
+    if (sameAsRecipientPhone || !paymentPhoneInput) {
+      return normalizePhone(customerPhone || "");
+    }
+    return normalizePhone(paymentPhoneInput || "");
+  }, [sameAsRecipientPhone, paymentPhoneInput, customerPhone]);
+
+  const detectedPaymentNetwork = useMemo(() => {
+    return getNetworkFromPhone(effectivePaymentPhone);
+  }, [effectivePaymentPhone]);
+
   const [isValidatingName, setIsValidatingName] = useState(false);
   const [nameValidationSuccess, setNameValidationSuccess] = useState(null);
 
@@ -310,32 +335,47 @@ export default function BuyPage() {
       return;
     }
 
-    // Get payment phone and network
-    const payPhone = normalizePhone(data.customerPhone);
-    const inferredNetwork = getNetworkFromPhone(payPhone);
-    const finalNetwork = inferredNetwork;
+    // 1. Recipient phone & network validation
+    const recipientPhone = normalizePhone(data.customerPhone);
+    const recipientInferredNetwork = getNetworkFromPhone(recipientPhone);
 
-    if (!finalNetwork) {
+    if (!recipientInferredNetwork) {
       toast.error(
-        "Could not detect network from the phone number. Please enter a valid Ghanaian phone number.",
+        "Could not detect network from the recipient phone number. Please enter a valid Ghanaian phone number.",
       );
       return;
     }
 
     const isAirtelTigoMatch =
-      (finalNetwork === "AIRTELTIGO" || finalNetwork === "AT") &&
+      (recipientInferredNetwork === "AIRTELTIGO" || recipientInferredNetwork === "AT") &&
       (selectedBundle.network === "AIRTELTIGO" || selectedBundle.network === "AT");
 
-    if (finalNetwork !== selectedBundle.network && !isAirtelTigoMatch) {
+    if (recipientInferredNetwork !== selectedBundle.network && !isAirtelTigoMatch) {
       toast.error(
-        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "AT Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your number is ${finalNetwork === "AIRTELTIGO" ? "AT Big Time" : finalNetwork === "AT" ? "AT iSHARE" : finalNetwork}. Please enter a matching number.`,
+        `The selected bundle is for ${selectedBundle.network === "AIRTELTIGO" ? "AT Big Time" : selectedBundle.network === "AT" ? "AT iSHARE" : selectedBundle.network} but your recipient number is ${recipientInferredNetwork === "AIRTELTIGO" ? "AT Big Time" : recipientInferredNetwork === "AT" ? "AT iSHARE" : recipientInferredNetwork}. Please enter a matching recipient number.`,
+      );
+      return;
+    }
+
+    // 2. Payment phone & payment network calculation (for Moolre)
+    const isMoolre = settings?.activePaymentProvider === "moolre";
+    const rawPaymentPhone = isMoolre && !data.sameAsRecipientPhone && data.paymentPhone
+      ? data.paymentPhone
+      : data.customerPhone;
+
+    const payPhone = normalizePhone(rawPaymentPhone);
+    const payNetwork = getNetworkFromPhone(payPhone) || recipientInferredNetwork;
+
+    if (isMoolre && !payNetwork) {
+      toast.error(
+        "Could not detect mobile money network for the payment phone number. Please enter a valid Ghanaian Mobile Money number.",
       );
       return;
     }
 
     // Save for OTP usage
     setPaymentPhone(payPhone);
-    setPaymentNetwork(finalNetwork);
+    setPaymentNetwork(payNetwork);
     setPendingTotal(grandTotal);
 
     createOrder.mutate(
@@ -343,9 +383,9 @@ export default function BuyPage() {
         code,
         data: {
           bundleId: selectedBundle.id,
-          customerPhone: normalizePhone(data.customerPhone),
+          customerPhone: recipientPhone,
           paymentNumber: payPhone,
-          network: finalNetwork,
+          network: isMoolre ? payNetwork : recipientInferredNetwork,
           customerName: data.customerName || undefined,
         },
       },
@@ -780,6 +820,66 @@ export default function BuyPage() {
                     />
                   </div>
                 </div>
+
+                {/* Moolre Payment Number & Auto Network Detection */}
+                {settings?.activePaymentProvider === "moolre" && (
+                  <div className="p-4 bg-slate-100/80 rounded-2xl space-y-3 border border-slate-200/80 mt-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Payment Number (MoMo)
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-600 select-none">
+                        <input
+                          type="checkbox"
+                          className="rounded border-slate-300 text-slate-900 focus:ring-slate-900 h-4 w-4"
+                          {...register("sameAsRecipientPhone")}
+                        />
+                        Same as recipient
+                      </label>
+                    </div>
+
+                    {!sameAsRecipientPhone && (
+                      <div className="space-y-1.5 animate-in fade-in duration-200">
+                        <div className="relative group">
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                          <input
+                            type="tel"
+                            placeholder="0201234567"
+                            className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 ${errors.paymentPhone ? "border-red-500" : "border-slate-200"}`}
+                            {...register("paymentPhone")}
+                          />
+                        </div>
+                        {errors.paymentPhone && (
+                          <p className="text-xs text-red-600 mt-1">
+                            {errors.paymentPhone.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Auto-detected Payment Network Badge */}
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/70">
+                      <span className="text-slate-500 font-medium">Payment Network:</span>
+                      {detectedPaymentNetwork ? (
+                        <Badge
+                          className={
+                            NETWORK_STYLES[detectedPaymentNetwork]?.bg || "bg-slate-700 text-white"
+                          }
+                        >
+                          {detectedPaymentNetwork === "AIRTELTIGO" || detectedPaymentNetwork === "AT"
+                            ? "AT (AirtelTigo)"
+                            : detectedPaymentNetwork === "TELECEL"
+                            ? "Telecel"
+                            : "MTN"}
+                        </Badge>
+                      ) : (
+                        <span className="text-slate-400 font-medium italic">
+                          {effectivePaymentPhone ? "Unrecognized prefix" : "Awaiting phone number"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <Button
                   type="submit"
