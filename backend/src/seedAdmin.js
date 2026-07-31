@@ -53,6 +53,8 @@ export async function seedAdmin(shouldDisconnect = false) {
         phone: adminData.phone,
         passwordHash,
         role: adminData.role,
+        agentCode: 100,
+        paymentLinkCode: "ADMIN001",
       },
     });
 
