@@ -159,7 +159,7 @@ export default function AdminOrdersPage() {
       if (payload?.updated) {
         toast.success(payload.message || `Delivery status updated to ${payload.status}`);
       } else {
-        toast.info(payload.message || "Live delivery status check completed.");
+        toast(payload.message || "Live delivery status check completed.", { icon: "ℹ️" });
       }
       queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
       if (payload?.order && selectedOrder?.id === payload.order.id) {
