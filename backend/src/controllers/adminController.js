@@ -11,7 +11,7 @@ import {
   createPlatformExpense,
   deletePlatformExpense,
 } from "../services/adminService.js";
-import { initiateHubnetOrder, checkAndSyncDeliveryStatus } from "../services/orderService.js";
+import { initiateHubnetOrder } from "../services/orderService.js";
 import { addCustomersManually } from "../services/customerService.js";
 import { getAnalyticsStats, getAnalyticsChartData } from "../services/analyticsService.js";
 import { checkBalance } from "../services/hubnetService.js";
@@ -264,23 +264,6 @@ export const fulfillOrder = asyncHandler(async (req, res) => {
     success: true,
     message: "Order fulfillment initiated successfully",
     order: result,
-  });
-});
-
-/**
- * Check and sync order delivery status with provider
- * POST /api/admin/orders/:orderId/check-delivery-status
- */
-export const checkDeliveryStatus = asyncHandler(async (req, res) => {
-  const { orderId } = req.params;
-
-  logger.info("Admin checking live delivery status for order", { orderId });
-
-  const result = await checkAndSyncDeliveryStatus(orderId);
-
-  res.status(200).json({
-    success: true,
-    ...result,
   });
 });
 
