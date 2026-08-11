@@ -11,6 +11,7 @@ import {
   fulfillOrder,
   markOrderCompleted,
   updateOrderStatusAdmin,
+  checkDeliveryStatus,
   getHubnetBalance,
   getBossuBalance,
   getTotalWalletBalance,
@@ -62,6 +63,7 @@ router.get("/orders", getOrders); // List all orders with filters
 router.get("/orders/failed", getFailedOrdersList); // Get failed orders
 router.post("/orders/:orderId/fulfill", fulfillOrder); // Manually fulfill order via Hubnet
 router.post("/orders/:orderId/complete", markOrderCompleted); // Manually mark order as completed
+router.post("/orders/:orderId/check-delivery-status", checkDeliveryStatus); // Manually check order delivery status with provider
 router.put("/orders/:orderId/status", updateOrderStatusAdmin); // Manually override order status to any status
 
 /**

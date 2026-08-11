@@ -14,6 +14,7 @@ import {
   Send,
   Loader2,
   Check,
+  RefreshCw,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
@@ -147,6 +148,31 @@ export default function AdminOrdersPage() {
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Verification failed.");
+    },
+  });
+
+  // Mutation for manually checking live delivery status with provider
+  const checkDeliveryStatusMutation = useMutation({
+    mutationFn: (orderId) => adminApi.checkDeliveryStatus(orderId),
+    onSuccess: (res) => {
+      const payload = res?.data || res;
+      if (payload?.updated) {
+        toast.success(payload.message || `Delivery status updated to ${payload.status}`);
+      } else {
+        toast.info(payload.message || "Live delivery status check completed.");
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+      if (payload?.order && selectedOrder?.id === payload.order.id) {
+        setSelectedOrder(payload.order);
+        setStatusUpdateValue(payload.order.status);
+      }
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to check delivery status";
+      toast.error(errorMessage, { duration: 5000 });
     },
   });
 
@@ -355,6 +381,23 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {/* Check Delivery Status button - show for processing orders or orders with provider reference */}
+                        {(order.status === "processing" || (order.hubnetOrderId && order.status !== "completed")) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => checkDeliveryStatusMutation.mutate(order.id)}
+                            disabled={checkDeliveryStatusMutation.isPending && checkDeliveryStatusMutation.variables === order.id}
+                            title="Check Live Delivery Status with Provider"
+                            className="border-slate-200 text-slate-700 hover:bg-slate-100"
+                          >
+                            {checkDeliveryStatusMutation.isPending && checkDeliveryStatusMutation.variables === order.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
                         {/* Fulfill button - show for payment_confirmed and failed orders */}
                         {(order.status === "payment_confirmed" ||
                           order.status === "failed") && (
@@ -535,6 +578,30 @@ export default function AdminOrdersPage() {
                   </p>
                 </div>
               )}
+
+            {/* Check Delivery Status Button - available for any non-pending order */}
+            {selectedOrder.status !== "pending" && (
+              <div className="pt-4 border-t border-slate-200">
+                <Button
+                  variant="outline"
+                  className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
+                  onClick={() => checkDeliveryStatusMutation.mutate(selectedOrder.id)}
+                  disabled={checkDeliveryStatusMutation.isPending}
+                >
+                  {checkDeliveryStatusMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Checking Live Delivery Status...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Check Live Delivery Status (Provider)
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
             {/* Force Verify Button - for pending Moolre orders */}
             {selectedOrder.status === "pending" && (

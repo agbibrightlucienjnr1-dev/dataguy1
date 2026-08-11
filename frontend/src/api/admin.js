@@ -68,6 +68,13 @@ export const adminApi = {
   updateOrderStatus: (orderId, status) =>
     apiClient.put(`/admin/orders/${orderId}/status`, { status }),
 
+  /**
+   * Check live order delivery status with provider (Bossu / Hubnet)
+   * @param {string} orderId - Order ID
+   */
+  checkDeliveryStatus: (orderId) =>
+    apiClient.post(`/admin/orders/${orderId}/check-delivery-status`),
+
   // ========== Bundles ==========
 
   /**

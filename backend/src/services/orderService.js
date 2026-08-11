@@ -5,10 +5,10 @@ import {
   processPaymentConfirmation,
   markOrderAsProcessing,
 } from "./commissionService.js";
-import { checkBalance as hubnetCheckBalance, initiateDataTransaction as hubnetInitiateTransaction } from "./hubnetService.js";
-import { checkBalance as bossuCheckBalance, initiateDataTransaction as bossuInitiateTransaction } from "./bossuService.js";
+import { checkBalance as hubnetCheckBalance, initiateDataTransaction as hubnetInitiateTransaction, getTransactionStatus as hubnetGetTransactionStatus } from "./hubnetService.js";
+import { checkBalance as bossuCheckBalance, initiateDataTransaction as bossuInitiateTransaction, checkOrderStatus as bossuCheckOrderStatus } from "./bossuService.js";
 import { getActiveDeliveryProvider } from "./settingsService.js";
-import { upsertCustomerOnOrderPlacement } from "./customerService.js";
+import { upsertCustomerOnOrderPlacement, incrementCustomerSuccessfulOrders } from "./customerService.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -700,3 +700,169 @@ export const trackOrdersByPhone = async (phone) => {
     paymentReference: order.paymentReference,
   }));
 };
+
+/**
+ * Manually check and sync order delivery status with provider (Bossu / Hubnet)
+ */
+export const checkAndSyncDeliveryStatus = async (orderId) => {
+  const prisma = getPrisma();
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      bundle: true,
+      seller: {
+        select: { id: true, name: true, phone: true },
+      },
+    },
+  });
+
+  if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  const provider =
+    order.deliveryProvider ||
+    (order.providerOrderId?.startsWith("EXT_") ? "bossu" : "hubnet");
+
+  if (!order.providerOrderId || order.providerOrderId.startsWith("DELIV-LOCK")) {
+    return {
+      success: true,
+      updated: false,
+      status: order.status,
+      provider,
+      message: "Order has not been dispatched to provider yet (no active provider order ID).",
+      order,
+    };
+  }
+
+  logger.info("Checking live delivery status with provider", {
+    orderId,
+    provider,
+    providerOrderId: order.providerOrderId,
+  });
+
+  let providerStatusData = null;
+  let rawStatusStr = "";
+
+  if (provider === "bossu") {
+    try {
+      const bossuRes = await bossuCheckOrderStatus(order.providerOrderId);
+      providerStatusData = bossuRes.data || bossuRes;
+      rawStatusStr = (bossuRes.status || providerStatusData.status || "").toString().toLowerCase();
+    } catch (err) {
+      logger.error("Failed to query Bossu order status", {
+        orderId,
+        providerOrderId: order.providerOrderId,
+        error: err.message,
+      });
+      throw new AppError(`Bossu status check failed: ${err.message}`, 500);
+    }
+  } else {
+    // Hubnet
+    try {
+      const hubnetRes = await hubnetGetTransactionStatus(order.providerOrderId);
+      providerStatusData = hubnetRes;
+      rawStatusStr = (hubnetRes.status || hubnetRes.data?.status || "").toString().toLowerCase();
+    } catch (err) {
+      logger.warn("Hubnet status endpoint returned error or unavailable", {
+        orderId,
+        providerOrderId: order.providerOrderId,
+        error: err.message,
+      });
+
+      let savedData = null;
+      if (order.providerResponse) {
+        try { savedData = JSON.parse(order.providerResponse); } catch (e) {}
+      }
+
+      return {
+        success: true,
+        updated: false,
+        status: order.status,
+        provider: "hubnet",
+        message: `Hubnet status check unavailable via API (${err.message}). Current order status is '${order.status}'. Delivery updates are processed via Hubnet webhook.`,
+        order,
+        providerData: savedData,
+      };
+    }
+  }
+
+  const successStatuses = ["completed", "success", "delivered", "successful"];
+  const failedStatuses = ["failed", "error", "cancelled"];
+
+  let newStatus = null;
+  let isCompleted = false;
+
+  if (successStatuses.some((s) => rawStatusStr.includes(s))) {
+    newStatus = "completed";
+    isCompleted = true;
+  } else if (failedStatuses.some((s) => rawStatusStr.includes(s))) {
+    newStatus = "failed";
+  }
+
+  if (newStatus && newStatus !== order.status) {
+    const updateData = {
+      status: newStatus,
+      providerResponse: JSON.stringify({
+        provider,
+        checkedAt: new Date().toISOString(),
+        checkedBy: "admin_manual_check",
+        providerStatus: rawStatusStr,
+        providerData: providerStatusData,
+        previousStatus: order.status,
+      }),
+    };
+
+    if (isCompleted) {
+      updateData.completedAt = new Date();
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id: order.id },
+      data: updateData,
+      include: {
+        bundle: true,
+        seller: {
+          select: { id: true, name: true, phone: true },
+        },
+      },
+    });
+
+    if (isCompleted && order.status !== "completed") {
+      await incrementCustomerSuccessfulOrders({
+        customerPhone: updatedOrder.customerPhone,
+        customerName: updatedOrder.customerName,
+      });
+    }
+
+    logger.success("Order delivery status updated via manual check", {
+      orderId: order.id,
+      previousStatus: order.status,
+      newStatus: updatedOrder.status,
+      provider,
+    });
+
+    return {
+      success: true,
+      updated: true,
+      status: updatedOrder.status,
+      provider,
+      message: `Order delivery status updated to '${updatedOrder.status}' based on provider response (${rawStatusStr}).`,
+      order: updatedOrder,
+      providerData: providerStatusData,
+    };
+  }
+
+  // Status did not change
+  return {
+    success: true,
+    updated: false,
+    status: order.status,
+    provider,
+    message: `Provider reported status as '${rawStatusStr || "processing"}'. Order remains '${order.status}'.`,
+    order,
+    providerData: providerStatusData,
+  };
+};
+
