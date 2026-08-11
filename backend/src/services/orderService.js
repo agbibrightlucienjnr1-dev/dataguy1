@@ -725,49 +725,57 @@ export const checkAndSyncDeliveryStatus = async (orderId) => {
     order.deliveryProvider ||
     (order.providerOrderId?.startsWith("EXT_") ? "bossu" : "hubnet");
 
-  if (!order.providerOrderId || order.providerOrderId.startsWith("DELIV-LOCK")) {
-    return {
-      success: true,
-      updated: false,
-      status: order.status,
-      provider,
-      message: "Order has not been dispatched to provider yet (no active provider order ID).",
-      order,
-    };
-  }
+  // Determine candidate order ID for provider query.
+  // Use providerOrderId if it's a real ID, otherwise fall back to order.id (the external reference sent to provider).
+  const candidateOrderId =
+    order.providerOrderId && !order.providerOrderId.startsWith("DELIV-LOCK")
+      ? order.providerOrderId
+      : order.id;
 
   logger.info("Checking live delivery status with provider", {
-    orderId,
+    orderId: order.id,
     provider,
-    providerOrderId: order.providerOrderId,
+    candidateOrderId,
+    dbProviderOrderId: order.providerOrderId,
   });
 
   let providerStatusData = null;
   let rawStatusStr = "";
+  let realProviderOrderId = null;
 
   if (provider === "bossu") {
     try {
-      const bossuRes = await bossuCheckOrderStatus(order.providerOrderId);
+      const bossuRes = await bossuCheckOrderStatus(candidateOrderId);
       providerStatusData = bossuRes.data || bossuRes;
       rawStatusStr = (bossuRes.status || providerStatusData.status || "").toString().toLowerCase();
+      realProviderOrderId = providerStatusData.order_id || providerStatusData.id || bossuRes.order_id || null;
     } catch (err) {
-      logger.error("Failed to query Bossu order status", {
-        orderId,
-        providerOrderId: order.providerOrderId,
+      logger.warn("Bossu status query failed or reference not found", {
+        orderId: order.id,
+        candidateOrderId,
         error: err.message,
       });
-      throw new AppError(`Bossu status check failed: ${err.message}`, 500);
+
+      return {
+        success: true,
+        updated: false,
+        status: order.status,
+        provider: "bossu",
+        message: `Order reference was not found at Bossu (${err.message}). If payment is confirmed, click 'Fulfill Order' to dispatch data to customer.`,
+        order,
+      };
     }
   } else {
     // Hubnet
     try {
-      const hubnetRes = await hubnetGetTransactionStatus(order.providerOrderId);
+      const hubnetRes = await hubnetGetTransactionStatus(candidateOrderId);
       providerStatusData = hubnetRes;
       rawStatusStr = (hubnetRes.status || hubnetRes.data?.status || "").toString().toLowerCase();
+      realProviderOrderId = hubnetRes.transaction_id || hubnetRes.data?.transaction_id || null;
     } catch (err) {
-      logger.warn("Hubnet status endpoint returned error or unavailable", {
-        orderId,
-        providerOrderId: order.providerOrderId,
+      logger.warn("Hubnet status endpoint error or reference not found", {
+        orderId: order.id,
+        candidateOrderId,
         error: err.message,
       });
 
@@ -781,7 +789,7 @@ export const checkAndSyncDeliveryStatus = async (orderId) => {
         updated: false,
         status: order.status,
         provider: "hubnet",
-        message: `Hubnet status check unavailable via API (${err.message}). Current order status is '${order.status}'. Delivery updates are processed via Hubnet webhook.`,
+        message: `Hubnet status query returned: ${err.message}. Current order status is '${order.status}'. Delivery updates are delivered via Webhook.`,
         order,
         providerData: savedData,
       };
@@ -801,9 +809,11 @@ export const checkAndSyncDeliveryStatus = async (orderId) => {
     newStatus = "failed";
   }
 
-  if (newStatus && newStatus !== order.status) {
+  // Update order if status changed OR if realProviderOrderId was retrieved
+  const targetOrderIdToSave = realProviderOrderId || (candidateOrderId !== order.id ? candidateOrderId : order.providerOrderId);
+
+  if (newStatus || (targetOrderIdToSave && targetOrderIdToSave !== order.providerOrderId)) {
     const updateData = {
-      status: newStatus,
       providerResponse: JSON.stringify({
         provider,
         checkedAt: new Date().toISOString(),
@@ -814,8 +824,16 @@ export const checkAndSyncDeliveryStatus = async (orderId) => {
       }),
     };
 
+    if (newStatus) {
+      updateData.status = newStatus;
+    }
+
     if (isCompleted) {
       updateData.completedAt = new Date();
+    }
+
+    if (targetOrderIdToSave && targetOrderIdToSave !== order.providerOrderId) {
+      updateData.providerOrderId = targetOrderIdToSave;
     }
 
     const updatedOrder = await prisma.order.update({
@@ -848,7 +866,7 @@ export const checkAndSyncDeliveryStatus = async (orderId) => {
       updated: true,
       status: updatedOrder.status,
       provider,
-      message: `Order delivery status updated to '${updatedOrder.status}' based on provider response (${rawStatusStr}).`,
+      message: `Order status synced to '${updatedOrder.status}' based on provider response (${rawStatusStr}).`,
       order: updatedOrder,
       providerData: providerStatusData,
     };
