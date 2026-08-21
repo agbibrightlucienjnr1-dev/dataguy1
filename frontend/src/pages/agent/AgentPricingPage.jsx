@@ -222,10 +222,10 @@ export default function AgentPricingPage() {
       </div>
 
       {/* Info Card */}
-      <Card className="p-4 bg-blue-50 border-blue-200">
+      <Card className="p-4 bg-violet-50 border-brand-200">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-800">
+          <Info className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
+          <div className="text-sm text-brand-900">
             <p className="font-medium mb-2">Pricing Rules:</p>
             <ul className="space-y-1.5 list-disc list-inside">
               <li className="leading-relaxed">
@@ -250,7 +250,7 @@ export default function AgentPricingPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
                <thead>
-                 <tr className="border-b border-slate-100 bg-slate-50">
+                 <tr className="border-b border-slate-100 bg-violet-50/40">
                     <th className="text-left p-4 text-sm font-medium text-slate-600">Bundle</th>
                     <th className="text-left p-4 text-sm font-medium text-slate-600">Your Cost</th>
                     <th className="text-left p-4 text-sm font-medium text-slate-600">Customer Price</th>
@@ -306,7 +306,7 @@ export default function AgentPricingPage() {
                 <button
                   key={networkKey}
                   onClick={() => setSelectedNetwork(networkKey)}
-                  className={`group relative overflow-hidden rounded-2xl bg-linear-to-br ${cardGradient} p-6 text-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 h-44 flex flex-col justify-between`}
+                  className={`group relative overflow-hidden rounded-2xl bg-linear-to-br ${cardGradient} p-6 text-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30 h-44 flex flex-col justify-between`}
                 >
                   {/* Absolute decoration */}
                   <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-10 transition-transform duration-500 group-hover:scale-110">
@@ -383,7 +383,7 @@ export default function AgentPricingPage() {
                 <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-slate-100 bg-slate-50">
+                      <tr className="border-b border-slate-100 bg-violet-50/40">
                         <th className="text-left p-4 text-sm font-medium text-slate-600">
                           Bundle
                         </th>
@@ -435,7 +435,7 @@ export default function AgentPricingPage() {
                           <tr
                             key={bundle.id}
                             className={`border-b border-slate-50 ${
-                              hasError ? "bg-red-50" : ""
+                              hasError ? "bg-red-50" : "hover:bg-violet-50/30"
                             }`}
                           >
                             <td className="p-4">
@@ -517,7 +517,7 @@ export default function AgentPricingPage() {
                               <span
                                 className={`font-medium ${
                                   profit > 0
-                                    ? "text-green-600"
+                                    ? "text-action-600"
                                     : profit < 0
                                       ? "text-red-600"
                                       : "text-slate-600"
@@ -686,9 +686,9 @@ export default function AgentPricingPage() {
                                 Your Profit
                               </span>
                               <span
-                                className={`text-lg font-semibold ${
+                                className={`font-display text-lg font-semibold ${
                                   profit > 0
-                                    ? "text-green-600"
+                                    ? "text-action-600"
                                     : profit < 0
                                       ? "text-red-600"
                                       : "text-slate-600"

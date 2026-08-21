@@ -67,13 +67,13 @@ export default function RegisterPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Create an account</h1>
+        <h1 className="text-2xl font-display font-bold text-slate-900">Create an account</h1>
         <p className="text-slate-600 mt-2">
           Start selling data bundles and earning commissions today
         </p>
         {isSubAgentRegistration && agentName && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 text-blue-800">
+          <div className="mt-3 p-3 bg-brand-50 border border-brand-200 rounded-xl">
+            <div className="flex items-center gap-2 text-brand-800">
               <UserCheck className="w-4 h-4" />
               <p className="text-sm font-medium">
                 Referred by <span className="font-semibold">{agentName}</span>
@@ -90,12 +90,12 @@ export default function RegisterPage() {
             Full Name
           </label>
           <div className="relative group">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
               type="text"
               placeholder="John Doe"
               className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white hover:border-brand-200
                 ${errors.name ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("name")}
             />
@@ -111,12 +111,12 @@ export default function RegisterPage() {
             Email address
           </label>
           <div className="relative group">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
               type="email"
               placeholder="you@example.com"
               className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white hover:border-brand-200
                 ${errors.email ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("email")}
             />
@@ -132,12 +132,12 @@ export default function RegisterPage() {
             Phone Number
           </label>
           <div className="relative group">
-            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
               type="tel"
               placeholder="0241234567"
               className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white hover:border-brand-200
                 ${errors.phone ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("phone")}
             />
@@ -153,19 +153,19 @@ export default function RegisterPage() {
             Password
           </label>
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Create a strong password"
               className={`w-full h-12 pl-11 pr-12 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white hover:border-brand-200
                 ${errors.password ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -192,19 +192,19 @@ export default function RegisterPage() {
             Confirm Password
           </label>
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Re-enter your password"
               className={`w-full h-12 pl-11 pr-12 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white hover:border-brand-200
                 ${errors.confirmPassword ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("confirmPassword")}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors"
             >
               {showConfirmPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -230,16 +230,16 @@ export default function RegisterPage() {
           <input
             type="checkbox"
             id="terms"
-            className="w-4 h-4 mt-0.5 rounded border-slate-300 text-slate-900 focus:ring-slate-900 transition-colors cursor-pointer"
+            className="w-4 h-4 mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 transition-colors cursor-pointer"
             required
           />
           <label htmlFor="terms" className="text-sm text-slate-600">
             I agree to the{" "}
-            <Link to="/terms" className="font-semibold text-slate-900 hover:text-slate-700 transition-colors">
+            <Link to="/terms" className="font-semibold text-brand-600 hover:text-brand-700 transition-colors">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy" className="font-semibold text-slate-900 hover:text-slate-700 transition-colors">
+            <Link to="/privacy" className="font-semibold text-brand-600 hover:text-brand-700 transition-colors">
               Privacy Policy
             </Link>
           </label>
@@ -247,19 +247,19 @@ export default function RegisterPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0 mt-2"
+          className="w-full h-12 text-[15px] hover:-translate-y-0.5 mt-2"
           isLoading={registerMutation.isPending}
         >
           Create Account
         </Button>
       </form>
 
-      <div className="mt-8 text-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+      <div className="mt-8 text-center bg-brand-50/50 p-4 rounded-xl border border-brand-100">
         <p className="text-slate-600 text-sm">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="font-semibold text-slate-900 hover:text-slate-700 transition-colors"
+            className="font-semibold text-brand-600 hover:text-brand-700 transition-colors"
           >
             Sign in
           </Link>

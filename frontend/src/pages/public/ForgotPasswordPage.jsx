@@ -53,13 +53,13 @@ export default function ForgotPasswordPage() {
 
   if (step === "success") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/60">
+      <div className="flex items-center justify-center">
+        <div className="w-full max-w-md">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-action-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-action-600" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            <h1 className="text-2xl font-display font-bold text-slate-900 mb-2">
               Password Reset Successful
             </h1>
             <p className="text-slate-600 mb-6">
@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
             </p>
             <Button
               onClick={() => navigate("/login")}
-              className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0"
+              className="w-full h-12 text-[15px] hover:-translate-y-0.5"
             >
               Go to Login
             </Button>
@@ -79,18 +79,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/60">
+    <div className="flex items-center justify-center">
+      <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-brand-600 transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Login
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-display font-bold text-slate-900">
             {step === "request" ? "Forgot Password" : "Reset Password"}
           </h1>
           <p className="text-slate-600 mt-2">
@@ -110,13 +110,13 @@ export default function ForgotPasswordPage() {
                 Phone Number
               </label>
               <div className="relative group">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                 <input
                   type="tel"
                   placeholder="0241234567"
                   className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                    focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                    hover:border-slate-300
+                    focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                    hover:border-brand-200
                     ${requestForm.formState.errors.phone ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
                   {...requestForm.register("phone")}
                 />
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0"
+              className="w-full h-12 text-[15px] hover:-translate-y-0.5"
               isLoading={forgotPasswordMutation.isPending}
             >
               Send Reset Code
@@ -147,13 +147,13 @@ export default function ForgotPasswordPage() {
                 Phone Number
               </label>
               <div className="relative group">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                 <input
                   type="tel"
                   placeholder="0241234567"
                   className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                    focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                    hover:border-slate-300
+                    focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                    hover:border-brand-200
                     ${resetForm.formState.errors.phone ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
                   {...resetForm.register("phone")}
                 />
@@ -171,14 +171,14 @@ export default function ForgotPasswordPage() {
                 Reset Code
               </label>
               <div className="relative group">
-                <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                 <input
                   type="text"
                   placeholder="1234"
                   maxLength={4}
                   className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                    focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                    hover:border-slate-300
+                    focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                    hover:border-brand-200
                     ${resetForm.formState.errors.code ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
                   {...resetForm.register("code")}
                 />
@@ -196,13 +196,13 @@ export default function ForgotPasswordPage() {
                 New Password
               </label>
               <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                 <input
                   type="password"
                   placeholder="••••••••"
                   className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                    focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                    hover:border-slate-300
+                    focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                    hover:border-brand-200
                     ${resetForm.formState.errors.newPassword ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
                   {...resetForm.register("newPassword")}
                 />
@@ -220,13 +220,13 @@ export default function ForgotPasswordPage() {
                 Confirm New Password
               </label>
               <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                 <input
                   type="password"
                   placeholder="••••••••"
                   className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                    focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                    hover:border-slate-300
+                    focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                    hover:border-brand-200
                     ${resetForm.formState.errors.confirmPassword ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
                   {...resetForm.register("confirmPassword")}
                 />
@@ -250,7 +250,7 @@ export default function ForgotPasswordPage() {
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0"
+                className="flex-1 h-12 text-[15px] hover:-translate-y-0.5"
                 isLoading={resetPasswordMutation.isPending}
               >
                 Reset Password
@@ -264,7 +264,7 @@ export default function ForgotPasswordPage() {
             Remember your password?{" "}
             <Link
               to="/login"
-              className="font-medium text-slate-900 hover:text-slate-700"
+              className="font-medium text-brand-600 hover:text-brand-700"
             >
               Sign in
             </Link>

@@ -42,12 +42,12 @@ export default function AdminDashboardPage() {
   const getStatusIcon = (status) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-action-500" />;
       case "failed":
         return <XCircle className="w-4 h-4 text-red-500" />;
       case "pending":
       case "processing":
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       default:
         return <AlertCircle className="w-4 h-4 text-slate-400" />;
     }
@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">Admin Dashboard</h1>
         <p className="text-slate-600 mt-1">
           Overview of platform activity and metrics
         </p>
@@ -65,16 +65,16 @@ export default function AdminDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="p-5">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Users</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
+              <p className="font-display text-2xl font-bold text-slate-900 mt-1">
                 {statsLoading ? "..." : stats.totalUsers || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-brand-600" />
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500">
@@ -83,16 +83,16 @@ export default function AdminDashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Orders</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
+              <p className="font-display text-2xl font-bold text-slate-900 mt-1">
                 {statsLoading ? "..." : stats.totalOrders || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-action-600" />
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500">
@@ -101,16 +101,16 @@ export default function AdminDashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Revenue (This Month)</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
+              <p className="font-display text-2xl font-bold text-slate-900 mt-1">
                 {statsLoading ? "..." : formatCurrency(stats.thisMonthRevenue || 0)}
               </p>
             </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-brand-600" />
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500">
@@ -118,16 +118,16 @@ export default function AdminDashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Platform Profit (This Month)</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
+              <p className="font-display text-2xl font-bold text-slate-900 mt-1">
                 {statsLoading ? "..." : formatCurrency(stats.thisMonthProfit || 0)}
               </p>
             </div>
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-emerald-600" />
+            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-action-600" />
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500">
@@ -135,16 +135,16 @@ export default function AdminDashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Pending WDs</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
+              <p className="font-display text-2xl font-bold text-slate-900 mt-1">
                 {statsLoading ? "..." : stats.pendingWithdrawals || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
-              <ArrowDownToLine className="w-6 h-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
+              <ArrowDownToLine className="w-6 h-6 text-amber-600" />
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-500 truncate">
@@ -156,13 +156,13 @@ export default function AdminDashboardPage() {
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <Card>
+        <Card className="rounded-2xl">
           <div className="p-5 border-b border-slate-100">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900">Recent Orders</h2>
+              <h2 className="font-display font-semibold text-slate-900">Recent Orders</h2>
               <Link
                 to="/admin/orders"
-                className="text-sm text-slate-600 hover:text-slate-900"
+                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
               >
                 View all →
               </Link>
@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
               {recentOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="p-4 flex items-center justify-between hover:bg-slate-50"
+                  className="p-4 flex items-center justify-between hover:bg-violet-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(order.status)}
@@ -211,15 +211,15 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Pending Withdrawals */}
-        <Card>
+        <Card className="rounded-2xl">
           <div className="p-5 border-b border-slate-100">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900">
+              <h2 className="font-display font-semibold text-slate-900">
                 Pending Withdrawals
               </h2>
               <Link
                 to="/admin/withdrawals"
-                className="text-sm text-slate-600 hover:text-slate-900"
+                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
               >
                 View all →
               </Link>
@@ -240,10 +240,10 @@ export default function AdminDashboardPage() {
               {pendingWithdrawals.map((withdrawal) => (
                 <div
                   key={withdrawal.id}
-                  className="p-4 flex items-center justify-between hover:bg-slate-50"
+                  className="p-4 flex items-center justify-between hover:bg-violet-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Clock className="w-4 h-4 text-yellow-500" />
+                    <Clock className="w-4 h-4 text-amber-500" />
                     <div>
                       <p className="font-medium text-slate-900 text-sm">
                         {withdrawal.user?.name}
@@ -258,7 +258,7 @@ export default function AdminDashboardPage() {
                     <p className="font-medium text-slate-900 text-sm">
                       {formatCurrency(withdrawal.amount)}
                     </p>
-                    <p className="text-xs text-yellow-600">Pending</p>
+                    <p className="text-xs text-amber-600">Pending</p>
                   </div>
                 </div>
               ))}
@@ -269,26 +269,26 @@ export default function AdminDashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">
+        <Card className="p-4 text-center rounded-2xl">
+          <p className="font-display text-2xl font-bold text-action-600">
             {stats.successRate || 0}%
           </p>
           <p className="text-xs text-slate-500 mt-1">Success Rate</p>
         </Card>
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">
+        <Card className="p-4 text-center rounded-2xl">
+          <p className="font-display text-2xl font-bold text-slate-900">
             {stats.todayOrders || 0}
           </p>
           <p className="text-xs text-slate-500 mt-1">Orders Today</p>
         </Card>
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">
+        <Card className="p-4 text-center rounded-2xl">
+          <p className="font-display text-2xl font-bold text-brand-600">
             {stats.activeAgents || 0}
           </p>
           <p className="text-xs text-slate-500 mt-1">Active Agents</p>
         </Card>
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-red-600">
+        <Card className="p-4 text-center rounded-2xl">
+          <p className="font-display text-2xl font-bold text-red-600">
             {stats.failedOrders || 0}
           </p>
           <p className="text-xs text-slate-500 mt-1">Failed Orders</p>

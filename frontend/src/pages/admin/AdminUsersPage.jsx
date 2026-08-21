@@ -42,11 +42,11 @@ export default function AdminUsersPage() {
       setShowAdjustForm(false);
       setAdjustAmount("");
       setAdjustReason("");
-      
+
       if (res.data?.wallet) {
         setSelectedUser((prev) => ({ ...prev, walletBalance: res.data.wallet.balance }));
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
     onError: (err) => {
@@ -117,7 +117,7 @@ export default function AdminUsersPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Users</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Users</h1>
           <p className="text-slate-600 mt-1">
             Manage agents and sub-agents on the platform
           </p>
@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="p-4 rounded-2xl">
         <form
           onSubmit={handleSearch}
           className="flex flex-col sm:flex-row gap-4"
@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
               placeholder="Search by name, email, or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+              className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             />
           </div>
           <select
@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
               setRoleFilter(e.target.value);
               setPage(1);
             }}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Roles</option>
             <option value="agent">Agents</option>
@@ -161,7 +161,7 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
             <SkeletonTable rows={5} columns={7} />
@@ -175,7 +175,7 @@ export default function AdminUsersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+              <thead className="bg-violet-50/60 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Contact</th>
@@ -190,11 +190,11 @@ export default function AdminUsersPage() {
                 {users.map((user) => (
                   <tr
                     key={user.id}
-                    className="border-b border-slate-50 hover:bg-slate-50"
+                    className="border-b border-slate-50 hover:bg-violet-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-tr from-brand-600 to-violet-400 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium text-white">
                             {user.name?.charAt(0)?.toUpperCase()}
                           </span>
@@ -285,7 +285,7 @@ export default function AdminUsersPage() {
           <div className="space-y-6">
             {/* User Header */}
             <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
-              <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-indigo-400 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200">
+              <div className="w-16 h-16 bg-gradient-to-tr from-brand-600 to-violet-400 rounded-full flex items-center justify-center shadow-lg shadow-violet-200">
                 <span className="text-2xl font-bold text-white">
                   {selectedUser.name?.charAt(0)?.toUpperCase()}
                 </span>
@@ -324,16 +324,16 @@ export default function AdminUsersPage() {
               <div>
                 <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Activity & Earnings</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <div className="flex items-center gap-2 text-blue-600 text-sm font-medium mb-1">
+                  <div className="p-4 bg-violet-50 border border-violet-100 rounded-2xl">
+                    <div className="flex items-center gap-2 text-brand-600 text-sm font-medium mb-1">
                       <ShoppingCart className="w-4 h-4" />
                       Total Orders
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">
+                    <p className="font-display text-3xl font-bold text-slate-900">
                       {selectedUser.totalOrders || 0}
                     </p>
                   </div>
-                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
                         <Wallet className="w-4 h-4" />
@@ -349,7 +349,7 @@ export default function AdminUsersPage() {
                         <Settings2 className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">
+                    <p className="font-display text-3xl font-bold text-slate-900">
                       {formatCurrency(selectedUser.walletBalance || 0)}
                     </p>
                   </div>
@@ -366,7 +366,7 @@ export default function AdminUsersPage() {
                           <select
                             value={adjustAction}
                             onChange={(e) => setAdjustAction(e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                           >
                             <option value="add">Add Funds</option>
                             <option value="deduct">Deduct Funds</option>
@@ -431,7 +431,7 @@ export default function AdminUsersPage() {
                 <div className="p-4 bg-slate-900 rounded-xl text-white flex items-center justify-between">
                   <div>
                     <p className="text-xs text-slate-400 mb-1 uppercase font-semibold">Payment Link Code</p>
-                    <p className="font-mono text-lg font-medium text-indigo-400">
+                    <p className="font-mono text-lg font-medium text-violet-300">
                       {selectedUser.paymentLinkCode}
                     </p>
                   </div>

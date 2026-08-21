@@ -20,30 +20,30 @@ import toast from "react-hot-toast";
 const STATUS_CONFIG = {
   pending: {
     icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
+    color: "text-amber-600",
+    bgColor: "bg-amber-100",
     label: "Pending Payment",
     description: "Waiting for payment confirmation",
   },
   payment_confirmed: {
     icon: CheckCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-brand-600",
+    bgColor: "bg-brand-100",
     label: "Payment Confirmed",
     description: "Your payment has been received. Delivering data bundle...",
   },
   processing: {
     icon: Loader2,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
+    color: "text-fuchsia-600",
+    bgColor: "bg-fuchsia-100",
     label: "Processing",
     description: "Your data bundle is being delivered",
     animate: true,
   },
   completed: {
     icon: CheckCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+    color: "text-action-600",
+    bgColor: "bg-action-100",
     label: "Completed",
     description: "Your data bundle has been delivered successfully!",
   },
@@ -195,9 +195,9 @@ export default function PaymentCallbackPage() {
   // Processing/Loading state
   if (isProcessing || isLoading || !orderId) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-mesh-navy flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-slate-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-4" />
           <p className="text-slate-600">
             {isProcessing
               ? "Processing your payment..."
@@ -216,11 +216,11 @@ export default function PaymentCallbackPage() {
   if (showError) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center">
+        <Card className="max-w-md w-full p-8 rounded-3xl text-center shadow-lg shadow-red-500/5 border-red-100">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <h1 className="text-xl font-bold text-slate-900 mb-2">
+          <h1 className="text-xl font-display font-bold text-slate-900 mb-2">
             {processError ? "Payment Processing Error" : "Order Not Found"}
           </h1>
           <p className="text-slate-600 mb-6">
@@ -248,7 +248,7 @@ export default function PaymentCallbackPage() {
       {/* Header */}
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <Link to="/" className="text-xl font-bold text-slate-900">
+          <Link to="/" className="text-xl font-display font-bold text-slate-900">
             DataGuy
           </Link>
         </div>
@@ -256,7 +256,15 @@ export default function PaymentCallbackPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-12">
         {/* Status Card */}
-        <Card className="p-8 text-center mb-6">
+        <Card
+          className={`p-8 rounded-3xl text-center mb-6 ${
+            order?.status === "completed"
+              ? "border-action-200 shadow-lg shadow-action-500/10"
+              : order?.status === "failed"
+              ? "border-red-200 shadow-lg shadow-red-500/10"
+              : ""
+          }`}
+        >
           <div
             className={`w-20 h-20 ${status.bgColor} rounded-full flex items-center justify-center mx-auto mb-6`}
           >
@@ -265,18 +273,18 @@ export default function PaymentCallbackPage() {
             />
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-bold text-slate-900 mb-2">
             {status.label}
           </h1>
           <p className="text-slate-600 mb-6">{status.description}</p>
 
           {/* Order Details */}
-          <div className="bg-slate-50 rounded-xl p-6 text-left">
+          <div className="bg-slate-50 rounded-2xl p-6 text-left">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-slate-500">Order ID</span>
               <button
                 onClick={copyOrderId}
-                className="flex items-center gap-2 text-sm font-mono text-slate-900 hover:text-slate-600"
+                className="flex items-center gap-2 text-sm font-mono text-slate-900 hover:text-brand-600"
               >
                 {order?.id?.slice(0, 12)}...
                 <Copy className="w-3 h-3" />
@@ -285,8 +293,8 @@ export default function PaymentCallbackPage() {
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                  <Wifi className="w-5 h-5 text-slate-600" />
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <Wifi className="w-5 h-5 text-brand-600" />
                 </div>
                 <div>
                   <p className="font-medium text-slate-900">
@@ -296,14 +304,14 @@ export default function PaymentCallbackPage() {
                     {order?.bundle?.network} • {order?.bundle?.validity}
                   </p>
                 </div>
-                <Badge className="ml-auto">
+                <Badge variant="primary" className="ml-auto">
                   {formatCurrency(order?.pricePaid)}
                 </Badge>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-slate-600" />
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <Phone className="w-5 h-5 text-brand-600" />
                 </div>
                 <div>
                   <p className="font-medium text-slate-900">
@@ -339,18 +347,18 @@ export default function PaymentCallbackPage() {
 
         {/* Help Text */}
         {order?.status === "pending" && (
-          <Card className="mt-6 p-4 bg-yellow-50 border-yellow-200">
+          <Card className="mt-6 p-4 rounded-2xl bg-amber-50 border-amber-200">
             <div className="flex items-center gap-3 mb-2">
               {isPolling && (
-                <Loader2 className="w-4 h-4 text-yellow-600 animate-spin" />
+                <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
               )}
-              <p className="text-sm font-medium text-yellow-800">
+              <p className="text-sm font-medium text-amber-800">
                 {isPolling
                   ? "Checking payment status..."
                   : "Waiting for payment confirmation"}
               </p>
             </div>
-            <p className="text-sm text-yellow-700">
+            <p className="text-sm text-amber-700">
               If you've completed the payment, please wait a moment. We're
               verifying your payment with Paystack. This usually takes a few
               seconds.
@@ -359,8 +367,8 @@ export default function PaymentCallbackPage() {
         )}
 
         {order?.status === "completed" && (
-          <Card className="mt-6 p-4 bg-green-50 border-green-200">
-            <p className="text-sm text-green-800 text-center">
+          <Card className="mt-6 p-4 rounded-2xl bg-action-50 border-action-200">
+            <p className="text-sm text-action-800 text-center">
               🎉 Your data bundle has been delivered! Check your phone for
               confirmation.
             </p>
@@ -368,7 +376,7 @@ export default function PaymentCallbackPage() {
         )}
 
         {order?.status === "failed" && (
-          <Card className="mt-6 p-4 bg-red-50 border-red-200">
+          <Card className="mt-6 p-4 rounded-2xl bg-red-50 border-red-200">
             <p className="text-sm text-red-800 text-center">
               If you were charged, please contact support with your Order ID for
               a refund.

@@ -63,12 +63,12 @@ export default function PushNotificationPrompt({
       size="sm"
     >
       <div className="space-y-5 text-center p-2">
-        <div className="mx-auto w-14 h-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 animate-bounce">
+        <div className="mx-auto w-14 h-14 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center text-brand-600 animate-bounce">
           <Bell className="w-7 h-7" />
         </div>
-        
+
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+          <h3 className="font-display text-lg font-bold text-slate-900">{title}</h3>
           <p className="text-sm text-slate-500 leading-relaxed">
             {description}
           </p>
@@ -93,7 +93,7 @@ export default function PushNotificationPrompt({
           <Button
             variant="primary"
             onClick={handleSubscribe}
-            className="w-full sm:flex-1 order-1 sm:order-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="w-full sm:flex-1 order-1 sm:order-2"
             disabled={isPending}
           >
             {isPending ? "Enabling..." : "Enable Notifications"}

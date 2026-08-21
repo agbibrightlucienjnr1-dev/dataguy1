@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Users, 
-  MousePointerClick, 
-  Smartphone, 
-  Activity, 
-  ArrowLeft 
+import {
+  Users,
+  MousePointerClick,
+  Smartphone,
+  Activity,
+  ArrowLeft
 } from "lucide-react";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   Legend,
   PieChart,
@@ -44,7 +44,7 @@ export const AdminAnalyticsPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -54,7 +54,7 @@ export const AdminAnalyticsPage = () => {
       <div className="bg-red-50 text-red-600 p-6 rounded-xl border border-red-100 flex flex-col items-center">
         <Activity className="w-10 h-10 mb-4 opacity-50" />
         <p className="font-medium text-lg">{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
         >
@@ -71,12 +71,12 @@ export const AdminAnalyticsPage = () => {
       <div className="flex items-center gap-4">
         <Link
           to="/admin"
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-violet-50 rounded-xl transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-500" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Platform Analytics</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Platform Analytics</h1>
           <p className="text-slate-500">Live traffic and conversion metrics perfectly tracked via internal DB engine.</p>
         </div>
       </div>
@@ -85,33 +85,33 @@ export const AdminAnalyticsPage = () => {
         <MetricCard
           title="Total Page Views (30d)"
           value={stats?.totalPageViews || 0}
-          icon={<MousePointerClick className="w-6 h-6 text-emerald-600" />}
+          icon={<MousePointerClick className="w-6 h-6 text-action-600" />}
           bgColor="bg-emerald-50"
         />
         <MetricCard
           title="Unique Visitors (30d)"
           value={stats?.uniqueVisitors || 0}
-          icon={<Users className="w-6 h-6 text-blue-600" />}
-          bgColor="bg-blue-50"
+          icon={<Users className="w-6 h-6 text-brand-600" />}
+          bgColor="bg-violet-50"
         />
         <MetricCard
           title="Total USSD Dials (30d)"
           value={stats?.ussdDials || 0}
-          icon={<Smartphone className="w-6 h-6 text-purple-600" />}
-          bgColor="bg-purple-50"
+          icon={<Smartphone className="w-6 h-6 text-fuchsia-600" />}
+          bgColor="bg-fuchsia-50"
         />
         <MetricCard
           title="Conversion Rate"
           value={`${stats?.conversionRate || "0.00"}%`}
-          icon={<Activity className="w-6 h-6 text-orange-600" />}
-          bgColor="bg-orange-50"
+          icon={<Activity className="w-6 h-6 text-amber-600" />}
+          bgColor="bg-amber-50"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 col-span-1 lg:col-span-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 col-span-1 lg:col-span-2">
           <div className="mb-6">
-             <h3 className="text-lg font-semibold text-slate-900">Traffic Trends (Last 7 Days)</h3>
+             <h3 className="font-display text-lg font-semibold text-slate-900">Traffic Trends (Last 7 Days)</h3>
              <p className="text-sm text-slate-500">Compare web visits against offline USSD dial usage.</p>
           </div>
           <div className="h-[400px]">
@@ -120,21 +120,21 @@ export const AdminAnalyticsPage = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="top" height={36}/>
-                <Line type="monotone" name="Web Views" dataKey="views" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
-                <Line type="monotone" name="Unique Web Users" dataKey="unique" stroke="#10B981" strokeWidth={3} dot={{ r: 4 }} />
-                <Line type="monotone" name="USSD Dials" dataKey="ussd" stroke="#8B5CF6" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" name="Web Views" dataKey="views" stroke="#7C3AED" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                <Line type="monotone" name="Unique Web Users" dataKey="unique" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" name="USSD Dials" dataKey="ussd" stroke="#D97706" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-slate-900">Device Analytics</h3>
+            <h3 className="font-display text-lg font-semibold text-slate-900">Device Analytics</h3>
             <p className="text-sm text-slate-500">Traffic breakdown by hardware.</p>
           </div>
           <div className="flex-1 min-h-[300px]">
@@ -150,10 +150,10 @@ export const AdminAnalyticsPage = () => {
                     dataKey="value"
                   >
                     {(stats?.deviceBreakdown || []).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B"][index % 4]} />
+                      <Cell key={`cell-${index}`} fill={["#7C3AED", "#059669", "#D97706", "#DC2626"][index % 4]} />
                     ))}
                   </Pie>
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value) => [`${value} Uses`, 'Impressions']}
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
@@ -166,26 +166,26 @@ export const AdminAnalyticsPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Agents */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-4">
-             <h3 className="text-lg font-semibold text-slate-900">Top Performing Agents</h3>
+             <h3 className="font-display text-lg font-semibold text-slate-900">Top Performing Agents</h3>
              <p className="text-sm text-slate-500">Highest traffic drivers across 30 days.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-sm">
-                  <th className="pb-3 font-medium">Agent</th>
-                  <th className="pb-3 font-medium">Code</th>
-                  <th className="pb-3 font-medium text-right">Traffic Generated</th>
+                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-violet-50/40">
+                  <th className="pb-3 pt-2 px-2 font-medium">Agent</th>
+                  <th className="pb-3 pt-2 px-2 font-medium">Code</th>
+                  <th className="pb-3 pt-2 px-2 font-medium text-right">Traffic Generated</th>
                 </tr>
               </thead>
               <tbody>
                 {(stats?.topAgents || []).map((agent, i) => (
-                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                    <td className="py-4 text-sm font-medium text-slate-900">{agent.name}</td>
-                    <td className="py-4 text-sm font-mono text-slate-500">{agent.code}</td>
-                    <td className="py-4 text-sm text-right font-bold text-indigo-600">{agent.views.toLocaleString()}</td>
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-violet-50/50 transition-colors">
+                    <td className="py-4 px-2 text-sm font-medium text-slate-900">{agent.name}</td>
+                    <td className="py-4 px-2 text-sm font-mono text-slate-500">{agent.code}</td>
+                    <td className="py-4 px-2 text-sm text-right font-bold text-brand-600">{agent.views.toLocaleString()}</td>
                   </tr>
                 ))}
                 {(!stats?.topAgents || stats.topAgents.length === 0) && (
@@ -199,24 +199,24 @@ export const AdminAnalyticsPage = () => {
         </div>
 
         {/* Top Paths */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-4">
-             <h3 className="text-lg font-semibold text-slate-900">Popular Paths</h3>
+             <h3 className="font-display text-lg font-semibold text-slate-900">Popular Paths</h3>
              <p className="text-sm text-slate-500">Most visited URLs & Entry Points.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-sm">
-                  <th className="pb-3 font-medium">URL Source</th>
-                  <th className="pb-3 font-medium text-right">Footprints</th>
+                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-violet-50/40">
+                  <th className="pb-3 pt-2 px-2 font-medium">URL Source</th>
+                  <th className="pb-3 pt-2 px-2 font-medium text-right">Footprints</th>
                 </tr>
               </thead>
               <tbody>
                 {(stats?.topPaths || []).map((path, i) => (
-                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                    <td className="py-4 text-sm font-medium font-mono text-slate-700 truncate max-w-xs">{path.path}</td>
-                    <td className="py-4 text-sm text-right font-bold text-emerald-600">{path.views.toLocaleString()}</td>
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-violet-50/50 transition-colors">
+                    <td className="py-4 px-2 text-sm font-medium font-mono text-slate-700 truncate max-w-xs">{path.path}</td>
+                    <td className="py-4 px-2 text-sm text-right font-bold text-action-600">{path.views.toLocaleString()}</td>
                   </tr>
                 ))}
                 {(!stats?.topPaths || stats.topPaths.length === 0) && (
@@ -234,12 +234,12 @@ export const AdminAnalyticsPage = () => {
 };
 
 const MetricCard = ({ title, value, icon, bgColor }) => (
-  <div className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:shadow-md transition-shadow">
     <div className="flex items-center gap-4">
-      <div className={`p-4 rounded-xl ${bgColor}`}>{icon}</div>
+      <div className={`p-4 rounded-2xl ${bgColor}`}>{icon}</div>
       <div>
         <p className="text-sm font-medium text-slate-500">{title}</p>
-        <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+        <h3 className="font-display text-2xl font-bold text-slate-900">{value}</h3>
       </div>
     </div>
   </div>

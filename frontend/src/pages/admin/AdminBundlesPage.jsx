@@ -279,7 +279,7 @@ export default function AdminBundlesPage() {
           <select
             value={networkFilter}
             onChange={(e) => setNetworkFilter(e.target.value)}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Networks</option>
             {NETWORKS.map((network) => (
@@ -363,7 +363,7 @@ export default function AdminBundlesPage() {
                             {bundle.isActive ? (
                               <Badge variant="success">Active</Badge>
                             ) : (
-                              <Badge variant="secondary">Inactive</Badge>
+                              <Badge variant="danger">Inactive</Badge>
                             )}
                           </div>
                         </div>
@@ -384,13 +384,13 @@ export default function AdminBundlesPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Admin Price:</span>
-                            <span className="font-medium text-green-600">
+                            <span className="font-medium text-action-600">
                               {formatCurrency(bundle.adminPrice)}
                             </span>
                           </div>
                           <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
                             <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
-                            <span className="font-bold text-indigo-600 text-lg">
+                            <span className="font-bold text-action-600 text-lg">
                               {formatCurrency(
                                 parseFloat(bundle.adminPrice || 0) -
                                   parseFloat(bundle.hubnetCost || 0),
@@ -474,7 +474,7 @@ export default function AdminBundlesPage() {
                           {bundle.isActive ? (
                             <Badge variant="success">Active</Badge>
                           ) : (
-                            <Badge variant="secondary">Inactive</Badge>
+                            <Badge variant="danger">Inactive</Badge>
                           )}
                         </div>
                       </div>
@@ -489,11 +489,11 @@ export default function AdminBundlesPage() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-500">Admin Price:</span>
-                          <span className="font-medium text-green-600">{formatCurrency(bundle.adminPrice)}</span>
+                          <span className="font-medium text-action-600">{formatCurrency(bundle.adminPrice)}</span>
                         </div>
                         <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
                           <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
-                          <span className="font-bold text-indigo-600 text-lg">
+                          <span className="font-bold text-action-600 text-lg">
                             {formatCurrency(parseFloat(bundle.adminPrice || 0) - parseFloat(bundle.hubnetCost || 0))}
                           </span>
                         </div>
@@ -547,7 +547,7 @@ export default function AdminBundlesPage() {
             </label>
             <select
               {...register("network")}
-              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+              className="w-full h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">Select Network</option>
               {NETWORKS.map((network) => (
@@ -641,7 +641,7 @@ export default function AdminBundlesPage() {
       >
         {selectedBundle && (
           <form onSubmit={handleEditSubmit(onSubmitEdit)} className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-lg mb-4">
+            <div className="p-4 bg-slate-50 rounded-xl mb-4">
               <div className="flex items-center gap-2 mb-2">
                 {getNetworkBadge(selectedBundle.network)}
                 <span className="font-semibold text-lg">
@@ -715,14 +715,14 @@ export default function AdminBundlesPage() {
       >
         {selectedBundle && (
           <div className="space-y-4">
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-800">
                 Are you sure you want to delete this bundle? This action cannot
                 be undone.
               </p>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <div className="flex items-center gap-2">
                 {getNetworkBadge(selectedBundle.network)}
                 <span className="font-semibold">{selectedBundle.volume}</span>

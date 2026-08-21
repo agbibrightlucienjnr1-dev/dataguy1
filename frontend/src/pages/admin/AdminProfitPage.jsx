@@ -50,7 +50,7 @@ const MONTHS = [
   { value: 12, label: "December" }
 ];
 
-const PIE_COLORS = ["#6366f1", "#f43f5e", "#fbbf24", "#ec4899", "#8b5cf6", "#10b981"];
+const PIE_COLORS = ["#7c3aed", "#fb7185", "#fbbf24", "#f472b6", "#a78bfa", "#059669"];
 
 export default function AdminProfitPage() {
   const queryClient = useQueryClient();
@@ -201,7 +201,7 @@ export default function AdminProfitPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <TrendingUp className="w-7 h-7 text-indigo-600 animate-pulse" />
+            <TrendingUp className="w-7 h-7 text-brand-600 animate-pulse" />
             System Profit Analysis
           </h1>
           <p className="text-slate-600 mt-1">
@@ -241,7 +241,7 @@ export default function AdminProfitPage() {
 
       {isLoading ? (
         <div className="flex flex-col justify-center items-center py-24 gap-3">
-          <Spinner className="w-10 h-10 text-indigo-600" />
+          <Spinner className="w-10 h-10 text-brand-600" />
           <span className="text-sm font-medium text-slate-500">Calculating system profit metrics...</span>
         </div>
       ) : (
@@ -251,11 +251,11 @@ export default function AdminProfitPage() {
             
             {/* Gross Collected */}
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-bl-full flex items-start justify-end p-4">
-                <Layers className="w-5 h-5 text-indigo-500" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-brand-50/60 rounded-bl-full flex items-start justify-end p-4">
+                <Layers className="w-5 h-5 text-brand-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Collections</div>
-              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+              <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
                 {formatCurrency(overview.totalGrossCollected)}
               </div>
               <p className="text-xs text-slate-500 mt-3 flex items-center gap-1 font-medium">
@@ -270,7 +270,7 @@ export default function AdminProfitPage() {
                 <CreditCard className="w-5 h-5 text-rose-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gateway Deductions</div>
-              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+              <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
                 {formatCurrency(overview.totalGatewayFees)}
               </div>
               <p className="text-xs text-rose-600 mt-3 flex items-center gap-1 font-medium">
@@ -285,7 +285,7 @@ export default function AdminProfitPage() {
                 <Wallet className="w-5 h-5 text-emerald-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Net Settlement</div>
-              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+              <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
                 {formatCurrency(overview.totalNetSettlement)}
               </div>
               <p className="text-xs text-emerald-600 mt-3 flex items-center gap-1 font-medium">
@@ -300,7 +300,7 @@ export default function AdminProfitPage() {
                 <Layers className="w-5 h-5 text-slate-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Wholesale Costs (Supplier)</div>
-              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+              <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
                 {formatCurrency(overview.totalWholesaleCosts)}
               </div>
               <p className="text-xs text-slate-500 mt-3 flex items-center gap-1 font-medium">
@@ -315,7 +315,7 @@ export default function AdminProfitPage() {
                 <MinusCircle className="w-5 h-5 text-amber-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Platform Expenses</div>
-              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+              <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
                 {formatCurrency(overview.totalExpenses)}
               </div>
               <p className="text-xs text-amber-600 mt-3 flex items-center gap-1 font-medium">
@@ -330,7 +330,7 @@ export default function AdminProfitPage() {
                 <TrendingDown className="w-5 h-5 text-pink-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Withdrawal Fees</div>
-              <div className="text-3xl font-extrabold text-slate-900 mt-2">
+              <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
                 {formatCurrency(overview.totalWithdrawalFees)}
               </div>
               <p className="text-xs text-pink-600 mt-3 flex items-center gap-1 font-medium">
@@ -342,7 +342,7 @@ export default function AdminProfitPage() {
             {/* Net Platform Profit (This Month) */}
             <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-1 lg:col-span-1 ${
               isProfitPositive 
-                ? "bg-gradient-to-br from-indigo-600 to-indigo-800 shadow-indigo-200/50" 
+                ? "bg-gradient-to-br from-action-600 to-action-800 shadow-action-200/50"
                 : "bg-gradient-to-br from-red-600 to-red-800 shadow-red-200/50"
             }`}>
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full flex items-start justify-end p-4">
@@ -353,7 +353,7 @@ export default function AdminProfitPage() {
                 )}
               </div>
               <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Net Platform Profit (This Month)</div>
-              <div className="text-3xl font-black mt-2">
+              <div className="text-3xl font-display font-black mt-2">
                 {formatCurrency(overview.totalNetProfit)}
               </div>
               <p className="text-[10px] opacity-75 mt-1 font-mono">
@@ -378,7 +378,7 @@ export default function AdminProfitPage() {
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Overall Net Profit (All Months)</div>
-              <div className="text-3xl font-black mt-2">
+              <div className="text-3xl font-display font-black mt-2">
                 {formatCurrency(overall.totalNetProfit)}
               </div>
               <p className="text-[10px] opacity-75 mt-1 font-mono">
@@ -400,7 +400,7 @@ export default function AdminProfitPage() {
             {/* Cost Breakdown Donut Chart */}
             <Card className="p-6">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                 Cost & Profit Allocations
               </h3>
               
@@ -442,7 +442,7 @@ export default function AdminProfitPage() {
             {/* Network Performance Bar Chart */}
             <Card className="p-6">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                 Operator Revenue vs Profit
               </h3>
               
@@ -459,7 +459,7 @@ export default function AdminProfitPage() {
                       <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                       <ChartTooltip formatter={(value) => formatCurrency(value)} />
                       <Legend wrapperStyle={{ fontSize: "12px" }} />
-                      <Bar dataKey="Revenue" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="Profit" fill="#10b981" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -471,14 +471,14 @@ export default function AdminProfitPage() {
           {/* Network Performance Breakdown Table */}
           <Card className="p-6 overflow-hidden">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
               Operator Margin Ledger
             </h3>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                  <tr className="border-b border-slate-200 bg-violet-50/40 text-xs font-bold text-slate-500 uppercase">
                     <th className="pb-3 font-semibold">Operator</th>
                     <th className="pb-3 font-semibold text-right">Orders</th>
                     <th className="pb-3 font-semibold text-right">Gross Collected</th>
@@ -497,7 +497,7 @@ export default function AdminProfitPage() {
                     </tr>
                   ) : (
                     networkBreakdown.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <tr key={idx} className="hover:bg-violet-50/50 transition-colors">
                         <td className="py-3.5 font-bold text-slate-900">{item.network}</td>
                         <td className="py-3.5 text-right font-medium text-slate-700">{item.orders}</td>
                         <td className="py-3.5 text-right font-medium text-slate-900">{formatCurrency(item.grossCollected)}</td>
@@ -505,7 +505,7 @@ export default function AdminProfitPage() {
                         <td className="py-3.5 text-right font-medium text-amber-600">-{formatCurrency(item.commission)}</td>
                         <td className="py-3.5 text-right font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</td>
                         <td className={`py-3.5 text-right font-bold ${
-                          parseFloat(item.netProfit) >= 0 ? "text-indigo-600" : "text-red-600"
+                          parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"
                         }`}>
                           {formatCurrency(item.netProfit)}
                         </td>
@@ -531,7 +531,7 @@ export default function AdminProfitPage() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Category</label>
                   <select
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                     value={expenseForm.category}
                     onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
                   >
@@ -549,7 +549,7 @@ export default function AdminProfitPage() {
                   <input
                     type="number"
                     step="0.01"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                     placeholder="0.00"
                     value={expenseForm.amount}
                     onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
@@ -560,7 +560,7 @@ export default function AdminProfitPage() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Description</label>
                   <textarea
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                     rows="2"
                     placeholder="e.g. 5000 SMS top-up credit..."
                     value={expenseForm.description}
@@ -572,7 +572,7 @@ export default function AdminProfitPage() {
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Expense Date</label>
                   <input
                     type="date"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                     value={expenseForm.date}
                     onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
                     required
@@ -600,14 +600,14 @@ export default function AdminProfitPage() {
             <Card className="p-6 lg:col-span-2 overflow-hidden flex flex-col justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                   Operational Expenses Log
                 </h3>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                      <tr className="border-b border-slate-200 bg-violet-50/40 text-xs font-bold text-slate-500 uppercase">
                         <th className="pb-2 font-semibold">Date</th>
                         <th className="pb-2 font-semibold">Category</th>
                         <th className="pb-2 font-semibold">Description</th>
@@ -624,7 +624,7 @@ export default function AdminProfitPage() {
                         </tr>
                       ) : (
                         expensesList.map((exp) => (
-                          <tr key={exp.id} className="hover:bg-slate-50 transition-colors">
+                          <tr key={exp.id} className="hover:bg-violet-50/50 transition-colors">
                             <td className="py-2.5 text-xs text-slate-500">
                               {new Date(exp.date).toLocaleDateString()}
                             </td>
@@ -667,7 +667,7 @@ export default function AdminProfitPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                   Transaction-by-Transaction Profit Ledger
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
@@ -681,7 +681,7 @@ export default function AdminProfitPage() {
                 <input
                   type="text"
                   placeholder="Search phone, operator..."
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50"
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-slate-50"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -694,7 +694,7 @@ export default function AdminProfitPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                  <tr className="border-b border-slate-200 bg-violet-50/40 text-xs font-bold text-slate-500 uppercase">
                     <th className="pb-3 font-semibold">Date/Time</th>
                     <th className="pb-3 font-semibold">Recipient</th>
                     <th className="pb-3 font-semibold">Operator</th>
@@ -716,7 +716,7 @@ export default function AdminProfitPage() {
                     </tr>
                   ) : (
                     paginatedLedger.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50 transition-colors text-xs">
+                      <tr key={item.id} className="hover:bg-violet-50/50 transition-colors text-xs">
                         <td className="py-3 text-slate-500 whitespace-nowrap">
                           {new Date(item.createdAt).toLocaleString()}
                         </td>
@@ -733,7 +733,7 @@ export default function AdminProfitPage() {
                         <td className="py-3 text-right font-medium text-amber-600">-{formatCurrency(item.commission)}</td>
                         <td className="py-3 text-right font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</td>
                         <td className={`py-3 text-right font-bold ${
-                          parseFloat(item.netProfit) >= 0 ? "text-indigo-600" : "text-red-600"
+                          parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"
                         }`}>
                           {formatCurrency(item.netProfit)}
                         </td>
@@ -764,7 +764,7 @@ export default function AdminProfitPage() {
                   {Array.from({ length: totalPages }).map((_, i) => (
                     <Button
                       key={i}
-                      variant={currentPage === i + 1 ? "default" : "outline"}
+                      variant={currentPage === i + 1 ? "primary" : "outline"}
                       size="sm"
                       onClick={() => setCurrentPage(i + 1)}
                     >

@@ -161,15 +161,15 @@ export default function AdminOrdersPage() {
   const getStatusIcon = (status) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-action-500" />;
       case "failed":
         return <XCircle className="w-4 h-4 text-red-500" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       case "payment_confirmed":
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        return <CheckCircle className="w-4 h-4 text-action-500" />;
       case "processing":
-        return <AlertCircle className="w-4 h-4 text-blue-500" />;
+        return <AlertCircle className="w-4 h-4 text-brand-500" />;
       default:
         return <Clock className="w-4 h-4 text-slate-400" />;
     }
@@ -256,7 +256,7 @@ export default function AdminOrdersPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -271,7 +271,7 @@ export default function AdminOrdersPage() {
               setNetworkFilter(e.target.value);
               setPage(1);
             }}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Networks</option>
             {NETWORKS.map((network) => (
@@ -298,7 +298,7 @@ export default function AdminOrdersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+              <thead className="bg-violet-50/40 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Order</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Bundle</th>
@@ -314,7 +314,7 @@ export default function AdminOrdersPage() {
                 {orders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-slate-50 hover:bg-slate-50"
+                    className="border-b border-slate-50 hover:bg-violet-50/50"
                   >
                     <td className="px-6 py-4">
                       <p className="font-mono text-sm text-slate-900">
@@ -465,7 +465,7 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Bundle Info */}
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <p className="text-sm text-slate-500 mb-2">Bundle</p>
               <div className="flex items-center gap-2">
                 {getNetworkBadge(selectedOrder.bundle?.network)}
@@ -526,7 +526,7 @@ export default function AdminOrdersPage() {
             {/* Error Message */}
             {selectedOrder.status === "failed" &&
               selectedOrder.errorMessage && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
                   <p className="text-sm font-medium text-red-800">
                     Error Message
                   </p>
@@ -544,7 +544,7 @@ export default function AdminOrdersPage() {
                 </p>
                 <Button
                   variant="outline"
-                  className="w-full border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                  className="w-full border-brand-300 text-brand-700 hover:bg-brand-50"
                   onClick={() => forceVerifyMutation.mutate(selectedOrder.id)}
                   disabled={forceVerifyMutation.isPending}
                 >
@@ -627,7 +627,7 @@ export default function AdminOrdersPage() {
                 <select
                   value={statusUpdateValue}
                   onChange={(e) => setStatusUpdateValue(e.target.value)}
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                  className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white"
                 >
                   <option value="pending">Pending</option>
                   <option value="payment_confirmed">Payment Confirmed</option>

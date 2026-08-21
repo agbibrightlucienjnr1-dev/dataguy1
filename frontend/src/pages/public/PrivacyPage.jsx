@@ -8,18 +8,18 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Subtle Background Blobs */}
-      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-35 pointer-events-none"></div>
-      <div className="absolute top-1/3 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35 pointer-events-none"></div>
+      <div className="absolute top-0 -left-64 w-96 h-96 bg-brand-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none"></div>
+      <div className="absolute top-1/3 -right-64 w-96 h-96 bg-action-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none"></div>
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-md shadow-brand-600/20 transform group-hover:scale-105 transition-all">
                 <Wifi className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-700">
+              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-fuchsia-600">
                 DataGuy
               </span>
             </Link>
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
                   navigate("/");
                 }
               }}
-              className="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-slate-100 hover:bg-slate-200 transition-colors px-3 py-1.5 rounded-full border border-slate-200"
+              className="text-sm font-semibold text-slate-600 hover:text-brand-700 flex items-center gap-1 bg-slate-100 hover:bg-brand-50 transition-colors px-3 py-1.5 rounded-full border border-slate-200"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -43,10 +43,10 @@ export default function PrivacyPage() {
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 py-12 relative z-10">
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-slate-900/10">
+          <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-fuchsia-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/20">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-display font-extrabold text-slate-900 tracking-tight">
             Privacy Policy
           </h1>
           <p className="text-slate-600 mt-2">
@@ -54,10 +54,10 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        <Card className="p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 bg-white/90 backdrop-blur-md">
+        <Card className="p-8 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 bg-white/90 backdrop-blur-md">
           <div className="space-y-8 text-slate-700 leading-relaxed">
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-display font-bold text-slate-900">
                 1. Information We Collect
               </h2>
               <p>
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-display font-bold text-slate-900">
                 2. How We Use Your Information
               </h2>
               <p>
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-display font-bold text-slate-900">
                 3. Information Sharing and Disclosure
               </h2>
               <p>
@@ -112,7 +112,7 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-display font-bold text-slate-900">
                 4. Data Security
               </h2>
               <p>
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-display font-bold text-slate-900">
                 5. Contact and Inquiries
               </h2>
               <p>

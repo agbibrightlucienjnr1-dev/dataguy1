@@ -52,7 +52,7 @@ export default function AdminSmsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
           SMS Notifications
         </h1>
         <p className="text-slate-500">
@@ -62,7 +62,7 @@ export default function AdminSmsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <Card className="p-6">
+          <Card className="p-6 rounded-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Target Selection */}
               <div>
@@ -87,11 +87,11 @@ export default function AdminSmsPage() {
                         onClick={() => setTarget(option.id)}
                         className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
                           isActive
-                            ? "border-blue-600 bg-blue-50 text-blue-700"
-                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50 text-slate-600"
+                            ? "border-brand-600 bg-violet-50 text-brand-700"
+                            : "border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50 text-slate-600"
                         }`}
                       >
-                        <Icon className={`w-6 h-6 mb-2 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                        <Icon className={`w-6 h-6 mb-2 ${isActive ? "text-brand-600" : "text-slate-400"}`} />
                         <span className="text-xs font-semibold text-center">{option.label}</span>
                       </button>
                     );
@@ -122,7 +122,7 @@ export default function AdminSmsPage() {
                     <select
                       value={orderStatus}
                       onChange={(e) => setOrderStatus(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 p-2.5 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                      className="w-full rounded-xl border border-slate-300 p-2.5 shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 sm:text-sm"
                       required
                     >
                       <option value="" disabled>Select a status</option>
@@ -159,13 +159,13 @@ export default function AdminSmsPage() {
                   <label htmlFor="message" className="block text-sm font-medium text-slate-700">
                     Message Content
                   </label>
-                  <span className={`text-xs ${message.length > 160 ? "text-orange-500 font-medium" : "text-slate-400"}`}>
+                  <span className={`text-xs ${message.length > 160 ? "text-amber-600 font-medium" : "text-slate-400"}`}>
                     {message.length} chars {message.length > 160 && "(Might be split into multiple SMS)"}
                   </span>
                 </div>
                 <textarea
                   id="message"
-                  className="w-full h-32 rounded-lg border border-slate-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm transition-shadow resize-none"
+                  className="w-full h-32 rounded-xl border border-slate-300 p-3 shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 sm:text-sm transition-shadow resize-none"
                   placeholder="Type your message here..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -199,9 +199,9 @@ export default function AdminSmsPage() {
 
         {/* Info Box */}
         <div>
-          <Card className="p-6 bg-slate-50 border-none shadow-inner">
-            <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-slate-500" />
+          <Card className="p-6 bg-violet-50/60 border-none shadow-inner rounded-2xl">
+            <h3 className="font-display font-semibold text-slate-900 mb-3 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-brand-600" />
               SMS Info
             </h3>
             <ul className="text-sm text-slate-600 space-y-3">

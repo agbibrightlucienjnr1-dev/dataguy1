@@ -80,7 +80,7 @@ export default function AdminCustomersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Customers</h1>
           <p className="text-slate-600 mt-1">
             View all customers and order activity across the platform.
           </p>
@@ -98,14 +98,14 @@ export default function AdminCustomersPage() {
           />
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition shadow-sm whitespace-nowrap"
+            className="flex items-center gap-2 rounded-xl bg-action-600 text-white px-4 py-2 text-sm font-medium hover:bg-action-700 transition shadow-sm shadow-emerald-200 whitespace-nowrap"
           >
             <UserPlus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Customers</span>
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-medium hover:bg-indigo-700 transition shadow-sm"
+            className="flex items-center gap-2 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-medium hover:bg-brand-700 transition shadow-sm shadow-violet-200"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export</span>
@@ -113,7 +113,7 @@ export default function AdminCustomersPage() {
         </div>
       </div>
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
             <SkeletonTable rows={5} columns={4} />
@@ -139,7 +139,7 @@ export default function AdminCustomersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+              <thead className="bg-violet-50/60 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Customer</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Phone Number</th>
@@ -152,11 +152,11 @@ export default function AdminCustomersPage() {
                 {paginatedCustomers.map((customer) => (
                   <tr
                     key={customer.phone}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-violet-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-100 text-brand-600 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
                           {customer.name ? customer.name.charAt(0) : <User className="w-4 h-4" />}
                         </div>
                         <div className="font-medium text-slate-900 border-none">
@@ -249,7 +249,7 @@ export default function AdminCustomersPage() {
             Paste phone numbers separated by spaces, commas, or new lines. They will automatically bypass the USSD web-order block.
           </p>
           <textarea
-            className="w-full h-32 rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="w-full h-32 rounded-xl border border-slate-200 p-3 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             placeholder="0241234567, 0557654321..."
             value={importText}
             onChange={(e) => setImportText(e.target.value)}

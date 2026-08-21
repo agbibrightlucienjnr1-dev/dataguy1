@@ -455,7 +455,7 @@ export default function BuyPage() {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <h1 className="text-xl font-bold text-slate-900 mb-2">
+          <h1 className="text-xl font-display font-bold text-slate-900 mb-2">
             Invalid Payment Link
           </h1>
           <p className="text-slate-600 mb-6">
@@ -478,7 +478,7 @@ export default function BuyPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-slate-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-4" />
           <p className="text-slate-600">Loading...</p>
         </div>
       </div>
@@ -488,24 +488,24 @@ export default function BuyPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Animated Subtle Background */}
-      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
-      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
+      <div className="absolute top-0 -left-64 w-96 h-96 bg-brand-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
+      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-action-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-white/50 sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-linear-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 bg-linear-to-br from-brand-600 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-md shadow-violet-300/50 transform group-hover:scale-105 transition-all">
                 <Wifi className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-700">
+              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-fuchsia-600">
                 DataGuy
               </span>
             </Link>
             <Link
               to="/track"
-              className="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200"
+              className="text-sm font-semibold text-brand-700 hover:text-brand-800 transition-colors bg-brand-50 px-3 py-1.5 rounded-full border border-brand-200"
             >
               Track Order
             </Link>
@@ -515,19 +515,19 @@ export default function BuyPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 relative z-10">
         {/* Seller Info Container */}
-        <div className="p-8 mb-8 rounded-2xl bg-slate-900 shadow-2xl relative overflow-hidden border border-slate-800 animate-float-slow">
+        <div className="p-8 mb-8 rounded-2xl bg-linear-to-br from-brand-700 via-violet-700 to-fuchsia-700 shadow-2xl shadow-violet-300/40 relative overflow-hidden animate-float-slow">
           <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-slate-700 rounded-full mix-blend-screen filter blur-2xl opacity-40 pointer-events-none"></div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-action-400 rounded-full mix-blend-screen filter blur-2xl opacity-30 pointer-events-none"></div>
 
           <div className="relative z-10 flex items-center gap-5">
             <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <p className="text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">
+              <p className="text-violet-100 text-sm font-semibold uppercase tracking-wider mb-1">
                 Buying from
               </p>
-              <h2 className="text-2xl font-bold text-white tracking-tight">
+              <h2 className="text-2xl font-display font-bold text-white tracking-tight">
                 {seller?.shopName || seller?.name}
               </h2>
             </div>
@@ -539,8 +539,8 @@ export default function BuyPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Network Filter / Initial Selection Screen */}
             {networkFilter === "" ? (
-              <div className="glass-panel p-8 rounded-3xl border border-white/50 space-y-6 bg-white/70 backdrop-blur-md shadow-lg">
-                <h3 className="text-xl font-extrabold text-slate-800 tracking-tight text-center">
+              <div className="glass-panel p-8 rounded-3xl border border-white/50 space-y-6 bg-white/70 backdrop-blur-md shadow-lg shadow-violet-200/40">
+                <h3 className="text-xl font-display font-extrabold text-slate-800 tracking-tight text-center">
                   Select a Network/Bundle Type to view available packages
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -575,7 +575,7 @@ export default function BuyPage() {
                         variant={isActive ? "primary" : "outline"}
                         size="sm"
                         onClick={() => setNetworkFilter(network)}
-                        className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"}`}
+                        className={`transition-all rounded-full px-5 ${isActive ? `${style.bg} text-white border-transparent shadow-md` : "bg-white border-brand-200 text-slate-700 hover:bg-brand-50 hover:text-brand-700"}`}
                       >
                         {label}
                       </Button>
@@ -588,7 +588,7 @@ export default function BuyPage() {
                       setNetworkFilter("");
                       setSelectedBundle(null);
                     }}
-                    className="transition-all rounded-full px-5 bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+                    className="transition-all rounded-full px-5 bg-white border-brand-200 text-slate-700 hover:bg-brand-50 hover:text-brand-700"
                   >
                     Back to Selection
                   </Button>
@@ -608,13 +608,13 @@ export default function BuyPage() {
                           <div
                             className={`w-4 h-4 rounded shadow-sm ${style.bg}`}
                           />
-                          <h3 className="font-bold text-slate-900 text-lg tracking-tight">
+                          <h3 className="font-display font-bold text-slate-900 text-lg tracking-tight">
                             {label}
                           </h3>
                           <Badge
                             variant="secondary"
                             size="sm"
-                            className="bg-slate-200 text-slate-700 ml-1"
+                            className="bg-brand-100 text-brand-700 ml-1"
                           >
                             {networkBundles.length} bundles
                           </Badge>
@@ -630,7 +630,7 @@ export default function BuyPage() {
                                 className={`p-5 rounded-2xl border-2 text-left transition-all duration-300 relative overflow-hidden group ${
                                   isSelected
                                     ? `${style.border} ${style.bgLight} ring-4 ring-offset-2 ${style.ring} shadow-lg -translate-y-1`
-                                    : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
+                                    : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-brand-300 hover:shadow-md hover:shadow-violet-100/50 hover:-translate-y-0.5"
                                 }`}
                               >
                                 {isSelected && (
@@ -640,7 +640,7 @@ export default function BuyPage() {
                                 )}
                                 <div className="flex items-center justify-between mb-3 relative z-10">
                                   <Wifi
-                                    className={`w-5 h-5 transition-colors ${isSelected ? style.text : "text-slate-400 group-hover:text-slate-600"}`}
+                                    className={`w-5 h-5 transition-colors ${isSelected ? style.text : "text-slate-400 group-hover:text-brand-500"}`}
                                   />
                                   {isSelected && (
                                     <CheckCircle
@@ -650,7 +650,7 @@ export default function BuyPage() {
                                 </div>
                                 <div className="relative z-10">
                                   <p
-                                    className={`font-extrabold text-2xl transition-colors ${isSelected ? "text-slate-900" : "text-slate-800"}`}
+                                    className={`font-display font-extrabold text-2xl transition-colors ${isSelected ? "text-slate-900" : "text-slate-800"}`}
                                   >
                                     {bundle.volume}
                                   </p>
@@ -658,7 +658,7 @@ export default function BuyPage() {
                                     {bundle.validity || "30 days"}
                                   </p>
                                   <p
-                                    className={`font-bold tracking-tight text-lg ${isSelected ? style.text : "text-slate-700"}`}
+                                    className={`font-bold tracking-tight text-lg ${isSelected ? style.text : "text-action-700"}`}
                                   >
                                     {formatCurrency(bundle.price)}
                                   </p>
@@ -676,10 +676,10 @@ export default function BuyPage() {
 
             {bundles.length === 0 && (
               <div className="glass-panel p-12 rounded-3xl text-center border border-white/50">
-                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Package className="w-10 h-10 text-slate-400" />
+                <div className="w-20 h-20 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Package className="w-10 h-10 text-brand-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                <h3 className="text-xl font-display font-bold text-slate-900 mb-2">
                   No bundles available
                 </h3>
                 <p className="text-slate-600">
@@ -693,9 +693,9 @@ export default function BuyPage() {
           <div className="lg:col-span-1 border-slate-200">
             <div
               ref={formRef}
-              className="glass-panel p-6 sm:p-8 rounded-3xl sticky top-28 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/60"
+              className="glass-panel p-6 sm:p-8 rounded-3xl sticky top-28 shadow-[0_8px_30px_rgba(124,58,237,0.12)] border border-white/60"
             >
-              <h3 className="font-bold text-xl text-slate-900 mb-6 tracking-tight">
+              <h3 className="font-display font-bold text-xl text-slate-900 mb-6 tracking-tight">
                 Complete Your Purchase
               </h3>
 
@@ -724,7 +724,7 @@ export default function BuyPage() {
                         : "MTN"}
                     </Badge>
                   </div>
-                  <p className="font-extrabold text-2xl text-slate-900">
+                  <p className="font-display font-extrabold text-2xl text-slate-900">
                     {selectedBundle.volume}
                   </p>
                   <p className="text-slate-500 text-sm font-medium mb-4">
@@ -749,16 +749,16 @@ export default function BuyPage() {
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-slate-50">
                       <span className="text-slate-900 font-bold">Total:</span>
-                      <span className="font-extrabold text-2xl text-slate-900">
+                      <span className="font-display font-extrabold text-2xl text-action-700">
                         {formatCurrency(grandTotal)}
                       </span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-8 bg-white/50 backdrop-blur-sm rounded-2xl mb-6 text-center border border-dashed border-slate-200/50">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <ShoppingCart className="w-8 h-8 text-slate-400" />
+                <div className="p-8 bg-white/50 backdrop-blur-sm rounded-2xl mb-6 text-center border border-dashed border-brand-200">
+                  <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <ShoppingCart className="w-8 h-8 text-brand-400" />
                   </div>
                   <p className="text-sm font-medium text-slate-500">
                     Select a bundle to continue
@@ -773,11 +773,11 @@ export default function BuyPage() {
                     Phone Number
                   </label>
                   <div className="relative group">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                     <input
                       type="tel"
                       placeholder="0241234567"
-                      className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 ${errors.customerPhone ? "border-red-500" : "border-slate-200"}`}
+                      className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-brand-500/15 focus:border-brand-500 hover:border-brand-300 ${errors.customerPhone ? "border-red-500" : "border-slate-200"}`}
                       {...register("customerPhone")}
                     />
                   </div>
@@ -787,7 +787,7 @@ export default function BuyPage() {
                     </p>
                   )}
                   {isValidatingName && (
-                    <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1 font-medium animate-pulse">
+                    <p className="text-xs text-brand-600 mt-1 flex items-center gap-1 font-medium animate-pulse">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       Verifying recipient name...
                     </p>
@@ -811,11 +811,11 @@ export default function BuyPage() {
                     Recipient Name (Auto-filled)
                   </label>
                   <div className="relative group">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                     <input
                       type="text"
                       placeholder="John Doe"
-                      className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-200 bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300"
+                      className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-200 bg-white/80 text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-brand-500/15 focus:border-brand-500 hover:border-brand-300"
                       {...register("customerName")}
                     />
                   </div>
@@ -823,7 +823,7 @@ export default function BuyPage() {
 
                 {/* Moolre Payment Number & Auto Network Detection */}
                 {settings?.activePaymentProvider === "moolre" && (
-                  <div className="p-4 bg-slate-100/80 rounded-2xl space-y-3 border border-slate-200/80 mt-2">
+                  <div className="p-4 bg-brand-50/80 rounded-2xl space-y-3 border border-brand-100 mt-2">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                         Payment Number (MoMo)
@@ -831,7 +831,7 @@ export default function BuyPage() {
                       <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-600 select-none">
                         <input
                           type="checkbox"
-                          className="rounded border-slate-300 text-slate-900 focus:ring-slate-900 h-4 w-4"
+                          className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4"
                           {...register("sameAsRecipientPhone")}
                         />
                         Same as recipient
@@ -841,11 +841,11 @@ export default function BuyPage() {
                     {!sameAsRecipientPhone && (
                       <div className="space-y-1.5 animate-in fade-in duration-200">
                         <div className="relative group">
-                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
                           <input
                             type="tel"
                             placeholder="0201234567"
-                            className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 hover:border-slate-300 ${errors.paymentPhone ? "border-red-500" : "border-slate-200"}`}
+                            className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-brand-500/15 focus:border-brand-500 hover:border-brand-300 ${errors.paymentPhone ? "border-red-500" : "border-slate-200"}`}
                             {...register("paymentPhone")}
                           />
                         </div>
@@ -858,12 +858,12 @@ export default function BuyPage() {
                     )}
 
                     {/* Auto-detected Payment Network Badge */}
-                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/70">
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-brand-100">
                       <span className="text-slate-500 font-medium">Payment Network:</span>
                       {detectedPaymentNetwork ? (
                         <Badge
                           className={
-                            NETWORK_STYLES[detectedPaymentNetwork]?.bg || "bg-slate-700 text-white"
+                            NETWORK_STYLES[detectedPaymentNetwork]?.bg || "bg-brand-600 text-white"
                           }
                         >
                           {detectedPaymentNetwork === "AIRTELTIGO" || detectedPaymentNetwork === "AT"
@@ -883,7 +883,8 @@ export default function BuyPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0 mt-4"
+                  variant="success"
+                  className="w-full h-12 text-[15px] font-bold shadow-lg shadow-action-500/30 hover:-translate-y-0.5 transition-all mt-4"
                   disabled={!selectedBundle || createOrder.isPending}
                 >
                   {createOrder.isPending ? (
@@ -914,11 +915,11 @@ export default function BuyPage() {
 
       {/* Register as Agent CTA */}
       <div className="max-w-4xl mx-auto px-4 py-12 text-center relative z-10">
-        <div className="inline-block p-1 rounded-full bg-slate-100">
+        <div className="inline-block p-1 rounded-full bg-brand-50">
           <Link to={`/register/subagent?agent=${code}`}>
             <Button
               variant="outline"
-              className="gap-2 rounded-full border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-6 py-2 h-auto shadow-sm transition-all hover:shadow-md"
+              className="gap-2 rounded-full border-brand-200 bg-white hover:bg-brand-50 text-brand-700 font-semibold px-6 py-2 h-auto shadow-sm transition-all hover:shadow-md"
             >
               <User className="w-4 h-4" />
               Become an Agent
@@ -932,7 +933,7 @@ export default function BuyPage() {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <p className="text-center text-sm text-slate-500">
             Powered by{" "}
-            <Link to="/" className="font-medium text-slate-900 hover:underline">
+            <Link to="/" className="font-medium text-brand-700 hover:underline">
               DataGuy
             </Link>{" "}
             - Instant data bundles for Ghana
@@ -944,13 +945,13 @@ export default function BuyPage() {
       {otpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <Card className="max-w-sm w-full p-6 bg-white animate-in zoom-in-95">
-            <h3 className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-purple-600 mb-2">
+            <h3 className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-600 to-fuchsia-500 mb-2">
               Payment Verification
             </h3>
             <p className="text-sm text-slate-500 mb-6 font-medium">
               An OTP has been sent to your phone. Enter it to authorize the
               payment of
-              <span className="text-slate-900 font-bold ml-1">
+              <span className="text-action-700 font-bold ml-1">
                 {formatCurrency(pendingTotal)}
               </span>
               .
@@ -968,7 +969,7 @@ export default function BuyPage() {
                   onChange={(e) =>
                     setOtpCode(e.target.value.replace(/\D/g, ""))
                   }
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-center text-lg tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-center text-lg tracking-widest font-bold focus:outline-none focus:ring-4 focus:ring-brand-500/15 focus:border-brand-500 uppercase"
                 />
               </div>
               <div className="flex gap-3 pt-2">
@@ -980,7 +981,8 @@ export default function BuyPage() {
                   Cancel
                 </Button>
                 <Button
-                  className="flex-1 rounded-xl h-12 bg-slate-900 text-white"
+                  variant="success"
+                  className="flex-1 rounded-xl h-12"
                   onClick={handleVerifyOtp}
                   disabled={!otpCode || verifyingOtp}
                 >

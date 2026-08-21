@@ -92,7 +92,7 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
+        <h1 className="text-2xl font-display font-bold text-slate-900">Profile</h1>
         <p className="text-slate-600 mt-1">
           Manage your account information and security settings
         </p>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
+                <User className="w-5 h-5 text-brand-600" />
                 Profile Information
               </CardTitle>
               <CardDescription>
@@ -116,7 +116,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Full Name
                 </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <User className="w-4 h-4 text-slate-400" />
                   <span className="text-sm text-slate-900">
                     {user?.name || "N/A"}
@@ -128,7 +128,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Email Address
                 </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <Mail className="w-4 h-4 text-slate-400" />
                   <span className="text-sm text-slate-900">
                     {user?.email || "N/A"}
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Phone Number
                 </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <Phone className="w-4 h-4 text-slate-400" />
                   <span className="text-sm text-slate-900">
                     {user?.phone || "N/A"}
@@ -152,8 +152,8 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Role
                 </label>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-blue-100 text-blue-800">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-violet-100 text-brand-700">
                     {user?.role || "N/A"}
                   </span>
                 </div>
@@ -164,7 +164,7 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Payment Link Code
                   </label>
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <code className="text-sm font-mono text-slate-900">
                       {user.paymentLinkCode}
                     </code>
@@ -177,7 +177,7 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Member Since
                   </label>
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <span className="text-sm text-slate-900">
                       {formatDate(user.createdAt)}
                     </span>
@@ -192,7 +192,7 @@ export default function ProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Store className="w-5 h-5" />
+                  <Store className="w-5 h-5 text-brand-600" />
                   Shop Name
                 </CardTitle>
                 <CardDescription>
@@ -247,7 +247,7 @@ export default function ProfilePage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Key className="w-5 h-5" />
+              <Key className="w-5 h-5 text-brand-600" />
               Change Password
             </CardTitle>
             <CardDescription>
@@ -264,7 +264,7 @@ export default function ProfilePage() {
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
                     type={showCurrentPassword ? "text" : "password"}
-                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-10 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50"
+                    className="flex h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pl-10 pr-10 text-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50"
                     {...register("currentPassword")}
                   />
                   <button
@@ -294,7 +294,7 @@ export default function ProfilePage() {
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
                     type={showNewPassword ? "text" : "password"}
-                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-10 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50"
+                    className="flex h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pl-10 pr-10 text-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50"
                     {...register("newPassword")}
                   />
                   <button
@@ -330,7 +330,7 @@ export default function ProfilePage() {
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
-                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-10 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50"
+                    className="flex h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pl-10 pr-10 text-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50"
                     {...register("confirmPassword")}
                   />
                   <button

@@ -6,7 +6,7 @@ const Card = forwardRef(({ children, className, ...props }, ref) => {
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border border-gray-200 bg-white shadow-sm",
+        "rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-200/50",
         className,
       )}
       {...props}
@@ -32,7 +32,7 @@ export function CardTitle({ children, className, ...props }) {
   return (
     <h3
       className={cn(
-        "text-lg font-semibold leading-none tracking-tight",
+        "font-display text-lg font-semibold leading-none tracking-tight text-slate-900",
         className,
       )}
       {...props}
@@ -44,7 +44,7 @@ export function CardTitle({ children, className, ...props }) {
 
 export function CardDescription({ children, className, ...props }) {
   return (
-    <p className={cn("text-sm text-gray-500", className)} {...props}>
+    <p className={cn("text-sm text-slate-500", className)} {...props}>
       {children}
     </p>
   );

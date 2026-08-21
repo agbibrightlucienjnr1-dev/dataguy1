@@ -63,7 +63,7 @@ export default function AgentCustomersPage() {
           />
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-medium hover:bg-indigo-700 transition shadow-sm"
+            className="flex items-center gap-2 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-medium hover:bg-brand-700 transition shadow-sm shadow-brand-600/20"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export</span>
@@ -97,7 +97,7 @@ export default function AgentCustomersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+              <thead className="bg-violet-50/60 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Customer</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Phone Number</th>
@@ -110,11 +110,11 @@ export default function AgentCustomersPage() {
                 {filteredCustomers.map((customer) => (
                   <tr
                     key={customer.phone}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-violet-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
                           {customer.name ? customer.name.charAt(0) : <User className="w-4 h-4" />}
                         </div>
                         <div className="font-medium text-slate-900 border-none">

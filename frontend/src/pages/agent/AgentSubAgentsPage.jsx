@@ -56,7 +56,7 @@ export default function AgentSubAgentsPage() {
         <button
           onClick={() => refetch()}
           disabled={isFetching}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors disabled:opacity-50 shadow-sm shadow-brand-600/20"
         >
           <RefreshCw
             className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
@@ -75,8 +75,8 @@ export default function AgentSubAgentsPage() {
                 {total}
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-brand-600" />
             </div>
           </div>
         </Card>
@@ -89,8 +89,8 @@ export default function AgentSubAgentsPage() {
                 {subAgents.reduce((sum, sa) => sum + sa.totalOrders, 0)}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-action-50 rounded-xl flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-action-600" />
             </div>
           </div>
         </Card>
@@ -108,8 +108,8 @@ export default function AgentSubAgentsPage() {
                 )}
               </p>
             </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-fuchsia-50 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-fuchsia-600" />
             </div>
           </div>
         </Card>
@@ -128,8 +128,8 @@ export default function AgentSubAgentsPage() {
                 )}
               </p>
             </div>
-            <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-action-50 rounded-xl flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-action-600" />
             </div>
           </div>
         </Card>
@@ -199,7 +199,7 @@ export default function AgentSubAgentsPage() {
                 {/* Left: Sub-Agent Info */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-linear-to-br from-brand-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-sm shadow-brand-600/30">
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -254,7 +254,7 @@ export default function AgentSubAgentsPage() {
 
                   <div className="text-center">
                     <p className="text-xs text-slate-500 mb-1">My Commission</p>
-                    <p className="text-lg font-semibold text-green-600">
+                    <p className="text-lg font-semibold text-action-600">
                       {formatCurrency(subAgent.totalParentCommission)}
                     </p>
                   </div>

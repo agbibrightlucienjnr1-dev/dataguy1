@@ -41,27 +41,27 @@ const phoneSchema = z.object({
 const STATUS_CONFIG = {
   pending: {
     icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
+    color: "text-amber-600",
+    bgColor: "bg-amber-100",
     label: "Pending",
   },
   payment_confirmed: {
     icon: CheckCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-brand-600",
+    bgColor: "bg-brand-100",
     label: "Paid",
   },
   processing: {
     icon: Loader2,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
+    color: "text-fuchsia-600",
+    bgColor: "bg-fuchsia-100",
     label: "Processing",
     animate: true,
   },
   completed: {
     icon: CheckCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+    color: "text-action-600",
+    bgColor: "bg-action-100",
     label: "Completed",
   },
   failed: {
@@ -149,7 +149,7 @@ export default function OrderTrackingPage() {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="text-xl font-bold text-slate-900">
+            <Link to="/" className="text-xl font-display font-bold text-slate-900">
               DataGuy
             </Link>
             <button
@@ -160,7 +160,7 @@ export default function OrderTrackingPage() {
                   navigate("/");
                 }
               }}
-              className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1"
+              className="text-sm text-slate-600 hover:text-brand-700 flex items-center gap-1"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -171,7 +171,7 @@ export default function OrderTrackingPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-bold text-slate-900 mb-2">
             Track Your Order
           </h1>
           <p className="text-slate-600">
@@ -180,12 +180,12 @@ export default function OrderTrackingPage() {
         </div>
 
         {/* Search Type Toggle */}
-        <div className="flex bg-slate-100 rounded-lg p-1 mb-6">
+        <div className="flex bg-slate-100 rounded-xl p-1 mb-6">
           <button
             onClick={() => setSearchType("phone")}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
               searchType === "phone"
-                ? "bg-white text-slate-900 shadow-sm"
+                ? "bg-white text-brand-700 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -194,9 +194,9 @@ export default function OrderTrackingPage() {
           </button>
           <button
             onClick={() => setSearchType("orderId")}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
               searchType === "orderId"
-                ? "bg-white text-slate-900 shadow-sm"
+                ? "bg-white text-brand-700 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -206,7 +206,7 @@ export default function OrderTrackingPage() {
         </div>
 
         {/* Search Forms */}
-        <Card className="p-6 mb-6">
+        <Card className="p-6 rounded-2xl mb-6">
           {searchType === "phone" ? (
             <form
               onSubmit={phoneForm.handleSubmit(handlePhoneSearch)}
@@ -269,8 +269,8 @@ export default function OrderTrackingPage() {
           (orderError?.status === 404 ||
             phoneError?.status === 404 ||
             (!orderError && !phoneError)) && (
-            <Card className="p-8 text-center">
-              <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <Card className="p-8 rounded-2xl text-center">
+              <Package className="w-12 h-12 text-brand-200 mx-auto mb-4" />
               <p className="text-slate-600">
                 {orderError?.status === 404 || phoneError?.status === 404
                   ? "No orders found. Please check your search criteria."
@@ -283,7 +283,7 @@ export default function OrderTrackingPage() {
         {(orderError || phoneError) &&
           orderError?.status !== 404 &&
           phoneError?.status !== 404 && (
-            <Card className="p-8 text-center">
+            <Card className="p-8 rounded-2xl text-center">
               <XCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
               <p className="text-slate-600">
                 {orderError?.message ||
@@ -363,12 +363,12 @@ function OrderCard({ order, onCopy, onRefetch }) {
   };
 
   return (
-    <Card className="p-5">
+    <Card className="p-5 rounded-2xl">
       <div className="flex items-start justify-between mb-4">
         <div>
           <button
             onClick={() => onCopy(order.id || order.orderId || "")}
-            className="flex items-center gap-2 text-sm font-mono text-slate-600 hover:text-slate-900"
+            className="flex items-center gap-2 text-sm font-mono text-slate-600 hover:text-brand-700"
           >
             {(order.id || order.orderId || "").slice(0, 16)}...
             <Copy className="w-3 h-3" />
@@ -385,9 +385,9 @@ function OrderCard({ order, onCopy, onRefetch }) {
         </Badge>
       </div>
 
-      <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <Wifi className="w-5 h-5 text-slate-600" />
+      <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+          <Wifi className="w-5 h-5 text-brand-600" />
         </div>
         <div className="flex-1">
           <p className="font-medium text-slate-900">{order.bundle?.volume}</p>
@@ -407,8 +407,8 @@ function OrderCard({ order, onCopy, onRefetch }) {
       </div>
 
       {order.status === "pending" && (
-        <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-          <p className="text-sm text-yellow-800 mb-3">
+        <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
+          <p className="text-sm text-amber-800 mb-3">
             If you've already paid, click the button below to verify your
             payment.
           </p>
@@ -435,7 +435,7 @@ function OrderCard({ order, onCopy, onRefetch }) {
       )}
 
       {order.status === "completed" && (
-        <p className="text-sm text-green-600 mt-3">
+        <p className="text-sm text-action-600 mt-3">
           ✓ Data bundle delivered successfully
         </p>
       )}

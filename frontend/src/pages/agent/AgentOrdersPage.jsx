@@ -119,7 +119,7 @@ export default function AgentOrdersPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">All Status</option>
               {Object.entries(ORDER_STATUSES).map(([key, value]) => (
@@ -134,7 +134,7 @@ export default function AgentOrdersPage() {
                 setNetworkFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">All Networks</option>
               {NETWORKS.map((network) => (
@@ -152,7 +152,7 @@ export default function AgentOrdersPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100">
+              <tr className="border-b border-slate-100 bg-violet-50/40">
                 <th className="text-left p-4 text-sm font-medium text-slate-500">
                   Order
                 </th>
@@ -201,7 +201,7 @@ export default function AgentOrdersPage() {
                 filteredOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-slate-50 hover:bg-slate-50"
+                    className="border-b border-slate-50 hover:bg-violet-50/50 transition-colors"
                   >
                     <td className="p-4">
                       <p className="font-mono text-sm text-slate-900">
@@ -241,7 +241,7 @@ export default function AgentOrdersPage() {
                         {formatCurrency(order.pricePaid)}
                       </p>
                       {order.commissionAmount > 0 && (
-                        <p className="text-xs text-green-600">
+                        <p className="text-xs text-action-600">
                           +{formatCurrency(order.commissionAmount)} earned
                         </p>
                       )}
@@ -386,7 +386,7 @@ export default function AgentOrdersPage() {
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
                   Your Commission
                 </p>
-                <p className="text-sm font-medium text-green-600 mt-1">
+                <p className="text-sm font-medium text-action-600 mt-1">
                   {formatCurrency(selectedOrder.commissionAmount || 0)}
                 </p>
               </div>

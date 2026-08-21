@@ -26,12 +26,12 @@ export default function EmptyState({
         className,
       )}
     >
-      <div className="mb-4 rounded-full bg-gray-100 p-4">
-        <Icon className="h-8 w-8 text-gray-400" />
+      <div className="mb-4 rounded-full bg-violet-50 p-4">
+        <Icon className="h-8 w-8 text-brand-400" />
       </div>
-      <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+      <h3 className="font-display text-lg font-medium text-slate-900">{title}</h3>
       {description && (
-        <p className="mt-1 max-w-sm text-sm text-gray-500">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>
       )}
       {action && (
         <Button onClick={action} className="mt-4">
