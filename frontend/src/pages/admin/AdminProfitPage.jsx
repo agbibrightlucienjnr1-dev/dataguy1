@@ -860,12 +860,13 @@ export default function AdminProfitPage() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 pt-4 mt-4">
                 <span className="text-xs text-slate-500">
                   Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredLedger.length)} of {filteredLedger.length} items
                 </span>
 
-                <div className="flex items-center gap-1">
+                {/* Compact prev/next on mobile - a button per page would overflow the viewport */}
+                <div className="flex sm:hidden items-center justify-between gap-3">
                   <Button
                     variant="outline"
                     size="sm"
@@ -874,7 +875,30 @@ export default function AdminProfitPage() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  
+                  <span className="text-xs font-medium text-slate-600">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Full page-number row on wider screens */}
+                <div className="hidden sm:flex items-center gap-1 flex-wrap justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
                   {Array.from({ length: totalPages }).map((_, i) => (
                     <Button
                       key={i}
