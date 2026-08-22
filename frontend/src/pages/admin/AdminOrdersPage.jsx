@@ -297,7 +297,8 @@ export default function AdminOrdersPage() {
             description="There are no orders matching your current filters."
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-brand-50/40 text-slate-500 border-b border-slate-200">
                 <tr>
@@ -409,6 +410,80 @@ export default function AdminOrdersPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile card list */}
+          <div className="lg:hidden divide-y divide-slate-100">
+            {orders.map((order) => (
+              <div key={order.id} className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs px-2 py-1 rounded-lg bg-slate-100 inline-block text-slate-700">
+                      #{order.id.slice(-8)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">{formatDateTime(order.createdAt)}</p>
+                  </div>
+                  {getStatusBadge(order.status)}
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  {getNetworkBadge(order.bundle?.network)}
+                  <span className="text-sm text-slate-900">{order.bundle?.volume}</span>
+                  <span className="ml-auto font-medium text-slate-900">{formatCurrency(order.pricePaid)}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div className="bg-slate-50 rounded-lg p-2">
+                    <p className="text-xs text-slate-500">Recipient</p>
+                    <p className="font-medium text-slate-900 truncate">{order.customerPhone}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-lg p-2">
+                    <p className="text-xs text-slate-500">Seller</p>
+                    <p className="font-medium text-slate-900 truncate">{order.seller?.name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(order.status === "payment_confirmed" || order.status === "failed") && (
+                    <Button
+                      variant={order.status === "failed" ? "danger" : "primary"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => fulfillMutation.mutate(order.id)}
+                      disabled={fulfillMutation.isPending}
+                    >
+                      {fulfillMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-1" />
+                          {order.status === "failed" ? "Retry" : "Fulfill"}
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {order.status !== "completed" && order.status !== "pending" && (
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => completeMutation.mutate(order.id)}
+                      disabled={completeMutation.isPending}
+                    >
+                      {completeMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 mr-1" />
+                          Complete
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => handleOpenOrderModal(order)}>
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         )}
 
         {/* Pagination */}

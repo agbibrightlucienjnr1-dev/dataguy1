@@ -197,8 +197,8 @@ export const AdminAnalyticsPage = () => {
               <tbody>
                 {(stats?.topAgents || []).map((agent, i) => (
                   <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-brand-50/50 transition-colors">
-                    <td className="py-4 px-2 text-sm font-medium text-slate-900">{agent.name}</td>
-                    <td className="py-4 px-2 text-sm font-mono text-slate-500">{agent.code}</td>
+                    <td className="py-4 px-2 text-sm font-medium text-slate-900 break-words">{agent.name}</td>
+                    <td className="py-4 px-2 text-sm font-mono text-slate-500 break-all">{agent.code}</td>
                     <td className="py-4 px-2 text-sm text-right font-bold text-brand-600">{agent.views.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -231,7 +231,7 @@ export const AdminAnalyticsPage = () => {
               <tbody>
                 {(stats?.topPaths || []).map((path, i) => (
                   <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-brand-50/50 transition-colors">
-                    <td className="py-4 px-2 text-sm font-medium font-mono text-slate-700 truncate max-w-xs">{path.path}</td>
+                    <td className="py-4 px-2 text-sm font-medium font-mono text-slate-700 break-all">{path.path}</td>
                     <td className="py-4 px-2 text-sm text-right font-bold text-action-600">{path.views.toLocaleString()}</td>
                   </tr>
                 ))}
