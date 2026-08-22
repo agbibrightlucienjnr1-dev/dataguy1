@@ -1,5 +1,19 @@
 import { Outlet, Link } from "react-router-dom";
 import { Wifi } from "lucide-react";
+import { useCountUp } from "../../hooks";
+
+function StatChip({ target, format, label, delay }) {
+  const value = useCountUp(target, { start: true, duration: 1400 });
+  return (
+    <div
+      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 animate-fade-in-up hover:bg-white/10 hover:-translate-y-1 transition-all duration-300"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="font-display text-2xl font-bold text-white mb-1 tabular-nums">{format(value)}</div>
+      <div className="text-brand-300 text-xs font-semibold uppercase tracking-wider">{label}</div>
+    </div>
+  );
+}
 
 export default function AuthLayout() {
   return (
@@ -14,9 +28,9 @@ export default function AuthLayout() {
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-sky-600 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
         <div className="absolute top-1/2 right-0 w-96 h-96 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 animate-fade-in-up">
           <Link to="/" className="flex items-center gap-3 w-max group">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm border border-white/20 transform group-hover:scale-105 transition-all">
+            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm border border-white/20 transform group-hover:scale-105 group-hover:rotate-6 transition-all">
               <Wifi className="w-6 h-6 text-white" />
             </div>
             <span className="font-display text-2xl font-extrabold text-white tracking-tight">DataGuy</span>
@@ -24,29 +38,20 @@ export default function AuthLayout() {
         </div>
 
         <div className="space-y-8 relative z-10 animate-float-slow">
-          <h1 className="font-display text-4xl lg:text-5xl font-extrabold leading-[1.1] text-white">
+          <h1 className="animate-fade-in-up animation-delay-150 font-display text-4xl lg:text-5xl font-extrabold leading-[1.1] text-white">
             Sell Data Bundles.<br/>
             Earn Commissions.<br/>
             Grow Your Business.
           </h1>
-          <p className="text-brand-200 text-lg max-w-md leading-relaxed font-medium">
+          <p className="animate-fade-in-up animation-delay-300 text-brand-200 text-lg max-w-md leading-relaxed font-medium">
             Join thousands of agents selling MTN, Telecel and AirtelTigo data bundles
             across Ghana. Start earning with every sale.
           </p>
 
           <div className="grid grid-cols-3 gap-6 pt-6">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-              <div className="font-display text-2xl font-bold text-white mb-1">5,000+</div>
-              <div className="text-brand-300 text-xs font-semibold uppercase tracking-wider">Active Agents</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-              <div className="font-display text-2xl font-bold text-white mb-1">₵500K+</div>
-              <div className="text-brand-300 text-xs font-semibold uppercase tracking-wider">Paid Out</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-              <div className="font-display text-2xl font-bold text-white mb-1">99.9%</div>
-              <div className="text-brand-300 text-xs font-semibold uppercase tracking-wider">Uptime</div>
-            </div>
+            <StatChip target={5000} format={(v) => `${Math.round(v).toLocaleString()}+`} label="Active Agents" delay={450} />
+            <StatChip target={500} format={(v) => `₵${Math.round(v)}K+`} label="Paid Out" delay={550} />
+            <StatChip target={99.9} format={(v) => `${v.toFixed(1)}%`} label="Uptime" delay={650} />
           </div>
         </div>
 
@@ -72,7 +77,7 @@ export default function AuthLayout() {
           {/* Animated Background Blob for Desktop Form Side */}
           <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-brand-200/60 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob hidden lg:block pointer-events-none"></div>
 
-          <div className="w-full max-w-md bg-white/85 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-xl shadow-brand-200/50 border border-white relative z-10">
+          <div className="animate-fade-in-up w-full max-w-md bg-white/85 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-xl shadow-brand-200/50 border border-white relative z-10">
             <Outlet />
           </div>
         </div>

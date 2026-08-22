@@ -226,14 +226,15 @@ export default function DashboardLayout() {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="animate-fade-in-up fixed inset-0 bg-black/50 z-40 lg:hidden"
+          style={{ animationDuration: "0.2s" }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gradient-to-b from-brand-950 to-slate-950 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gradient-to-b from-brand-950 to-slate-950 transform transition-transform duration-300 ease-out lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -242,9 +243,9 @@ export default function DashboardLayout() {
           <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
             <Link
               to={isAdmin() ? "/admin" : "/dashboard"}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 group"
             >
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                 <Wifi className="w-5 h-5 text-brand-700" />
               </div>
               <span className="font-display text-lg font-bold text-white">DataGuy</span>
@@ -456,7 +457,7 @@ export default function DashboardLayout() {
                       className="fixed inset-0 z-40"
                       onClick={() => setUserMenuOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-brand-950/10 border border-slate-200 py-1 z-50">
+                    <div className="animate-fade-in-up absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-brand-950/10 border border-slate-200 py-1 z-50" style={{ animationDuration: "0.18s" }}>
                       <Link
                         to="/profile"
                         onClick={() => setUserMenuOpen(false)}
