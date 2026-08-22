@@ -213,23 +213,23 @@ export default function LandingPage() {
                 </div>
 
                 {/* Floating success toast */}
-                <div className="absolute -bottom-6 -left-8 bg-white rounded-2xl shadow-xl shadow-slate-300/40 border border-slate-100 p-4 flex items-center gap-3 -rotate-3 animate-float">
-                  <div className="w-10 h-10 rounded-full bg-action-100 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-action-600" />
+                <div className="absolute -bottom-8 -left-2 sm:-bottom-6 sm:-left-8 max-w-[65%] sm:max-w-none bg-white rounded-xl sm:rounded-2xl shadow-xl shadow-slate-300/40 border border-slate-100 p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 -rotate-3 animate-float">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-action-100 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-action-600" />
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-slate-900">Delivered instantly</div>
-                    <div className="text-xs text-slate-500">to 024 XXX XXXX</div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">Delivered instantly</div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 truncate">to 024 XXX XXXX</div>
                   </div>
                 </div>
 
                 {/* Floating earnings chip */}
-                <div className="absolute -top-6 -right-4 bg-linear-to-br from-brand-600 to-sky-500 rounded-2xl shadow-xl shadow-brand-400/40 p-4 text-white animate-float animation-delay-2000">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-brand-100">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    Commission earned
+                <div className="absolute -top-3 -right-2 sm:-top-6 sm:-right-4 max-w-[60%] sm:max-w-none bg-linear-to-br from-brand-600 to-sky-500 rounded-xl sm:rounded-2xl shadow-xl shadow-brand-400/40 p-2 sm:p-4 text-white animate-float animation-delay-2000">
+                  <div className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-xs font-semibold text-brand-100">
+                    <TrendingUp className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 shrink-0" />
+                    <span className="truncate">Commission earned</span>
                   </div>
-                  <div className="text-xl font-display font-extrabold mt-1">+₵6.50</div>
+                  <div className="text-sm sm:text-xl font-display font-extrabold mt-0.5 sm:mt-1">+₵6.50</div>
                 </div>
               </div>
             </div>

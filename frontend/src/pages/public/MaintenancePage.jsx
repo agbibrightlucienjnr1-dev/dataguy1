@@ -37,7 +37,7 @@ export default function MaintenancePage() {
 
       {/* Main Card */}
       <main className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="animate-fade-in-up animation-delay-150 w-full max-w-lg glass-panel p-8 md:p-10 rounded-3xl relative border border-white/60 shadow-[0_20px_50px_rgba(124,58,237,0.12)]">
+        <div className="animate-fade-in-up animation-delay-150 w-full max-w-lg glass-panel p-8 md:p-10 rounded-3xl relative border border-white/60 shadow-[0_20px_50px_rgba(30,60,102,0.14)]">
           {/* Animated floating wrench */}
           <div className="mx-auto w-20 h-20 bg-gradient-to-br from-brand-600 via-brand-500 to-sky-500 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-brand-600/30 relative animate-float">
             <Wrench className="w-10 h-10 text-white" />

@@ -134,7 +134,7 @@ export const AdminAnalyticsPage = () => {
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="top" height={36}/>
-                <Line type="monotone" name="Web Views" dataKey="views" stroke="#7C3AED" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                <Line type="monotone" name="Web Views" dataKey="views" stroke="#1E3C66" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
                 <Line type="monotone" name="Unique Web Users" dataKey="unique" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} />
                 <Line type="monotone" name="USSD Dials" dataKey="ussd" stroke="#D97706" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
@@ -162,7 +162,7 @@ export const AdminAnalyticsPage = () => {
                     dataKey="value"
                   >
                     {(stats?.deviceBreakdown || []).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={["#7C3AED", "#059669", "#D97706", "#DC2626"][index % 4]} />
+                      <Cell key={`cell-${index}`} fill={["#1E3C66", "#059669", "#D97706", "#DC2626"][index % 4]} />
                     ))}
                   </Pie>
                   <Tooltip

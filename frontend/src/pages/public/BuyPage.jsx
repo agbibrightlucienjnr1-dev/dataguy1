@@ -698,7 +698,7 @@ export default function BuyPage() {
           <div className="lg:col-span-1 border-slate-200">
             <div
               ref={formRef}
-              className="glass-panel p-6 sm:p-8 rounded-3xl sticky top-28 shadow-[0_8px_30px_rgba(124,58,237,0.12)] border border-white/60"
+              className="glass-panel p-6 sm:p-8 rounded-3xl lg:sticky lg:top-28 shadow-[0_8px_30px_rgba(30,60,102,0.14)] border border-white/60"
             >
               <h3 className="font-display font-bold text-xl text-slate-900 mb-6 tracking-tight">
                 Complete Your Purchase
