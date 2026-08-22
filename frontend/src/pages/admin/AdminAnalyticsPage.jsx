@@ -71,7 +71,7 @@ export const AdminAnalyticsPage = () => {
       <div className="flex items-center gap-4">
         <Link
           to="/admin"
-          className="p-2 hover:bg-violet-50 rounded-xl transition-colors"
+          className="p-2 hover:bg-brand-50 rounded-xl transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-500" />
         </Link>
@@ -92,13 +92,13 @@ export const AdminAnalyticsPage = () => {
           title="Unique Visitors (30d)"
           value={stats?.uniqueVisitors || 0}
           icon={<Users className="w-6 h-6 text-brand-600" />}
-          bgColor="bg-violet-50"
+          bgColor="bg-brand-50"
         />
         <MetricCard
           title="Total USSD Dials (30d)"
           value={stats?.ussdDials || 0}
-          icon={<Smartphone className="w-6 h-6 text-fuchsia-600" />}
-          bgColor="bg-fuchsia-50"
+          icon={<Smartphone className="w-6 h-6 text-sky-600" />}
+          bgColor="bg-sky-50"
         />
         <MetricCard
           title="Conversion Rate"
@@ -174,7 +174,7 @@ export const AdminAnalyticsPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-violet-50/40">
+                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-brand-50/40">
                   <th className="pb-3 pt-2 px-2 font-medium">Agent</th>
                   <th className="pb-3 pt-2 px-2 font-medium">Code</th>
                   <th className="pb-3 pt-2 px-2 font-medium text-right">Traffic Generated</th>
@@ -182,7 +182,7 @@ export const AdminAnalyticsPage = () => {
               </thead>
               <tbody>
                 {(stats?.topAgents || []).map((agent, i) => (
-                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-violet-50/50 transition-colors">
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-brand-50/50 transition-colors">
                     <td className="py-4 px-2 text-sm font-medium text-slate-900">{agent.name}</td>
                     <td className="py-4 px-2 text-sm font-mono text-slate-500">{agent.code}</td>
                     <td className="py-4 px-2 text-sm text-right font-bold text-brand-600">{agent.views.toLocaleString()}</td>
@@ -207,14 +207,14 @@ export const AdminAnalyticsPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-violet-50/40">
+                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-brand-50/40">
                   <th className="pb-3 pt-2 px-2 font-medium">URL Source</th>
                   <th className="pb-3 pt-2 px-2 font-medium text-right">Footprints</th>
                 </tr>
               </thead>
               <tbody>
                 {(stats?.topPaths || []).map((path, i) => (
-                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-violet-50/50 transition-colors">
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-brand-50/50 transition-colors">
                     <td className="py-4 px-2 text-sm font-medium font-mono text-slate-700 truncate max-w-xs">{path.path}</td>
                     <td className="py-4 px-2 text-sm text-right font-bold text-action-600">{path.views.toLocaleString()}</td>
                   </tr>

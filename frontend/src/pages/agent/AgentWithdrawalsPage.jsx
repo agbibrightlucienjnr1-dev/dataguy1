@@ -238,17 +238,17 @@ export default function AgentWithdrawalsPage() {
       )}
 
       {/* Balance Card */}
-      <Card className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-fuchsia-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
+      <Card className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
         <ArrowDownToLine className="absolute right-3 bottom-3 w-24 h-24 text-white/10" />
         <div className="flex items-center justify-between relative">
           <div>
-            <p className="text-violet-100 text-sm mb-1">Available Balance</p>
+            <p className="text-brand-100 text-sm mb-1">Available Balance</p>
             <p className="font-display text-4xl font-bold">{formatCurrency(balance)}</p>
           </div>
           <Button
             variant="secondary"
             onClick={() => setShowWithdrawModal(true)}
-            className="bg-white text-brand-700 hover:bg-violet-50"
+            className="bg-white text-brand-700 hover:bg-brand-50"
             disabled={disableWithdrawals}
           >
             <ArrowDownToLine className="w-4 h-4 mr-2" />
@@ -319,7 +319,7 @@ export default function AgentWithdrawalsPage() {
             withdrawals.map((withdrawal) => (
               <div
                 key={withdrawal.id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-violet-50/50 transition-colors cursor-pointer"
+                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-brand-50/50 transition-colors cursor-pointer"
                 onClick={() => setSelectedWithdrawal(withdrawal)}
               >
                 <div className="flex items-center gap-3">
@@ -477,7 +477,7 @@ export default function AgentWithdrawalsPage() {
                    </p>
                  )}
                {inputAmt > 0 && (
-                  <div className="p-3.5 bg-violet-50/60 border border-brand-100 rounded-xl space-y-2 text-sm mt-3">
+                  <div className="p-3.5 bg-brand-50/60 border border-brand-100 rounded-xl space-y-2 text-sm mt-3">
                     <div className="flex justify-between">
                       <span className="text-slate-500">Gross Withdrawal:</span>
                       <span className="font-medium text-slate-950">{formatCurrency(inputAmt)}</span>

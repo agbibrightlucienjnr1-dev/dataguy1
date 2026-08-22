@@ -26,7 +26,7 @@ export default function EmptyState({
         className,
       )}
     >
-      <div className="mb-4 rounded-full bg-violet-50 p-4">
+      <div className="mb-4 rounded-full bg-brand-50 p-4">
         <Icon className="h-8 w-8 text-brand-400" />
       </div>
       <h3 className="font-display text-lg font-medium text-slate-900">{title}</h3>

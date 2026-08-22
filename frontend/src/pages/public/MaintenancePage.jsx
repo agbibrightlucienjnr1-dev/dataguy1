@@ -17,15 +17,15 @@ export default function MaintenancePage() {
       {/* Background blobs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-300/40 rounded-full mix-blend-multiply filter blur-3xl opacity-60 pointer-events-none animate-blob"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-action-300/40 rounded-full mix-blend-multiply filter blur-3xl opacity-50 pointer-events-none animate-blob animation-delay-2000"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-fuchsia-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none animate-blob animation-delay-4000"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-sky-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none animate-blob animation-delay-4000"></div>
 
       {/* Header */}
       <header className="w-full max-w-4xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/30">
+          <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/30">
             <Wifi className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-700 to-fuchsia-600 tracking-tight">
+          <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-700 to-sky-600 tracking-tight">
             DataGuy
           </span>
         </div>
@@ -39,7 +39,7 @@ export default function MaintenancePage() {
       <main className="flex-1 flex items-center justify-center p-6 relative z-10">
         <div className="w-full max-w-lg glass-panel p-8 md:p-10 rounded-3xl relative border border-white/60 shadow-[0_20px_50px_rgba(124,58,237,0.12)]">
           {/* Animated floating wrench */}
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-brand-600 via-violet-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-brand-600/30 relative animate-float">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-brand-600 via-brand-500 to-sky-500 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-brand-600/30 relative animate-float">
             <Wrench className="w-10 h-10 text-white" />
             <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
               <ShieldAlert className="w-3 h-3 text-white" />

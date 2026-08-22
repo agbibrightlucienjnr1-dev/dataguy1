@@ -15,7 +15,7 @@ import {
   Package,
   Lock,
 } from "lucide-react";
-import { Card, Button, Input, Badge, PushNotificationPrompt } from "../../components/ui";
+import { Card, Button, Input, Badge, PushNotificationPrompt, Reveal } from "../../components/ui";
 import { useSellerInfo, usePaymentLinkBundles } from "../../hooks";
 import { useCreateOrder } from "../../hooks";
 import { formatCurrency } from "../../utils/formatters";
@@ -80,20 +80,20 @@ const NETWORK_STYLES = {
     ring: "ring-red-500/20",
   },
   AT: {
-    bg: "bg-blue-600",
-    bgLight: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-200",
-    gradient: "from-blue-500 to-blue-700",
-    ring: "ring-blue-500/20",
+    bg: "bg-indigo-600",
+    bgLight: "bg-indigo-50",
+    text: "text-indigo-700",
+    border: "border-indigo-200",
+    gradient: "from-indigo-500 to-indigo-700",
+    ring: "ring-indigo-500/20",
   },
   AIRTELTIGO: {
-    bg: "bg-blue-600",
-    bgLight: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-200",
-    gradient: "from-blue-500 to-blue-700",
-    ring: "ring-blue-500/20",
+    bg: "bg-indigo-600",
+    bgLight: "bg-indigo-50",
+    text: "text-indigo-700",
+    border: "border-indigo-200",
+    gradient: "from-indigo-500 to-indigo-700",
+    ring: "ring-indigo-500/20",
   },
 };
 
@@ -496,10 +496,10 @@ export default function BuyPage() {
         <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-linear-to-br from-brand-600 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-md shadow-violet-300/50 transform group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 bg-linear-to-br from-brand-600 to-sky-500 rounded-lg flex items-center justify-center shadow-md shadow-brand-300/50 transform group-hover:scale-105 transition-all">
                 <Wifi className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-fuchsia-600">
+              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-sky-600">
                 DataGuy
               </span>
             </Link>
@@ -515,7 +515,7 @@ export default function BuyPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 relative z-10">
         {/* Seller Info Container */}
-        <div className="p-8 mb-8 rounded-2xl bg-linear-to-br from-brand-700 via-violet-700 to-fuchsia-700 shadow-2xl shadow-violet-300/40 relative overflow-hidden animate-float-slow">
+        <div className="animate-fade-in-up p-8 mb-8 rounded-2xl bg-linear-to-br from-brand-800 via-brand-600 to-sky-500 shadow-2xl shadow-brand-300/40 relative overflow-hidden">
           <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-action-400 rounded-full mix-blend-screen filter blur-2xl opacity-30 pointer-events-none"></div>
 
@@ -524,7 +524,7 @@ export default function BuyPage() {
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <p className="text-violet-100 text-sm font-semibold uppercase tracking-wider mb-1">
+              <p className="text-brand-100 text-sm font-semibold uppercase tracking-wider mb-1">
                 Buying from
               </p>
               <h2 className="text-2xl font-display font-bold text-white tracking-tight">
@@ -539,17 +539,20 @@ export default function BuyPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Network Filter / Initial Selection Screen */}
             {networkFilter === "" ? (
-              <div className="glass-panel p-8 rounded-3xl border border-white/50 space-y-6 bg-white/70 backdrop-blur-md shadow-lg shadow-violet-200/40">
+              <div className="glass-panel p-8 rounded-3xl border border-white/50 space-y-6 bg-white/70 backdrop-blur-md shadow-lg shadow-brand-200/40">
                 <h3 className="text-xl font-display font-extrabold text-slate-800 tracking-tight text-center">
                   Select a Network/Bundle Type to view available packages
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {networks.map((network) => {
+                  {networks.map((network, i) => {
                     const style = NETWORK_STYLES[network] || NETWORK_STYLES.MTN;
                     const label = network === "AIRTELTIGO" ? "AT Big Time" : network === "AT" ? "AT iSHARE" : network === "TELECEL" ? "Telecel" : "MTN";
                     return (
-                      <button
+                      <Reveal
                         key={network}
+                        as="button"
+                        variant="scale"
+                        delay={i * 80}
                         onClick={() => setNetworkFilter(network)}
                         className={`p-6 rounded-2xl border-2 text-center transition-all duration-300 hover:scale-102 hover:shadow-lg ${style.border} bg-white hover:${style.bgLight} flex flex-col items-center justify-center gap-3`}
                       >
@@ -557,7 +560,7 @@ export default function BuyPage() {
                           <Wifi className="w-6 h-6" />
                         </div>
                         <span className="font-extrabold text-lg text-slate-900">{label}</span>
-                      </button>
+                      </Reveal>
                     );
                   })}
                 </div>
@@ -621,16 +624,18 @@ export default function BuyPage() {
                         </div>
 
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          {networkBundles.map((bundle) => {
+                          {networkBundles.map((bundle, i) => {
                             const isSelected = selectedBundle?.id === bundle.id;
                             return (
-                              <button
+                              <Reveal
                                 key={bundle.id}
+                                as="button"
+                                delay={Math.min(i * 60, 480)}
                                 onClick={() => setSelectedBundle(bundle)}
                                 className={`p-5 rounded-2xl border-2 text-left transition-all duration-300 relative overflow-hidden group ${
                                   isSelected
-                                    ? `${style.border} ${style.bgLight} ring-4 ring-offset-2 ${style.ring} shadow-lg -translate-y-1`
-                                    : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-brand-300 hover:shadow-md hover:shadow-violet-100/50 hover:-translate-y-0.5"
+                                    ? `${style.border} ${style.bgLight} ring-4 ring-offset-2 ${style.ring} shadow-lg -translate-y-1 scale-[1.02]`
+                                    : "border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm hover:border-brand-300 hover:shadow-md hover:shadow-brand-100/50 hover:-translate-y-0.5"
                                 }`}
                               >
                                 {isSelected && (
@@ -663,7 +668,7 @@ export default function BuyPage() {
                                     {formatCurrency(bundle.price)}
                                   </p>
                                 </div>
-                              </button>
+                              </Reveal>
                             );
                           })}
                         </div>
@@ -884,7 +889,7 @@ export default function BuyPage() {
                 <Button
                   type="submit"
                   variant="success"
-                  className="w-full h-12 text-[15px] font-bold shadow-lg shadow-action-500/30 hover:-translate-y-0.5 transition-all mt-4"
+                  className="shimmer-sweep w-full h-12 text-[15px] font-bold shadow-lg shadow-action-500/30 hover:-translate-y-0.5 transition-all mt-4"
                   disabled={!selectedBundle || createOrder.isPending}
                 >
                   {createOrder.isPending ? (
@@ -945,7 +950,7 @@ export default function BuyPage() {
       {otpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <Card className="max-w-sm w-full p-6 bg-white animate-in zoom-in-95">
-            <h3 className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-600 to-fuchsia-500 mb-2">
+            <h3 className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-600 to-sky-500 mb-2">
               Payment Verification
             </h3>
             <p className="text-sm text-slate-500 mb-6 font-medium">

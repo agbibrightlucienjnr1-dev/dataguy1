@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
                 {statsLoading ? "..." : stats.totalUsers || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center">
               <Users className="w-6 h-6 text-brand-600" />
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function AdminDashboardPage() {
                 {statsLoading ? "..." : formatCurrency(stats.thisMonthRevenue || 0)}
               </p>
             </div>
-            <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-brand-600" />
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
               {recentOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="p-4 flex items-center justify-between hover:bg-violet-50/50 transition-colors"
+                  className="p-4 flex items-center justify-between hover:bg-brand-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(order.status)}
@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
               {pendingWithdrawals.map((withdrawal) => (
                 <div
                   key={withdrawal.id}
-                  className="p-4 flex items-center justify-between hover:bg-violet-50/50 transition-colors"
+                  className="p-4 flex items-center justify-between hover:bg-brand-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Clock className="w-4 h-4 text-amber-500" />

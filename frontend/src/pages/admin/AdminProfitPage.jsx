@@ -50,7 +50,7 @@ const MONTHS = [
   { value: 12, label: "December" }
 ];
 
-const PIE_COLORS = ["#7c3aed", "#fb7185", "#fbbf24", "#f472b6", "#a78bfa", "#059669"];
+const PIE_COLORS = ["#2563eb", "#fb7185", "#fbbf24", "#f472b6", "#60a5fa", "#059669"];
 
 export default function AdminProfitPage() {
   const queryClient = useQueryClient();
@@ -459,7 +459,7 @@ export default function AdminProfitPage() {
                       <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                       <ChartTooltip formatter={(value) => formatCurrency(value)} />
                       <Legend wrapperStyle={{ fontSize: "12px" }} />
-                      <Bar dataKey="Revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Revenue" fill="#2563eb" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="Profit" fill="#10b981" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -478,7 +478,7 @@ export default function AdminProfitPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-violet-50/40 text-xs font-bold text-slate-500 uppercase">
+                  <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
                     <th className="pb-3 font-semibold">Operator</th>
                     <th className="pb-3 font-semibold text-right">Orders</th>
                     <th className="pb-3 font-semibold text-right">Gross Collected</th>
@@ -497,7 +497,7 @@ export default function AdminProfitPage() {
                     </tr>
                   ) : (
                     networkBreakdown.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-violet-50/50 transition-colors">
+                      <tr key={idx} className="hover:bg-brand-50/50 transition-colors">
                         <td className="py-3.5 font-bold text-slate-900">{item.network}</td>
                         <td className="py-3.5 text-right font-medium text-slate-700">{item.orders}</td>
                         <td className="py-3.5 text-right font-medium text-slate-900">{formatCurrency(item.grossCollected)}</td>
@@ -607,7 +607,7 @@ export default function AdminProfitPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 bg-violet-50/40 text-xs font-bold text-slate-500 uppercase">
+                      <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
                         <th className="pb-2 font-semibold">Date</th>
                         <th className="pb-2 font-semibold">Category</th>
                         <th className="pb-2 font-semibold">Description</th>
@@ -624,7 +624,7 @@ export default function AdminProfitPage() {
                         </tr>
                       ) : (
                         expensesList.map((exp) => (
-                          <tr key={exp.id} className="hover:bg-violet-50/50 transition-colors">
+                          <tr key={exp.id} className="hover:bg-brand-50/50 transition-colors">
                             <td className="py-2.5 text-xs text-slate-500">
                               {new Date(exp.date).toLocaleDateString()}
                             </td>
@@ -694,7 +694,7 @@ export default function AdminProfitPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-violet-50/40 text-xs font-bold text-slate-500 uppercase">
+                  <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
                     <th className="pb-3 font-semibold">Date/Time</th>
                     <th className="pb-3 font-semibold">Recipient</th>
                     <th className="pb-3 font-semibold">Operator</th>
@@ -716,7 +716,7 @@ export default function AdminProfitPage() {
                     </tr>
                   ) : (
                     paginatedLedger.map((item) => (
-                      <tr key={item.id} className="hover:bg-violet-50/50 transition-colors text-xs">
+                      <tr key={item.id} className="hover:bg-brand-50/50 transition-colors text-xs">
                         <td className="py-3 text-slate-500 whitespace-nowrap">
                           {new Date(item.createdAt).toLocaleString()}
                         </td>

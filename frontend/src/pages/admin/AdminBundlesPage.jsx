@@ -228,13 +228,13 @@ export default function AdminBundlesPage() {
         );
       case "AT":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT iSHARE
           </span>
         );
       case "AIRTELTIGO":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT Big Time
           </span>
         );
@@ -330,7 +330,7 @@ export default function AdminBundlesPage() {
                       ? "bg-yellow-400"
                       : networkKey === "TELECEL"
                       ? "bg-red-500"
-                      : "bg-blue-600"
+                      : "bg-indigo-600"
                   }`} />
                   <h2 className="text-lg font-bold text-slate-800">
                     {networkConfig.label} Bundles
@@ -352,7 +352,7 @@ export default function AdminBundlesPage() {
                             : bundle.network === "TELECEL"
                             ? "bg-red-500"
                             : bundle.network === "AT" || bundle.network === "AIRTELTIGO"
-                            ? "bg-blue-600"
+                            ? "bg-indigo-600"
                             : "bg-slate-300"
                         }`}
                       />

@@ -108,8 +108,8 @@ export default function AgentSubAgentsPage() {
                 )}
               </p>
             </div>
-            <div className="w-12 h-12 bg-fuchsia-50 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-fuchsia-600" />
+            <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-sky-600" />
             </div>
           </div>
         </Card>
@@ -199,7 +199,7 @@ export default function AgentSubAgentsPage() {
                 {/* Left: Sub-Agent Info */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-linear-to-br from-brand-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-sm shadow-brand-600/30">
+                    <div className="w-10 h-10 bg-linear-to-br from-brand-600 to-sky-600 rounded-full flex items-center justify-center shadow-sm shadow-brand-600/30">
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>

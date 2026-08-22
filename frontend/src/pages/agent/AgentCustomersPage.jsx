@@ -97,7 +97,7 @@ export default function AgentCustomersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-violet-50/60 text-slate-500 border-b border-slate-200">
+              <thead className="bg-brand-50/60 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Customer</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Phone Number</th>
@@ -110,7 +110,7 @@ export default function AgentCustomersPage() {
                 {filteredCustomers.map((customer) => (
                   <tr
                     key={customer.phone}
-                    className="hover:bg-violet-50/50 transition-colors"
+                    className="hover:bg-brand-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

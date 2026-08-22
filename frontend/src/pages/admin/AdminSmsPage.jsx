@@ -87,7 +87,7 @@ export default function AdminSmsPage() {
                         onClick={() => setTarget(option.id)}
                         className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
                           isActive
-                            ? "border-brand-600 bg-violet-50 text-brand-700"
+                            ? "border-brand-600 bg-brand-50 text-brand-700"
                             : "border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50 text-slate-600"
                         }`}
                       >
@@ -199,7 +199,7 @@ export default function AdminSmsPage() {
 
         {/* Info Box */}
         <div>
-          <Card className="p-6 bg-violet-50/60 border-none shadow-inner rounded-2xl">
+          <Card className="p-6 bg-brand-50/60 border-none shadow-inner rounded-2xl">
             <h3 className="font-display font-semibold text-slate-900 mb-3 flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-brand-600" />
               SMS Info

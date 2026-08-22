@@ -97,20 +97,20 @@ export default function DashboardPage() {
 
       {/* Getting Started Guide for New Users */}
       {!statsLoading && stats.totalOrders === 0 && (
-        <Card className="border border-violet-100 overflow-hidden p-0 mb-6 bg-white shadow-sm shadow-violet-100 rounded-2xl">
-          <div className="bg-linear-to-r from-brand-600 to-violet-600 p-5 text-white">
+        <Card className="border border-brand-100 overflow-hidden p-0 mb-6 bg-white shadow-sm shadow-brand-100 rounded-2xl">
+          <div className="bg-linear-to-r from-brand-600 to-sky-600 p-5 text-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="text-lg font-display font-bold">Getting Started Guide</h2>
-                <p className="text-violet-100 text-sm">Complete these steps to start earning</p>
+                <p className="text-brand-100 text-sm">Complete these steps to start earning</p>
               </div>
             </div>
           </div>
           <div className="p-0 divide-y divide-slate-100">
-            <div className="p-4 sm:p-5 flex items-start gap-4 hover:bg-violet-50/50 transition-colors">
+            <div className="p-4 sm:p-5 flex items-start gap-4 hover:bg-brand-50/50 transition-colors">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-sm mt-0.5">1</div>
               <div className="flex-grow">
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2">Copy & Share Your Link <Copy className="w-4 h-4 text-slate-400" /></h3>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 flex items-start gap-4 hover:bg-violet-50/50 transition-colors">
+            <div className="p-4 sm:p-5 flex items-start gap-4 hover:bg-brand-50/50 transition-colors">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-action-100 text-action-700 flex items-center justify-center font-bold text-sm mt-0.5">2</div>
               <div className="flex-grow">
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2">Set Your Custom Prices <Tag className="w-4 h-4 text-slate-400" /></h3>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
       <div className="space-y-4">
         {/* Customer Payment Link */}
         {paymentLink && (
-          <Card className="bg-linear-to-r from-brand-700 to-violet-900 text-white p-6 rounded-2xl shadow-sm shadow-violet-200">
+          <Card className="bg-linear-to-r from-brand-700 to-brand-900 text-white p-6 rounded-2xl shadow-sm shadow-brand-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -192,14 +192,14 @@ export default function DashboardPage() {
 
         {/* USSD Agent Code */}
         {user?.agentCode && (
-          <Card className="bg-linear-to-r from-violet-900 to-brand-900 text-white p-6 rounded-2xl shadow-sm shadow-violet-200">
+          <Card className="bg-linear-to-r from-brand-900 to-slate-900 text-white p-6 rounded-2xl shadow-sm shadow-brand-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <Phone className="w-5 h-5" />
                   <h3 className="font-semibold">USSD Code</h3>
                 </div>
-                <p className="text-violet-200 text-sm">
+                <p className="text-brand-200 text-sm">
                   USSD code is now live! Dial *203*138# and enter your agent code to get started.
                 </p>
               </div>
@@ -218,7 +218,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 rounded-2xl shadow-sm shadow-violet-100">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Orders</p>
@@ -226,13 +226,13 @@ export default function DashboardPage() {
                 {stats.totalOrders || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center">
               <ShoppingCart className="w-6 h-6 text-brand-600" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-violet-100">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Revenue</p>
@@ -246,7 +246,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-violet-100">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Wallet Balance</p>
@@ -266,7 +266,7 @@ export default function DashboardPage() {
           </Link>
         </Card>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-violet-100">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Pending Orders</p>
@@ -284,9 +284,9 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link to="/bundles">
-          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-violet-100 transition-colors cursor-pointer group rounded-2xl">
+          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-brand-100 transition-colors cursor-pointer group rounded-2xl">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
+              <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
                 <Package className="w-6 h-6 text-brand-600 group-hover:text-white transition-colors" />
               </div>
               <div>
@@ -300,9 +300,9 @@ export default function DashboardPage() {
         </Link>
 
         <Link to="/orders">
-          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-violet-100 transition-colors cursor-pointer group rounded-2xl">
+          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-brand-100 transition-colors cursor-pointer group rounded-2xl">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
+              <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
                 <ShoppingCart className="w-6 h-6 text-brand-600 group-hover:text-white transition-colors" />
               </div>
               <div>
@@ -316,7 +316,7 @@ export default function DashboardPage() {
         </Link>
 
         <Link to="/withdrawals">
-          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-violet-100 transition-colors cursor-pointer group rounded-2xl">
+          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-brand-100 transition-colors cursor-pointer group rounded-2xl">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:bg-action-600 transition-colors">
                 <Wallet className="w-6 h-6 text-action-600 group-hover:text-white transition-colors" />
@@ -331,7 +331,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Orders */}
-      <Card className="rounded-2xl shadow-sm shadow-violet-100">
+      <Card className="rounded-2xl shadow-sm shadow-brand-100">
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center justify-between">
             <h2 className="font-display font-semibold text-slate-900">Recent Orders</h2>
@@ -350,7 +350,7 @@ export default function DashboardPage() {
           </div>
         ) : orders.length === 0 ? (
           <div className="p-10 text-center">
-            <div className="w-16 h-16 bg-violet-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-brand-500" />
             </div>
             <h3 className="text-lg font-display font-semibold text-slate-900">No orders yet</h3>
@@ -371,7 +371,7 @@ export default function DashboardPage() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="p-4 flex items-center justify-between hover:bg-violet-50/50"
+                className="p-4 flex items-center justify-between hover:bg-brand-50/50"
               >
                 <div className="flex items-center gap-3">
                   {getStatusIcon(order.status)}

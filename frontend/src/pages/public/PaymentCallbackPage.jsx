@@ -34,8 +34,8 @@ const STATUS_CONFIG = {
   },
   processing: {
     icon: Loader2,
-    color: "text-fuchsia-600",
-    bgColor: "bg-fuchsia-100",
+    color: "text-sky-600",
+    bgColor: "bg-sky-100",
     label: "Processing",
     description: "Your data bundle is being delivered",
     animate: true,

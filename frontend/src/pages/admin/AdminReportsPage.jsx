@@ -25,7 +25,7 @@ import { formatCurrency } from "../../utils/formatters";
 import toast from "react-hot-toast";
 
 const COLORS = [
-  '#7c3aed', // Brand violet 600
+  '#2563eb', // Brand blue 600
   '#059669', // Action emerald 600
   '#d97706', // Amber 600
   '#dc2626', // Red 600
@@ -105,7 +105,7 @@ export default function AdminReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6 rounded-2xl">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-violet-50 text-brand-600 rounded-2xl">
+            <div className="p-3 bg-brand-50 text-brand-600 rounded-2xl">
               <BarChart3 className="w-6 h-6" />
             </div>
             <div>
@@ -118,7 +118,7 @@ export default function AdminReportsPage() {
         </Card>
         <Card className="p-6 rounded-2xl">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-violet-50 text-brand-600 rounded-2xl">
+            <div className="p-3 bg-brand-50 text-brand-600 rounded-2xl">
               <Package className="w-6 h-6" />
             </div>
             <div>
@@ -180,7 +180,7 @@ export default function AdminReportsPage() {
                 <Line
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#7c3aed"
+                  stroke="#2563eb"
                   strokeWidth={3}
                   dot={false}
                   activeDot={{r: 6}}

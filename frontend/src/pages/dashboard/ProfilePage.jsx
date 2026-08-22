@@ -153,7 +153,7 @@ export default function ProfilePage() {
                   Role
                 </label>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-violet-100 text-brand-700">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-brand-100 text-brand-700">
                     {user?.role || "N/A"}
                   </span>
                 </div>

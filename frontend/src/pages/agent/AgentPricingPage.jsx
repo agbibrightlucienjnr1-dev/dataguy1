@@ -222,7 +222,7 @@ export default function AgentPricingPage() {
       </div>
 
       {/* Info Card */}
-      <Card className="p-4 bg-violet-50 border-brand-200">
+      <Card className="p-4 bg-brand-50 border-brand-200">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
           <div className="text-sm text-brand-900">
@@ -250,7 +250,7 @@ export default function AgentPricingPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
                <thead>
-                 <tr className="border-b border-slate-100 bg-violet-50/40">
+                 <tr className="border-b border-slate-100 bg-brand-50/40">
                     <th className="text-left p-4 text-sm font-medium text-slate-600">Bundle</th>
                     <th className="text-left p-4 text-sm font-medium text-slate-600">Your Cost</th>
                     <th className="text-left p-4 text-sm font-medium text-slate-600">Customer Price</th>
@@ -298,8 +298,8 @@ export default function AgentPricingPage() {
                 cardGradient = "from-red-500 to-rose-600 shadow-red-100/50 hover:shadow-red-200/80";
                 badgeColor = "bg-red-100 text-red-900";
               } else if (networkKey === "AT" || networkKey === "AIRTELTIGO") {
-                cardGradient = "from-blue-500 to-indigo-600 shadow-blue-100/50 hover:shadow-blue-200/80";
-                badgeColor = "bg-blue-100 text-blue-900";
+                cardGradient = "from-indigo-500 to-indigo-600 shadow-indigo-100/50 hover:shadow-indigo-200/80";
+                badgeColor = "bg-indigo-100 text-indigo-900";
               }
 
               return (
@@ -383,7 +383,7 @@ export default function AgentPricingPage() {
                 <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-slate-100 bg-violet-50/40">
+                      <tr className="border-b border-slate-100 bg-brand-50/40">
                         <th className="text-left p-4 text-sm font-medium text-slate-600">
                           Bundle
                         </th>
@@ -435,7 +435,7 @@ export default function AgentPricingPage() {
                           <tr
                             key={bundle.id}
                             className={`border-b border-slate-50 ${
-                              hasError ? "bg-red-50" : "hover:bg-violet-50/30"
+                              hasError ? "bg-red-50" : "hover:bg-brand-50/30"
                             }`}
                           >
                             <td className="p-4">

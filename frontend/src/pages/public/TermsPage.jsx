@@ -16,10 +16,10 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-md shadow-brand-600/20 transform group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-sky-500 rounded-lg flex items-center justify-center shadow-md shadow-brand-600/20 transform group-hover:scale-105 transition-all">
                 <Wifi className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-fuchsia-600">
+              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-sky-600">
                 DataGuy
               </span>
             </Link>
@@ -43,7 +43,7 @@ export default function TermsPage() {
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 py-12 relative z-10">
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-fuchsia-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/20">
+          <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/20">
             <FileText className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-display font-extrabold text-slate-900 tracking-tight">

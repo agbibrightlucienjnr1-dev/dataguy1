@@ -111,10 +111,10 @@ export default function AgentWalletPage() {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Available Balance */}
-        <Card className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-fuchsia-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
+        <Card className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
           <Wallet className="absolute right-3 bottom-3 w-24 h-24 text-white/10" />
           <div className="flex items-center justify-between mb-4 relative">
-            <span className="text-violet-100 text-sm">Available Balance</span>
+            <span className="text-brand-100 text-sm">Available Balance</span>
             <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
               <Wallet className="w-4 h-4 text-white" />
             </div>
@@ -123,7 +123,7 @@ export default function AgentWalletPage() {
             {walletLoading ? "..." : formatCurrency(wallet.balance)}
           </p>
           {wallet.pendingBalance > 0 && (
-            <p className="text-sm text-violet-100 mt-2 relative">
+            <p className="text-sm text-brand-100 mt-2 relative">
               + {formatCurrency(wallet.pendingBalance)} pending
             </p>
           )}
@@ -228,7 +228,7 @@ export default function AgentWalletPage() {
               return (
                 <div
                   key={transaction.id}
-                  className="p-4 flex items-center justify-between hover:bg-violet-50/50 transition-colors"
+                  className="p-4 flex items-center justify-between hover:bg-brand-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div

@@ -152,7 +152,7 @@ export default function AgentOrdersPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-violet-50/40">
+              <tr className="border-b border-slate-100 bg-brand-50/40">
                 <th className="text-left p-4 text-sm font-medium text-slate-500">
                   Order
                 </th>
@@ -201,7 +201,7 @@ export default function AgentOrdersPage() {
                 filteredOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-slate-50 hover:bg-violet-50/50 transition-colors"
+                    className="border-b border-slate-50 hover:bg-brand-50/50 transition-colors"
                   >
                     <td className="p-4">
                       <p className="font-mono text-sm text-slate-900">

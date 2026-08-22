@@ -228,7 +228,7 @@ export default function AdminWithdrawalsPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-violet-50/60 text-slate-500 border-b border-slate-200">
+              <thead className="bg-brand-50/60 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Requested</th>
@@ -244,11 +244,11 @@ export default function AdminWithdrawalsPage() {
                 {withdrawals.map((withdrawal) => (
                   <tr
                     key={withdrawal.id}
-                    className="border-b border-slate-50 hover:bg-violet-50/50 transition-colors"
+                    className="border-b border-slate-50 hover:bg-brand-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-tr from-brand-600 to-violet-400 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium text-white">
                             {withdrawal.user?.name?.charAt(0)?.toUpperCase()}
                           </span>
@@ -456,7 +456,7 @@ export default function AdminWithdrawalsPage() {
                   </label>
                 </div>
                 {!useManualMode && (
-                  <div className="p-3 bg-violet-50 border border-violet-200 rounded-xl">
+                  <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl">
                     <p className="text-sm text-brand-800">
                       ⚠️ Automatic Paystack transfer requires a Registered
                       Business account.

@@ -208,13 +208,13 @@ export default function AdminOrdersPage() {
         );
       case "AT":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT iSHARE
           </span>
         );
       case "AIRTELTIGO":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT Big Time
           </span>
         );
@@ -298,7 +298,7 @@ export default function AdminOrdersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-violet-50/40 text-slate-500 border-b border-slate-200">
+              <thead className="bg-brand-50/40 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Order</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Bundle</th>
@@ -314,7 +314,7 @@ export default function AdminOrdersPage() {
                 {orders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-slate-50 hover:bg-violet-50/50"
+                    className="border-b border-slate-50 hover:bg-brand-50/50"
                   >
                     <td className="px-6 py-4">
                       <p className="font-mono text-sm text-slate-900">
