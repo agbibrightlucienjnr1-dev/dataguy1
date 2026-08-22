@@ -18,7 +18,7 @@ import {
   Settings2
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Input } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Input, Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Users</h1>
           <p className="text-slate-600 mt-1">
@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4 rounded-2xl">
+      <Card className="p-4 rounded-2xl animate-fade-in-up animation-delay-150">
         <form
           onSubmit={handleSearch}
           className="flex flex-col sm:flex-row gap-4"
@@ -161,6 +161,7 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Users Table */}
+      <Reveal>
       <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
@@ -274,6 +275,7 @@ export default function AdminUsersPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* User Details Modal */}
       <Modal

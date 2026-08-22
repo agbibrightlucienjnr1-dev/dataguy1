@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useCustomers } from "../../hooks/useCustomers";
 import { customersApi, adminApi } from "../../api";
 import toast from "react-hot-toast";
-import { Card, Input, EmptyState, SkeletonTable, Modal, Button } from "../../components/ui";
+import { Card, Input, EmptyState, SkeletonTable, Modal, Button, Reveal } from "../../components/ui";
 import { formatDate } from "../../utils/formatters";
 import { Search, Download, User, Phone, UserPlus, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -78,7 +78,7 @@ export default function AdminCustomersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Customers</h1>
           <p className="text-slate-600 mt-1">
@@ -105,7 +105,7 @@ export default function AdminCustomersPage() {
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-medium hover:bg-brand-700 transition shadow-sm shadow-brand-200"
+            className="shimmer-sweep flex items-center gap-2 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-medium hover:bg-brand-700 transition shadow-sm shadow-brand-200"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export</span>
@@ -113,6 +113,7 @@ export default function AdminCustomersPage() {
         </div>
       </div>
 
+      <Reveal>
       <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
@@ -218,6 +219,7 @@ export default function AdminCustomersPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       <Modal
         isOpen={isImportModalOpen}

@@ -268,7 +268,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-6">
             {/* Large featured card */}
-            <Reveal variant="scale" className="lg:col-span-2 lg:row-span-2 rounded-3xl bg-linear-to-br from-brand-800 via-brand-600 to-sky-500 p-8 flex flex-col justify-between text-white relative overflow-hidden">
+            <Reveal variant="scale" className="lg:col-span-2 lg:row-span-2 rounded-3xl bg-linear-to-br from-brand-900 via-brand-700 to-sky-800 p-8 flex flex-col justify-between text-white relative overflow-hidden">
               <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
               <div className="relative z-10">
                 <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/20">
@@ -370,7 +370,7 @@ export default function LandingPage() {
 
       {/* CTA — split layout with checklist, not a centered box */}
       <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-brand-800 via-brand-600 to-sky-500"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-brand-900 via-brand-700 to-sky-800"></div>
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-sky-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-action-400 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
 

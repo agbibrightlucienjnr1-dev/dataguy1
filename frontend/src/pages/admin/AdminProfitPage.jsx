@@ -30,10 +30,17 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
-import { Card, Button, Spinner } from "../../components/ui";
+import { Card, Button, Spinner, Reveal } from "../../components/ui";
+import { useCountUp } from "../../hooks";
 import { adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import toast from "react-hot-toast";
+
+function StatValue({ value, isLoading, className }) {
+  const numeric = Number(value) || 0;
+  const animated = useCountUp(numeric, { start: !isLoading, duration: 1000 });
+  return <span className={className}>{isLoading ? "..." : formatCurrency(animated)}</span>;
+}
 
 const MONTHS = [
   { value: 1, label: "January" },
@@ -50,7 +57,7 @@ const MONTHS = [
   { value: 12, label: "December" }
 ];
 
-const PIE_COLORS = ["#2563eb", "#fb7185", "#fbbf24", "#f472b6", "#60a5fa", "#059669"];
+const PIE_COLORS = ["#1e3c66", "#fb7185", "#fbbf24", "#f472b6", "#5779a6", "#059669"];
 
 export default function AdminProfitPage() {
   const queryClient = useQueryClient();
@@ -198,7 +205,7 @@ export default function AdminProfitPage() {
   return (
     <div className="space-y-6">
       {/* Header & Month/Year picker */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <TrendingUp className="w-7 h-7 text-brand-600 animate-pulse" />
@@ -250,98 +257,111 @@ export default function AdminProfitPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Gross Collected */}
+            <Reveal variant="scale" delay={0}>
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
               <div className="absolute top-0 right-0 w-24 h-24 bg-brand-50/60 rounded-bl-full flex items-start justify-end p-4">
                 <Layers className="w-5 h-5 text-brand-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Collections</div>
               <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
-                {formatCurrency(overview.totalGrossCollected)}
+                <StatValue value={overview.totalGrossCollected} />
               </div>
               <p className="text-xs text-slate-500 mt-3 flex items-center gap-1 font-medium">
                 <Info className="w-3.5 h-3.5 text-slate-400" />
                 Bundle prices paid + service fees
               </p>
             </Card>
+            </Reveal>
 
             {/* Gateway Deductions */}
+            <Reveal variant="scale" delay={60}>
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
               <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50/50 rounded-bl-full flex items-start justify-end p-4">
                 <CreditCard className="w-5 h-5 text-rose-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gateway Deductions</div>
               <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
-                {formatCurrency(overview.totalGatewayFees)}
+                <StatValue value={overview.totalGatewayFees} />
               </div>
               <p className="text-xs text-rose-600 mt-3 flex items-center gap-1 font-medium">
                 <TrendingDown className="w-3.5 h-3.5" />
                 Paystack/Moolre transaction cuts
               </p>
             </Card>
+            </Reveal>
 
             {/* Net Settlement */}
+            <Reveal variant="scale" delay={120}>
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50/50 rounded-bl-full flex items-start justify-end p-4">
                 <Wallet className="w-5 h-5 text-emerald-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Net Settlement</div>
               <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
-                {formatCurrency(overview.totalNetSettlement)}
+                <StatValue value={overview.totalNetSettlement} />
               </div>
               <p className="text-xs text-emerald-600 mt-3 flex items-center gap-1 font-medium">
                 <TrendingUp className="w-3.5 h-3.5" />
                 Actual funds settled to merchant account
               </p>
             </Card>
+            </Reveal>
 
             {/* Supplier Cost */}
+            <Reveal variant="scale" delay={180}>
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
               <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50/70 rounded-bl-full flex items-start justify-end p-4">
                 <Layers className="w-5 h-5 text-slate-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Wholesale Costs (Supplier)</div>
               <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
-                {formatCurrency(overview.totalWholesaleCosts)}
+                <StatValue value={overview.totalWholesaleCosts} />
               </div>
               <p className="text-xs text-slate-500 mt-3 flex items-center gap-1 font-medium">
                 <Info className="w-3.5 h-3.5 text-slate-400" />
                 Wholesale prices + deposit markups
               </p>
             </Card>
+            </Reveal>
 
             {/* Operating Expenses */}
+            <Reveal variant="scale" delay={240}>
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
               <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50/50 rounded-bl-full flex items-start justify-end p-4">
                 <MinusCircle className="w-5 h-5 text-amber-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Platform Expenses</div>
               <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
-                {formatCurrency(overview.totalExpenses)}
+                <StatValue value={overview.totalExpenses} />
               </div>
               <p className="text-xs text-amber-600 mt-3 flex items-center gap-1 font-medium">
                 <Info className="w-3.5 h-3.5 text-amber-500" />
                 Discrete costs logged this month
               </p>
             </Card>
+            </Reveal>
 
             {/* Withdrawal Fees */}
+            <Reveal variant="scale" delay={300}>
             <Card className="p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-slate-100">
               <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50/50 rounded-bl-full flex items-start justify-end p-4">
                 <TrendingDown className="w-5 h-5 text-pink-500" />
               </div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Withdrawal Fees</div>
               <div className="text-3xl font-display font-extrabold text-slate-900 mt-2">
-                {formatCurrency(overview.totalWithdrawalFees)}
+                <StatValue value={overview.totalWithdrawalFees} />
               </div>
               <p className="text-xs text-pink-600 mt-3 flex items-center gap-1 font-medium">
                 <TrendingDown className="w-3.5 h-3.5" />
                 Moolre withdrawal payout charges
               </p>
             </Card>
+            </Reveal>
 
             {/* Net Platform Profit (This Month) */}
-            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-1 lg:col-span-1 ${
-              isProfitPositive 
+            <Reveal variant="scale" delay={360} className="sm:col-span-1 lg:col-span-1">
+            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white ${
+              isProfitPositive
                 ? "bg-gradient-to-br from-action-600 to-action-800 shadow-action-200/50"
                 : "bg-gradient-to-br from-red-600 to-red-800 shadow-red-200/50"
             }`}>
@@ -354,7 +374,7 @@ export default function AdminProfitPage() {
               </div>
               <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Net Platform Profit (This Month)</div>
               <div className="text-3xl font-display font-black mt-2">
-                {formatCurrency(overview.totalNetProfit)}
+                <StatValue value={overview.totalNetProfit} />
               </div>
               <p className="text-[10px] opacity-75 mt-1 font-mono">
                 Formula: Net Settlement - Wholesale Costs - Commissions - Platform Expenses - Withdrawal Fees
@@ -367,11 +387,13 @@ export default function AdminProfitPage() {
                 )}
               </p>
             </Card>
+            </Reveal>
 
             {/* Overall Net Profit (All Months) */}
-            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white sm:col-span-1 lg:col-span-2 ${
-              parseFloat(overall.totalNetProfit) >= 0 
-                ? "bg-gradient-to-br from-emerald-600 to-teal-800 shadow-emerald-200/50" 
+            <Reveal variant="scale" delay={420} className="sm:col-span-1 lg:col-span-2">
+            <Card className={`p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-transparent text-white ${
+              parseFloat(overall.totalNetProfit) >= 0
+                ? "bg-gradient-to-br from-emerald-600 to-teal-800 shadow-emerald-200/50"
                 : "bg-gradient-to-br from-rose-600 to-rose-900 shadow-rose-200/50"
             }`}>
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full flex items-start justify-end p-4">
@@ -379,7 +401,7 @@ export default function AdminProfitPage() {
               </div>
               <div className="text-xs font-bold opacity-80 uppercase tracking-wider">Overall Net Profit (All Months)</div>
               <div className="text-3xl font-display font-black mt-2">
-                {formatCurrency(overall.totalNetProfit)}
+                <StatValue value={overall.totalNetProfit} />
               </div>
               <p className="text-[10px] opacity-75 mt-1 font-mono">
                 Lifetime Platform Profit across all registered months
@@ -392,12 +414,14 @@ export default function AdminProfitPage() {
                 )}
               </p>
             </Card>
+            </Reveal>
           </div>
 
           {/* Visual Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Cost Breakdown Donut Chart */}
+            <Reveal>
             <Card className="p-6">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
@@ -438,8 +462,10 @@ export default function AdminProfitPage() {
                 )}
               </div>
             </Card>
+            </Reveal>
 
             {/* Network Performance Bar Chart */}
+            <Reveal delay={120}>
             <Card className="p-6">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
@@ -459,16 +485,18 @@ export default function AdminProfitPage() {
                       <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                       <ChartTooltip formatter={(value) => formatCurrency(value)} />
                       <Legend wrapperStyle={{ fontSize: "12px" }} />
-                      <Bar dataKey="Revenue" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Revenue" fill="#1e3c66" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="Profit" fill="#10b981" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
             </Card>
+            </Reveal>
           </div>
 
           {/* Network Performance Breakdown Table */}
+          <Reveal>
           <Card className="p-6 overflow-hidden">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
@@ -516,11 +544,13 @@ export default function AdminProfitPage() {
               </table>
             </div>
           </Card>
+          </Reveal>
 
           {/* Operating Cost Expenses Log Tracker */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* Form to Log Expense */}
+            <Reveal>
             <Card className="p-6 h-fit">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <MinusCircle className="w-5 h-5 text-amber-500" />
@@ -581,7 +611,7 @@ export default function AdminProfitPage() {
 
                 <Button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-1.5"
+                  className="shimmer-sweep w-full flex items-center justify-center gap-1.5"
                   disabled={logExpenseMutation.isPending}
                 >
                   {logExpenseMutation.isPending ? (
@@ -595,8 +625,10 @@ export default function AdminProfitPage() {
                 </Button>
               </form>
             </Card>
+            </Reveal>
 
             {/* Expenses List Ledger */}
+            <Reveal delay={120}>
             <Card className="p-6 lg:col-span-2 overflow-hidden flex flex-col justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -660,9 +692,11 @@ export default function AdminProfitPage() {
                 </div>
               )}
             </Card>
+            </Reveal>
           </div>
 
           {/* Transaction Ledger */}
+          <Reveal>
           <Card className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
@@ -784,6 +818,7 @@ export default function AdminProfitPage() {
               </div>
             )}
           </Card>
+          </Reveal>
         </>
       )}
     </div>

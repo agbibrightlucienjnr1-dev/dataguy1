@@ -21,6 +21,7 @@ import {
   Cell
 } from "recharts";
 import { adminApi } from "../../api/admin";
+import { Reveal } from "../../components/ui";
 
 export const AdminAnalyticsPage = () => {
   const [data, setData] = useState({ stats: null, chartData: [] });
@@ -68,7 +69,7 @@ export const AdminAnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="animate-fade-in-up flex items-center gap-4">
         <Link
           to="/admin"
           className="p-2 hover:bg-brand-50 rounded-xl transition-colors"
@@ -82,34 +83,43 @@ export const AdminAnalyticsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Total Page Views (30d)"
-          value={stats?.totalPageViews || 0}
-          icon={<MousePointerClick className="w-6 h-6 text-action-600" />}
-          bgColor="bg-emerald-50"
-        />
-        <MetricCard
-          title="Unique Visitors (30d)"
-          value={stats?.uniqueVisitors || 0}
-          icon={<Users className="w-6 h-6 text-brand-600" />}
-          bgColor="bg-brand-50"
-        />
-        <MetricCard
-          title="Total USSD Dials (30d)"
-          value={stats?.ussdDials || 0}
-          icon={<Smartphone className="w-6 h-6 text-sky-600" />}
-          bgColor="bg-sky-50"
-        />
-        <MetricCard
-          title="Conversion Rate"
-          value={`${stats?.conversionRate || "0.00"}%`}
-          icon={<Activity className="w-6 h-6 text-amber-600" />}
-          bgColor="bg-amber-50"
-        />
+        <Reveal variant="scale" delay={0}>
+          <MetricCard
+            title="Total Page Views (30d)"
+            value={stats?.totalPageViews || 0}
+            icon={<MousePointerClick className="w-6 h-6 text-action-600" />}
+            bgColor="bg-emerald-50"
+          />
+        </Reveal>
+        <Reveal variant="scale" delay={80}>
+          <MetricCard
+            title="Unique Visitors (30d)"
+            value={stats?.uniqueVisitors || 0}
+            icon={<Users className="w-6 h-6 text-brand-600" />}
+            bgColor="bg-brand-50"
+          />
+        </Reveal>
+        <Reveal variant="scale" delay={160}>
+          <MetricCard
+            title="Total USSD Dials (30d)"
+            value={stats?.ussdDials || 0}
+            icon={<Smartphone className="w-6 h-6 text-sky-600" />}
+            bgColor="bg-sky-50"
+          />
+        </Reveal>
+        <Reveal variant="scale" delay={240}>
+          <MetricCard
+            title="Conversion Rate"
+            value={`${stats?.conversionRate || "0.00"}%`}
+            icon={<Activity className="w-6 h-6 text-amber-600" />}
+            bgColor="bg-amber-50"
+          />
+        </Reveal>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 col-span-1 lg:col-span-2">
+        <Reveal className="col-span-1 lg:col-span-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-6">
              <h3 className="font-display text-lg font-semibold text-slate-900">Traffic Trends (Last 7 Days)</h3>
              <p className="text-sm text-slate-500">Compare web visits against offline USSD dial usage.</p>
@@ -131,7 +141,9 @@ export const AdminAnalyticsPage = () => {
             </ResponsiveContainer>
           </div>
         </div>
+        </Reveal>
 
+        <Reveal delay={120}>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col">
           <div className="mb-4">
             <h3 className="font-display text-lg font-semibold text-slate-900">Device Analytics</h3>
@@ -162,10 +174,12 @@ export const AdminAnalyticsPage = () => {
              </ResponsiveContainer>
           </div>
         </div>
+        </Reveal>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Agents */}
+        <Reveal>
         <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-4">
              <h3 className="font-display text-lg font-semibold text-slate-900">Top Performing Agents</h3>
@@ -197,8 +211,10 @@ export const AdminAnalyticsPage = () => {
             </table>
           </div>
         </div>
+        </Reveal>
 
         {/* Top Paths */}
+        <Reveal delay={100}>
         <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-4">
              <h3 className="font-display text-lg font-semibold text-slate-900">Popular Paths</h3>
@@ -228,13 +244,14 @@ export const AdminAnalyticsPage = () => {
             </table>
           </div>
         </div>
+        </Reveal>
       </div>
     </div>
   );
 };
 
 const MetricCard = ({ title, value, icon, bgColor }) => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:shadow-md transition-shadow">
+  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
     <div className="flex items-center gap-4">
       <div className={`p-4 rounded-2xl ${bgColor}`}>{icon}</div>
       <div>

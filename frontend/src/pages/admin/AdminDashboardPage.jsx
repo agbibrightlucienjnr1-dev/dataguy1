@@ -10,10 +10,21 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { Card, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
+import { useCountUp } from "../../hooks";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { Link } from "react-router-dom";
+
+function StatValue({ value, isLoading, format, className }) {
+  const numeric = Number(value) || 0;
+  const animated = useCountUp(numeric, { start: !isLoading, duration: 1000 });
+  return (
+    <span className={className}>
+      {isLoading ? "..." : format ? format(animated) : Math.round(animated).toLocaleString()}
+    </span>
+  );
+}
 
 export default function AdminDashboardPage() {
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -56,7 +67,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="font-display text-2xl font-bold text-slate-900">Admin Dashboard</h1>
         <p className="text-slate-600 mt-1">
           Overview of platform activity and metrics
@@ -65,12 +76,13 @@ export default function AdminDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
+        <Reveal variant="scale" delay={0} className="rounded-2xl">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Users</p>
               <p className="font-display text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : stats.totalUsers || 0}
+                <StatValue value={stats.totalUsers} isLoading={statsLoading} />
               </p>
             </div>
             <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center">
@@ -82,13 +94,15 @@ export default function AdminDashboardPage() {
             sub-agents
           </div>
         </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
+        <Reveal variant="scale" delay={80} className="rounded-2xl">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Orders</p>
               <p className="font-display text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : stats.totalOrders || 0}
+                <StatValue value={stats.totalOrders} isLoading={statsLoading} />
               </p>
             </div>
             <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
@@ -100,13 +114,15 @@ export default function AdminDashboardPage() {
             pending
           </div>
         </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
+        <Reveal variant="scale" delay={160} className="rounded-2xl">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Revenue (This Month)</p>
               <p className="font-display text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : formatCurrency(stats.thisMonthRevenue || 0)}
+                <StatValue value={stats.thisMonthRevenue} isLoading={statsLoading} format={formatCurrency} />
               </p>
             </div>
             <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center">
@@ -117,13 +133,15 @@ export default function AdminDashboardPage() {
             Today: {formatCurrency(stats.todayRevenue || 0)} • Lifetime: {formatCurrency(stats.totalRevenue || 0)}
           </div>
         </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
+        <Reveal variant="scale" delay={240} className="rounded-2xl">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Platform Profit (This Month)</p>
               <p className="font-display text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : formatCurrency(stats.thisMonthProfit || 0)}
+                <StatValue value={stats.thisMonthProfit} isLoading={statsLoading} format={formatCurrency} />
               </p>
             </div>
             <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
@@ -134,13 +152,15 @@ export default function AdminDashboardPage() {
             Lifetime Profit: {formatCurrency(stats.platformProfit || 0)}
           </div>
         </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60">
+        <Reveal variant="scale" delay={320} className="rounded-2xl">
+        <Card className="p-5 rounded-2xl shadow-sm shadow-slate-200/60 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Pending WDs</p>
               <p className="font-display text-2xl font-bold text-slate-900 mt-1">
-                {statsLoading ? "..." : stats.pendingWithdrawals || 0}
+                <StatValue value={stats.pendingWithdrawals} isLoading={statsLoading} />
               </p>
             </div>
             <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
@@ -151,11 +171,13 @@ export default function AdminDashboardPage() {
             {formatCurrency(stats.pendingWithdrawalAmount || 0)} pending
           </div>
         </Card>
+        </Reveal>
       </div>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
+        <Reveal>
         <Card className="rounded-2xl">
           <div className="p-5 border-b border-slate-100">
             <div className="flex items-center justify-between">
@@ -209,8 +231,10 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </Card>
+        </Reveal>
 
         {/* Pending Withdrawals */}
+        <Reveal delay={100}>
         <Card className="rounded-2xl">
           <div className="p-5 border-b border-slate-100">
             <div className="flex items-center justify-between">
@@ -265,34 +289,43 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </Card>
+        </Reveal>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-4 text-center rounded-2xl">
+        <Reveal variant="scale" delay={0} className="rounded-2xl">
+        <Card className="p-4 text-center rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <p className="font-display text-2xl font-bold text-action-600">
-            {stats.successRate || 0}%
+            <StatValue value={stats.successRate} isLoading={statsLoading} format={(v) => `${v.toFixed(1)}%`} />
           </p>
           <p className="text-xs text-slate-500 mt-1">Success Rate</p>
         </Card>
-        <Card className="p-4 text-center rounded-2xl">
+        </Reveal>
+        <Reveal variant="scale" delay={80} className="rounded-2xl">
+        <Card className="p-4 text-center rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <p className="font-display text-2xl font-bold text-slate-900">
-            {stats.todayOrders || 0}
+            <StatValue value={stats.todayOrders} isLoading={statsLoading} />
           </p>
           <p className="text-xs text-slate-500 mt-1">Orders Today</p>
         </Card>
-        <Card className="p-4 text-center rounded-2xl">
+        </Reveal>
+        <Reveal variant="scale" delay={160} className="rounded-2xl">
+        <Card className="p-4 text-center rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <p className="font-display text-2xl font-bold text-brand-600">
-            {stats.activeAgents || 0}
+            <StatValue value={stats.activeAgents} isLoading={statsLoading} />
           </p>
           <p className="text-xs text-slate-500 mt-1">Active Agents</p>
         </Card>
-        <Card className="p-4 text-center rounded-2xl">
+        </Reveal>
+        <Reveal variant="scale" delay={240} className="rounded-2xl">
+        <Card className="p-4 text-center rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <p className="font-display text-2xl font-bold text-red-600">
-            {stats.failedOrders || 0}
+            <StatValue value={stats.failedOrders} isLoading={statsLoading} />
           </p>
           <p className="text-xs text-slate-500 mt-1">Failed Orders</p>
         </Card>
+        </Reveal>
       </div>
     </div>
   );

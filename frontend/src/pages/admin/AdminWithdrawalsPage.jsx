@@ -10,7 +10,7 @@ import {
   XCircle,
   Filter,
 } from "lucide-react";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { getErrorMessage } from "../../utils/helpers";
@@ -171,7 +171,7 @@ export default function AdminWithdrawalsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Withdrawals</h1>
           <p className="text-slate-600 mt-1">
@@ -185,7 +185,7 @@ export default function AdminWithdrawalsPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4 rounded-2xl">
+      <Card className="p-4 rounded-2xl animate-fade-in-up animation-delay-150">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
@@ -214,6 +214,7 @@ export default function AdminWithdrawalsPage() {
       </Card>
 
       {/* Withdrawals Table */}
+      <Reveal>
       <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
@@ -363,6 +364,7 @@ export default function AdminWithdrawalsPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Approval/Rejection/Complete Modal */}
       <Modal
@@ -508,7 +510,7 @@ export default function AdminWithdrawalsPage() {
               </Button>
               <Button
                 variant={actionType === "reject" ? "danger" : "success"}
-                className="flex-1"
+                className={actionType === "reject" ? "flex-1" : "shimmer-sweep flex-1"}
                 onClick={confirmAction}
                 disabled={
                   (actionType === "reject" && !rejectionReason.trim()) ||

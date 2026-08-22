@@ -17,7 +17,7 @@ import {
   Copy,
   RefreshCw,
 } from "lucide-react";
-import { Card, Button, Input, Badge } from "../../components/ui";
+import { Card, Button, Input, Badge, Reveal } from "../../components/ui";
 import { useTrackOrder, useTrackOrdersByPhone } from "../../hooks";
 import { paymentsApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -170,7 +170,7 @@ export default function OrderTrackingPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
+        <div className="animate-fade-in-up text-center mb-8">
           <h1 className="text-2xl font-display font-bold text-slate-900 mb-2">
             Track Your Order
           </h1>
@@ -180,7 +180,7 @@ export default function OrderTrackingPage() {
         </div>
 
         {/* Search Type Toggle */}
-        <div className="flex bg-slate-100 rounded-xl p-1 mb-6">
+        <div className="animate-fade-in-up animation-delay-150 flex bg-slate-100 rounded-xl p-1 mb-6">
           <button
             onClick={() => setSearchType("phone")}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
@@ -206,7 +206,7 @@ export default function OrderTrackingPage() {
         </div>
 
         {/* Search Forms */}
-        <Card className="p-6 rounded-2xl mb-6">
+        <Card className="animate-fade-in-up animation-delay-300 p-6 rounded-2xl mb-6">
           {searchType === "phone" ? (
             <form
               onSubmit={phoneForm.handleSubmit(handlePhoneSearch)}
@@ -295,11 +295,13 @@ export default function OrderTrackingPage() {
 
         {/* Single Order Result */}
         {order && !isLoading && (
-          <OrderCard
-            order={order}
-            onCopy={copyOrderId}
-            onRefetch={handleRefetch}
-          />
+          <Reveal>
+            <OrderCard
+              order={order}
+              onCopy={copyOrderId}
+              onRefetch={handleRefetch}
+            />
+          </Reveal>
         )}
 
         {/* Multiple Orders Result */}
@@ -308,13 +310,14 @@ export default function OrderTrackingPage() {
             <p className="text-sm text-slate-600">
               Found {orders.length} order{orders.length > 1 ? "s" : ""}
             </p>
-            {orders.map((o) => (
-              <OrderCard
-                key={o.id}
-                order={o}
-                onCopy={copyOrderId}
-                onRefetch={handleRefetch}
-              />
+            {orders.map((o, i) => (
+              <Reveal key={o.id} delay={Math.min(i * 80, 480)}>
+                <OrderCard
+                  order={o}
+                  onCopy={copyOrderId}
+                  onRefetch={handleRefetch}
+                />
+              </Reveal>
             ))}
           </div>
         )}
@@ -363,7 +366,7 @@ function OrderCard({ order, onCopy, onRefetch }) {
   };
 
   return (
-    <Card className="p-5 rounded-2xl">
+    <Card className="p-5 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
         <div>
           <button

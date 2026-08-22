@@ -13,7 +13,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
-import { Card, Button, Input, Badge, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Button, Input, Badge, Modal, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { useNavigate } from "react-router-dom";
 import { ordersApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
@@ -78,7 +78,7 @@ export default function AgentOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">My Orders</h1>
           <p className="text-slate-600 mt-1">
@@ -98,7 +98,7 @@ export default function AgentOrdersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Reveal as={Card} className="p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -145,10 +145,10 @@ export default function AgentOrdersPage() {
             </select>
           </div>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Orders Table */}
-      <Card>
+      <Reveal as={Card} delay={100}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -311,7 +311,7 @@ export default function AgentOrdersPage() {
             </div>
           </div>
         )}
-      </Card>
+      </Reveal>
 
       {/* Order Details Modal */}
       <Modal

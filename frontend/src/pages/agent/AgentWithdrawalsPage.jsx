@@ -16,11 +16,12 @@ import {
   Phone,
   AlertTriangle,
 } from "lucide-react";
-import { Card, Button, Input, Badge, Modal, EmptyState } from "../../components/ui";
+import { Card, Button, Input, Badge, Modal, EmptyState, Reveal } from "../../components/ui";
 import { withdrawalsApi, walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { MOBILE_MONEY_NETWORKS } from "../../utils/constants";
 import { getErrorMessage } from "../../utils/helpers";
+import { useCountUp } from "../../hooks";
 import toast from "react-hot-toast";
 
 const WITHDRAWAL_STATUSES = {
@@ -103,6 +104,8 @@ export default function AgentWithdrawalsPage() {
       mobileNetwork: "MTN",
     },
   });
+
+  const animatedBalance = useCountUp(balance, { start: true, duration: 1200 });
 
   const amountVal = watch("amount");
   const inputAmt = parseFloat(amountVal || "0");
@@ -200,7 +203,7 @@ export default function AgentWithdrawalsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Withdrawals</h1>
           <p className="text-slate-600 mt-1">
@@ -218,7 +221,11 @@ export default function AgentWithdrawalsPage() {
             />
             Refresh
           </Button>
-          <Button onClick={() => setShowWithdrawModal(true)} disabled={disableWithdrawals}>
+          <Button
+            onClick={() => setShowWithdrawModal(true)}
+            disabled={disableWithdrawals}
+            className="shimmer-sweep hover:-translate-y-0.5 transition-all"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Withdraw
           </Button>
@@ -238,12 +245,12 @@ export default function AgentWithdrawalsPage() {
       )}
 
       {/* Balance Card */}
-      <Card className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
+      <Reveal variant="scale" as={Card} className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
         <ArrowDownToLine className="absolute right-3 bottom-3 w-24 h-24 text-white/10" />
         <div className="flex items-center justify-between relative">
           <div>
             <p className="text-brand-100 text-sm mb-1">Available Balance</p>
-            <p className="font-display text-4xl font-bold">{formatCurrency(balance)}</p>
+            <p className="font-display text-4xl font-bold tabular-nums">{formatCurrency(animatedBalance)}</p>
           </div>
           <Button
             variant="secondary"
@@ -255,10 +262,10 @@ export default function AgentWithdrawalsPage() {
             Withdraw Funds
           </Button>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Reveal as={Card} delay={100} className="p-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-600">Filter by status:</span>
           <select
@@ -277,10 +284,10 @@ export default function AgentWithdrawalsPage() {
             ))}
           </select>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Withdrawals List */}
-      <Card>
+      <Reveal as={Card} delay={200}>
         <div className="divide-y divide-slate-100">
           {isLoading ? (
              <div className="space-y-0 divide-y divide-slate-100">
@@ -379,7 +386,7 @@ export default function AgentWithdrawalsPage() {
             </div>
           </div>
         )}
-      </Card>
+      </Reveal>
 
       {/* Withdraw Modal */}
       <Modal

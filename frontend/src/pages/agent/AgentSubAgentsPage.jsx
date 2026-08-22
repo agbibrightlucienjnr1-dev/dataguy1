@@ -12,7 +12,7 @@ import {
   User,
   RefreshCw,
 } from "lucide-react";
-import { Card, Input, Badge, EmptyState } from "../../components/ui";
+import { Card, Input, Badge, EmptyState, Reveal } from "../../components/ui";
 import { agentApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -46,7 +46,7 @@ export default function AgentSubAgentsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">My Sub-Agents</h1>
           <p className="text-slate-600 mt-1">
@@ -56,7 +56,7 @@ export default function AgentSubAgentsPage() {
         <button
           onClick={() => refetch()}
           disabled={isFetching}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors disabled:opacity-50 shadow-sm shadow-brand-600/20"
+          className="shimmer-sweep flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl hover:bg-brand-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 shadow-sm shadow-brand-600/20"
         >
           <RefreshCw
             className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
@@ -67,7 +67,7 @@ export default function AgentSubAgentsPage() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-5">
+        <Reveal variant="scale" as={Card} className="p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Sub-Agents</p>
@@ -79,9 +79,9 @@ export default function AgentSubAgentsPage() {
               <Users className="w-6 h-6 text-brand-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
 
-        <Card className="p-5">
+        <Reveal variant="scale" delay={80} as={Card} className="p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Orders</p>
@@ -93,9 +93,9 @@ export default function AgentSubAgentsPage() {
               <ShoppingCart className="w-6 h-6 text-action-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
 
-        <Card className="p-5">
+        <Reveal variant="scale" delay={160} as={Card} className="p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Revenue</p>
@@ -112,9 +112,9 @@ export default function AgentSubAgentsPage() {
               <TrendingUp className="w-6 h-6 text-sky-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
 
-        <Card className="p-5">
+        <Reveal variant="scale" delay={240} as={Card} className="p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">My Commission</p>
@@ -132,7 +132,7 @@ export default function AgentSubAgentsPage() {
               <Wallet className="w-6 h-6 text-action-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
       </div>
 
       {/* Search */}
@@ -192,9 +192,9 @@ export default function AgentSubAgentsPage() {
            />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <Reveal className="grid grid-cols-1 gap-4">
           {filteredSubAgents.map((subAgent) => (
-            <Card key={subAgent.id} className="p-6">
+            <Card key={subAgent.id} className="p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 {/* Left: Sub-Agent Info */}
                 <div className="flex-1">
@@ -282,7 +282,7 @@ export default function AgentSubAgentsPage() {
               </div>
             </Card>
           ))}
-        </div>
+        </Reveal>
       )}
     </div>
   );

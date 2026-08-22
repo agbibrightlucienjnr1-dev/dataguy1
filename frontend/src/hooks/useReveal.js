@@ -6,16 +6,14 @@ import { useEffect, useRef, useState } from "react";
  */
 export function useReveal({ threshold = 0.15, rootMargin = "0px 0px -80px 0px" } = {}) {
   const ref = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(
+    () => typeof IntersectionObserver === "undefined",
+  );
 
   useEffect(() => {
+    if (isVisible) return;
     const node = ref.current;
     if (!node) return;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setIsVisible(true);
-      return;
-    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -29,7 +27,7 @@ export function useReveal({ threshold = 0.15, rootMargin = "0px 0px -80px 0px" }
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [threshold, rootMargin]);
+  }, [threshold, rootMargin, isVisible]);
 
   return [ref, isVisible];
 }

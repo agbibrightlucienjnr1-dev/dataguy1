@@ -16,7 +16,7 @@ import {
   Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { adminApi, paymentsApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -230,7 +230,7 @@ export default function AdminOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">All Orders</h1>
           <p className="text-slate-600 mt-1">
@@ -244,7 +244,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="p-4 animate-fade-in-up animation-delay-150">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
@@ -284,6 +284,7 @@ export default function AdminOrdersPage() {
       </Card>
 
       {/* Orders Table */}
+      <Reveal>
       <Card className="overflow-hidden">
         {isLoading ? (
           <div className="p-6">
@@ -439,6 +440,7 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Order Details Modal */}
       <Modal
@@ -568,7 +570,7 @@ export default function AdminOrdersPage() {
               <div className="pt-4 border-t border-slate-200">
                 <Button
                   variant="primary"
-                  className="w-full"
+                  className="shimmer-sweep w-full"
                   onClick={() => fulfillMutation.mutate(selectedOrder.id)}
                   disabled={fulfillMutation.isPending}
                 >

@@ -9,7 +9,7 @@ import {
   CheckCircle,
   Info,
 } from "lucide-react";
-import { Card, Button, Input, Badge, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Button, Input, Badge, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { pricingApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -189,7 +189,7 @@ export default function AgentPricingPage() {
   return (
     <div className="space-y-6 pb-20 sm:pb-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">My Pricing</h1>
           <p className="text-slate-600 mt-1">
@@ -212,7 +212,7 @@ export default function AgentPricingPage() {
             <Button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
-              className="w-full sm:w-auto hidden sm:flex"
+              className="shimmer-sweep w-full sm:w-auto hidden sm:flex hover:-translate-y-0.5 transition-all"
             >
               <Save className="w-4 h-4 mr-2" />
               {saveMutation.isPending ? "Saving..." : "Save Changes"}
@@ -222,7 +222,7 @@ export default function AgentPricingPage() {
       </div>
 
       {/* Info Card */}
-      <Card className="p-4 bg-brand-50 border-brand-200">
+      <Reveal as={Card} delay={80} className="p-4 bg-brand-50 border-brand-200">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
           <div className="text-sm text-brand-900">
@@ -242,7 +242,7 @@ export default function AgentPricingPage() {
             </ul>
           </div>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Pricing Table / Network Cards */}
       {isLoading ? (
@@ -277,17 +277,17 @@ export default function AgentPricingPage() {
         </Card>
       ) : !selectedNetwork ? (
         <div className="space-y-6">
-          <div className="text-center max-w-xl mx-auto py-6">
+          <Reveal className="text-center max-w-xl mx-auto py-6">
             <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Select a Mobile Network</h2>
             <p className="text-slate-500 mt-2 text-sm sm:text-base">
               Choose a network to configure customer and sub-agent bundle pricing
             </p>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {["MTN", "TELECEL", "AT", "AIRTELTIGO"].map((networkKey) => {
+            {["MTN", "TELECEL", "AT", "AIRTELTIGO"].map((networkKey, i) => {
               const count = bundlesByNetwork[networkKey]?.length || 0;
               const networkInfo = getNetworkData(networkKey);
-              
+
               // Custom gradient card styles matching the branding colors
               let cardGradient = "from-slate-500 to-slate-600 shadow-slate-100/50 hover:shadow-slate-200/80";
               let badgeColor = "bg-slate-100 text-slate-800";
@@ -303,8 +303,11 @@ export default function AgentPricingPage() {
               }
 
               return (
-                <button
+                <Reveal
                   key={networkKey}
+                  as="button"
+                  variant="scale"
+                  delay={i * 80}
                   onClick={() => setSelectedNetwork(networkKey)}
                   className={`group relative overflow-hidden rounded-2xl bg-linear-to-br ${cardGradient} p-6 text-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30 h-44 flex flex-col justify-between`}
                 >
@@ -326,7 +329,7 @@ export default function AgentPricingPage() {
                     <h3 className="text-2xl font-bold tracking-tight">{networkInfo.label}</h3>
                     <p className="text-white/80 text-xs mt-1">Configure pricing & profit margins</p>
                   </div>
-                </button>
+                </Reveal>
               );
             })}
           </div>
@@ -361,7 +364,7 @@ export default function AgentPricingPage() {
             }
 
             return (
-              <Card className="overflow-hidden">
+              <Reveal as={Card} className="overflow-hidden">
                 {/* Network Header */}
                 <div
                   className={`${networkData.color} text-white px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3`}
@@ -704,7 +707,7 @@ export default function AgentPricingPage() {
                     );
                   })}
                 </div>
-              </Card>
+              </Reveal>
             );
           })()}
         </div>
@@ -714,7 +717,7 @@ export default function AgentPricingPage() {
       {hasChanges && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 sm:hidden z-10 shadow-lg">
           <Button
-            className="w-full"
+            className="shimmer-sweep w-full"
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
             size="lg"

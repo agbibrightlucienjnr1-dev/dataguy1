@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="animate-fade-in-up mb-8">
         <h1 className="text-2xl font-display font-bold text-slate-900">Welcome back</h1>
         <p className="text-slate-600 mt-2">
           Sign in to your account to continue selling
@@ -38,7 +38,7 @@ export default function LoginPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div>
+        <div className="animate-fade-in-up animation-delay-150">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Phone Number
           </label>
@@ -59,7 +59,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div>
+        <div className="animate-fade-in-up animation-delay-300">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Password
           </label>
@@ -91,7 +91,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="animate-fade-in-up animation-delay-450 flex items-center justify-between pt-2">
           <label className="flex items-center gap-2.5 cursor-pointer group">
             <input
               type="checkbox"
@@ -109,14 +109,15 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 text-[15px] hover:-translate-y-0.5"
+          className="shimmer-sweep animate-fade-in-up w-full h-12 text-[15px] hover:-translate-y-0.5"
+          style={{ animationDelay: "600ms" }}
           isLoading={loginMutation.isPending}
         >
           Sign in to Dashboard
         </Button>
       </form>
 
-      <div className="mt-8 text-center bg-brand-50/50 p-4 rounded-xl border border-brand-100">
+      <div className="animate-fade-in-up mt-8 text-center bg-brand-50/50 p-4 rounded-xl border border-brand-100" style={{ animationDelay: "750ms" }}>
         <p className="text-slate-600 text-sm">
           Don't have an account?{" "}
           <Link

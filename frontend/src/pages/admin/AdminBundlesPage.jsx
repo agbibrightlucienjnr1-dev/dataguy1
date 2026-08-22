@@ -13,7 +13,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
-import { Card, Badge, Button, Modal, Input, EmptyState, SkeletonCard } from "../../components/ui";
+import { Card, Badge, Button, Modal, Input, EmptyState, SkeletonCard, Reveal } from "../../components/ui";
 import { bundlesApi, adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -250,7 +250,7 @@ export default function AdminBundlesPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Data Bundles</h1>
           <p className="text-slate-600 mt-1">
@@ -270,7 +270,7 @@ export default function AdminBundlesPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="p-4 animate-fade-in-up animation-delay-150">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
@@ -323,7 +323,7 @@ export default function AdminBundlesPage() {
             };
 
             return (
-              <div key={networkKey} className="space-y-4">
+              <Reveal key={networkKey} as="div" className="space-y-4">
                 <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
                   <span className={`w-3.5 h-3.5 rounded-full ${
                     networkKey === "MTN"
@@ -343,7 +343,7 @@ export default function AdminBundlesPage() {
                   {networkBundles.map((bundle) => (
                     <Card
                       key={bundle.id}
-                      className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
+                      className={`p-0 overflow-hidden flex flex-col h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${!bundle.isActive ? "opacity-60" : ""}`}
                     >
                       <div
                         className={`h-2 w-full ${
@@ -449,13 +449,13 @@ export default function AdminBundlesPage() {
                     </Card>
                   ))}
                 </div>
-              </div>
+              </Reveal>
             );
           })}
 
           {/* Fallback for other networks */}
           {sortedBundles.filter((b) => !["MTN", "TELECEL", "AT", "AIRTELTIGO"].includes(b.network)).length > 0 && (
-            <div className="space-y-4">
+            <Reveal as="div" className="space-y-4">
               <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
                 <span className="w-3.5 h-3.5 rounded-full bg-slate-400" />
                 <h2 className="text-lg font-bold text-slate-800">Other Networks</h2>
@@ -464,7 +464,7 @@ export default function AdminBundlesPage() {
                 {sortedBundles.filter((b) => !["MTN", "TELECEL", "AT", "AIRTELTIGO"].includes(b.network)).map((bundle) => (
                   <Card
                     key={bundle.id}
-                    className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
+                    className={`p-0 overflow-hidden flex flex-col h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${!bundle.isActive ? "opacity-60" : ""}`}
                   >
                     <div className="h-2 w-full bg-slate-300" />
                     <div className="p-5 flex flex-col grow">
@@ -526,7 +526,7 @@ export default function AdminBundlesPage() {
                   </Card>
                 ))}
               </div>
-            </div>
+            </Reveal>
           )}
         </div>
       )}
@@ -620,7 +620,7 @@ export default function AdminBundlesPage() {
             </Button>
             <Button
               type="submit"
-              className="flex-1"
+              className="shimmer-sweep flex-1"
               disabled={createMutation.isPending}
             >
               {createMutation.isPending ? "Creating..." : "Create Bundle"}

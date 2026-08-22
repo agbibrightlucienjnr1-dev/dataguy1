@@ -17,12 +17,22 @@ import {
   ChevronRight,
   Phone,
 } from "lucide-react";
-import { Card } from "../../components/ui";
+import { Card, Reveal } from "../../components/ui";
 import { useAuthStore } from "../../stores";
-import { useOrders, useOrderStats, useWallet } from "../../hooks";
+import { useOrders, useOrderStats, useWallet, useCountUp } from "../../hooks";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { ORDER_STATUSES } from "../../utils/constants";
 import toast from "react-hot-toast";
+
+function AnimatedNumber({ value, isLoading }) {
+  const animated = useCountUp(Number(value) || 0, { start: !isLoading, duration: 900 });
+  return Math.round(animated).toLocaleString();
+}
+
+function AnimatedCurrency({ value, isLoading }) {
+  const animated = useCountUp(Number(value) || 0, { start: !isLoading, duration: 900 });
+  return formatCurrency(animated);
+}
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -80,7 +90,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="text-2xl font-display font-bold text-slate-900">
           {stats.totalOrders === 0
             ? `Welcome${user?.name ? `, ${user.name.split(" ")[0]}` : ""}! Let's get you set up.`
@@ -97,7 +107,7 @@ export default function DashboardPage() {
 
       {/* Getting Started Guide for New Users */}
       {!statsLoading && stats.totalOrders === 0 && (
-        <Card className="border border-brand-100 overflow-hidden p-0 mb-6 bg-white shadow-sm shadow-brand-100 rounded-2xl">
+        <Reveal as={Card} className="border border-brand-100 overflow-hidden p-0 mb-6 bg-white shadow-sm shadow-brand-100 rounded-2xl">
           <div className="bg-linear-to-r from-brand-600 to-sky-600 p-5 text-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
@@ -145,7 +155,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </Card>
+        </Reveal>
       )}
 
 
@@ -154,7 +164,7 @@ export default function DashboardPage() {
       <div className="space-y-4">
         {/* Customer Payment Link */}
         {paymentLink && (
-          <Card className="bg-linear-to-r from-brand-700 to-brand-900 text-white p-6 rounded-2xl shadow-sm shadow-brand-200">
+          <Reveal as={Card} className="bg-linear-to-r from-brand-700 to-brand-900 text-white p-6 rounded-2xl shadow-sm shadow-brand-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -187,12 +197,12 @@ export default function DashboardPage() {
                 </a>
               </div>
             </div>
-          </Card>
+          </Reveal>
         )}
 
         {/* USSD Agent Code */}
         {user?.agentCode && (
-          <Card className="bg-linear-to-r from-brand-900 to-slate-900 text-white p-6 rounded-2xl shadow-sm shadow-brand-200">
+          <Reveal as={Card} delay={100} className="bg-linear-to-r from-brand-900 to-slate-900 text-white p-6 rounded-2xl shadow-sm shadow-brand-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -209,7 +219,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          </Card>
+          </Reveal>
         )}
 
 
@@ -218,40 +228,40 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
+        <Reveal as={Card} className="p-5 rounded-2xl shadow-sm shadow-brand-100 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Orders</p>
-              <p className="text-2xl font-display font-bold text-slate-900 mt-1">
-                {stats.totalOrders || 0}
+              <p className="text-2xl font-display font-bold text-slate-900 mt-1 tabular-nums">
+                <AnimatedNumber value={stats.totalOrders || 0} isLoading={statsLoading} />
               </p>
             </div>
             <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center">
               <ShoppingCart className="w-6 h-6 text-brand-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
+        <Reveal as={Card} delay={80} className="p-5 rounded-2xl shadow-sm shadow-brand-100 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Revenue</p>
-              <p className="text-2xl font-display font-bold text-slate-900 mt-1">
-                {formatCurrency(stats.totalRevenue || 0)}
+              <p className="text-2xl font-display font-bold text-slate-900 mt-1 tabular-nums">
+                <AnimatedCurrency value={stats.totalRevenue || 0} isLoading={statsLoading} />
               </p>
             </div>
             <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-action-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
+        <Reveal as={Card} delay={160} className="p-5 rounded-2xl shadow-sm shadow-brand-100 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Wallet Balance</p>
-              <p className="text-2xl font-display font-bold text-slate-900 mt-1">
-                {formatCurrency(walletBalance || 0)}
+              <p className="text-2xl font-display font-bold text-slate-900 mt-1 tabular-nums">
+                <AnimatedCurrency value={walletBalance || 0} isLoading={false} />
               </p>
             </div>
             <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
@@ -264,74 +274,80 @@ export default function DashboardPage() {
           >
             View wallet <ArrowRight className="w-3 h-3" />
           </Link>
-        </Card>
+        </Reveal>
 
-        <Card className="p-5 rounded-2xl shadow-sm shadow-brand-100">
+        <Reveal as={Card} delay={240} className="p-5 rounded-2xl shadow-sm shadow-brand-100 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Pending Orders</p>
-              <p className="text-2xl font-display font-bold text-slate-900 mt-1">
-                {stats.pendingOrders || 0}
+              <p className="text-2xl font-display font-bold text-slate-900 mt-1 tabular-nums">
+                <AnimatedNumber value={stats.pendingOrders || 0} isLoading={statsLoading} />
               </p>
             </div>
             <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
               <Clock className="w-6 h-6 text-amber-600" />
             </div>
           </div>
-        </Card>
+        </Reveal>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Link to="/bundles">
-          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-brand-100 transition-colors cursor-pointer group rounded-2xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
-                <Package className="w-6 h-6 text-brand-600 group-hover:text-white transition-colors" />
+        <Reveal variant="scale">
+          <Link to="/bundles">
+            <Card className="p-5 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer group rounded-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
+                  <Package className="w-6 h-6 text-brand-600 group-hover:text-white transition-colors" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">Browse Bundles</h3>
+                  <p className="text-sm text-slate-500">
+                    View available data bundles
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Browse Bundles</h3>
-                <p className="text-sm text-slate-500">
-                  View available data bundles
-                </p>
-              </div>
-            </div>
-          </Card>
-        </Link>
+            </Card>
+          </Link>
+        </Reveal>
 
-        <Link to="/orders">
-          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-brand-100 transition-colors cursor-pointer group rounded-2xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
-                <ShoppingCart className="w-6 h-6 text-brand-600 group-hover:text-white transition-colors" />
+        <Reveal variant="scale" delay={80}>
+          <Link to="/orders">
+            <Card className="p-5 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer group rounded-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-600 transition-colors">
+                  <ShoppingCart className="w-6 h-6 text-brand-600 group-hover:text-white transition-colors" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">View Orders</h3>
+                  <p className="text-sm text-slate-500">
+                    Track your order history
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">View Orders</h3>
-                <p className="text-sm text-slate-500">
-                  Track your order history
-                </p>
-              </div>
-            </div>
-          </Card>
-        </Link>
+            </Card>
+          </Link>
+        </Reveal>
 
-        <Link to="/withdrawals">
-          <Card className="p-5 hover:border-brand-200 hover:shadow-sm hover:shadow-brand-100 transition-colors cursor-pointer group rounded-2xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:bg-action-600 transition-colors">
-                <Wallet className="w-6 h-6 text-action-600 group-hover:text-white transition-colors" />
+        <Reveal variant="scale" delay={160}>
+          <Link to="/withdrawals">
+            <Card className="p-5 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer group rounded-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:bg-action-600 transition-colors">
+                  <Wallet className="w-6 h-6 text-action-600 group-hover:text-white transition-colors" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">Withdraw Funds</h3>
+                  <p className="text-sm text-slate-500">Cash out your earnings</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Withdraw Funds</h3>
-                <p className="text-sm text-slate-500">Cash out your earnings</p>
-              </div>
-            </div>
-          </Card>
-        </Link>
+            </Card>
+          </Link>
+        </Reveal>
       </div>
 
       {/* Recent Orders */}
-      <Card className="rounded-2xl shadow-sm shadow-brand-100">
+      <Reveal as={Card} className="rounded-2xl shadow-sm shadow-brand-100">
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center justify-between">
             <h2 className="font-display font-semibold text-slate-900">Recent Orders</h2>
@@ -368,9 +384,10 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {orders.map((order) => (
-              <div
+            {orders.map((order, i) => (
+              <Reveal
                 key={order.id}
+                delay={Math.min(i * 60, 300)}
                 className="p-4 flex items-center justify-between hover:bg-brand-50/50"
               >
                 <div className="flex items-center gap-3">
@@ -397,11 +414,11 @@ export default function DashboardPage() {
                     {order.status}
                   </p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         )}
-      </Card>
+      </Reveal>
     </div>
   );
 }

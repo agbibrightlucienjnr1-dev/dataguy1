@@ -515,7 +515,7 @@ export default function BuyPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 relative z-10">
         {/* Seller Info Container */}
-        <div className="animate-fade-in-up p-8 mb-8 rounded-2xl bg-linear-to-br from-brand-800 via-brand-600 to-sky-500 shadow-2xl shadow-brand-300/40 relative overflow-hidden">
+        <div className="animate-fade-in-up p-8 mb-8 rounded-2xl bg-linear-to-br from-brand-900 via-brand-700 to-sky-800 shadow-2xl shadow-brand-300/40 relative overflow-hidden">
           <div className="absolute inset-0 bg-mesh-navy opacity-40"></div>
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-action-400 rounded-full mix-blend-screen filter blur-2xl opacity-30 pointer-events-none"></div>
 

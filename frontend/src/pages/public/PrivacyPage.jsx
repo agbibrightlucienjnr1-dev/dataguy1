@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, Lock, Wifi } from "lucide-react";
-import { Card, Button } from "../../components/ui";
+import { Card, Button, Reveal } from "../../components/ui";
 
 export default function PrivacyPage() {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
 
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 py-12 relative z-10">
-        <div className="text-center mb-10">
+        <div className="animate-fade-in-up text-center mb-10">
           <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/20">
             <Lock className="w-8 h-8 text-white" />
           </div>
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        <Card className="p-8 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 bg-white/90 backdrop-blur-md">
+        <Reveal as={Card} className="p-8 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 bg-white/90 backdrop-blur-md">
           <div className="space-y-8 text-slate-700 leading-relaxed">
             <section className="space-y-3">
               <h2 className="text-xl font-display font-bold text-slate-900">
@@ -129,7 +129,7 @@ export default function PrivacyPage() {
               </p>
             </section>
           </div>
-        </Card>
+        </Reveal>
       </main>
 
       {/* Footer */}

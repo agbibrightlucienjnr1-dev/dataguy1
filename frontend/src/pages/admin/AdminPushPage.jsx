@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Send, Users, UserCheck, Bell, MessageSquare, ListFilter, Globe } from "lucide-react";
-import { Card, Button, Input } from "../../components/ui";
+import { Card, Button, Input, Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import toast from "react-hot-toast";
 
@@ -59,7 +59,7 @@ export default function AdminPushPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
           Push Notifications
         </h1>
@@ -69,7 +69,7 @@ export default function AdminPushPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
+        <Reveal className="md:col-span-2">
           <Card className="p-6 rounded-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Target Selection */}
@@ -181,7 +181,7 @@ export default function AdminPushPage() {
                 <Button
                   type="submit"
                   disabled={sendPushMutation.isPending}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2"
+                  className="shimmer-sweep w-full sm:w-auto flex items-center justify-center gap-2"
                 >
                   {sendPushMutation.isPending ? (
                     <>
@@ -198,10 +198,10 @@ export default function AdminPushPage() {
               </div>
             </form>
           </Card>
-        </div>
+        </Reveal>
 
         {/* Info Sidebar */}
-        <div>
+        <Reveal delay={120}>
           <Card className="p-6 bg-brand-50/60 border-none shadow-inner space-y-4 rounded-2xl">
             <h3 className="font-display font-semibold text-slate-900 flex items-center gap-2">
               <Bell className="w-5 h-5 text-brand-600" />
@@ -222,7 +222,7 @@ export default function AdminPushPage() {
               </li>
             </ul>
           </Card>
-        </div>
+        </Reveal>
       </div>
     </div>
   );

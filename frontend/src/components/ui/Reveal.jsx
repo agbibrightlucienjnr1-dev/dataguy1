@@ -7,12 +7,13 @@ import { cn } from "../../utils/helpers";
  */
 export default function Reveal({
   children,
-  as: Tag = "div",
+  as = "div",
   variant = "up",
   delay = 0,
   className,
   ...props
 }) {
+  const Tag = as;
   const [ref, isVisible] = useReveal();
 
   return (

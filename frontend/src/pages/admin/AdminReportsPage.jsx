@@ -19,13 +19,20 @@ import {
   CheckCircle,
   Package
 } from "lucide-react";
-import { Card, Button, Spinner } from "../../components/ui";
+import { Card, Button, Spinner, Reveal } from "../../components/ui";
+import { useCountUp } from "../../hooks";
 import { adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import toast from "react-hot-toast";
 
+function StatValue({ value, format, className }) {
+  const numeric = Number(value) || 0;
+  const animated = useCountUp(numeric, { start: true, duration: 1000 });
+  return <span className={className}>{format ? format(animated) : Math.round(animated).toLocaleString()}</span>;
+}
+
 const COLORS = [
-  '#2563eb', // Brand blue 600
+  '#1e3c66', // Brand blue 600
   '#059669', // Action emerald 600
   '#d97706', // Amber 600
   '#dc2626', // Red 600
@@ -90,7 +97,7 @@ export default function AdminReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="animate-fade-in-up flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Analytics Reports</h1>
           <p className="text-slate-600 mt-1">Platform performance over the last 30 days</p>
@@ -103,7 +110,8 @@ export default function AdminReportsPage() {
 
       {/* Top Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6 rounded-2xl">
+        <Reveal variant="scale" delay={0} className="rounded-2xl">
+        <Card className="p-6 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-brand-50 text-brand-600 rounded-2xl">
               <BarChart3 className="w-6 h-6" />
@@ -111,12 +119,14 @@ export default function AdminReportsPage() {
             <div>
               <p className="text-sm font-medium text-slate-500">30D Revenue</p>
               <h3 className="font-display text-2xl font-bold text-slate-900">
-                {formatCurrency(reports.overview?.totalRevenue || 0)}
+                <StatValue value={reports.overview?.totalRevenue} format={formatCurrency} />
               </h3>
             </div>
           </div>
         </Card>
-        <Card className="p-6 rounded-2xl">
+        </Reveal>
+        <Reveal variant="scale" delay={80} className="rounded-2xl">
+        <Card className="p-6 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-brand-50 text-brand-600 rounded-2xl">
               <Package className="w-6 h-6" />
@@ -124,12 +134,14 @@ export default function AdminReportsPage() {
             <div>
               <p className="text-sm font-medium text-slate-500">30D Order Volume</p>
               <h3 className="font-display text-2xl font-bold text-slate-900">
-                {reports.overview?.totalVolume?.toLocaleString() || 0}
+                <StatValue value={reports.overview?.totalVolume} />
               </h3>
             </div>
           </div>
         </Card>
-        <Card className="p-6 rounded-2xl">
+        </Reveal>
+        <Reveal variant="scale" delay={160} className="rounded-2xl">
+        <Card className="p-6 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-emerald-50 text-action-600 rounded-2xl">
               <CheckCircle className="w-6 h-6" />
@@ -137,19 +149,21 @@ export default function AdminReportsPage() {
             <div>
               <p className="text-sm font-medium text-slate-500">Order Success Rate</p>
               <h3 className="font-display text-2xl font-bold text-slate-900">
-                {reports.overview?.successRate || 0}%
+                <StatValue value={reports.overview?.successRate} format={(v) => `${v.toFixed(1)}%`} />
               </h3>
             </div>
           </div>
         </Card>
+        </Reveal>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sales Trend Chart */}
-        <Card className="p-6 lg:col-span-2 rounded-2xl shadow-sm border border-slate-200">
+        <Reveal className="lg:col-span-2">
+        <Card className="p-6 rounded-2xl shadow-sm border border-slate-200">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-display text-lg font-bold text-slate-900">Revenue Trend</h3>
-             <Button variant="outline" size="sm" onClick={exportSalesCSV}>
+             <Button variant="outline" size="sm" onClick={exportSalesCSV} className="shimmer-sweep">
                <Download className="w-4 h-4 mr-2" /> Export
              </Button>
           </div>
@@ -180,7 +194,7 @@ export default function AdminReportsPage() {
                 <Line
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#2563eb"
+                  stroke="#1e3c66"
                   strokeWidth={3}
                   dot={false}
                   activeDot={{r: 6}}
@@ -189,8 +203,10 @@ export default function AdminReportsPage() {
             </ResponsiveContainer>
           </div>
         </Card>
+        </Reveal>
 
         {/* Volume Distribution Pie */}
+        <Reveal delay={120}>
         <Card className="p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
           <div className="mb-2">
             <h3 className="font-display text-lg font-bold text-slate-900">MTN Volume Distribution</h3>
@@ -228,6 +244,7 @@ export default function AdminReportsPage() {
              )}
           </div>
         </Card>
+        </Reveal>
       </div>
 
     </div>

@@ -13,10 +13,11 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Card, Button, Badge, EmptyState } from "../../components/ui";
+import { Card, Button, Badge, EmptyState, Reveal } from "../../components/ui";
 import { useNavigate } from "react-router-dom";
 import { walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import { useCountUp } from "../../hooks";
 
 const TRANSACTION_TYPES = {
   commission: {
@@ -86,10 +87,14 @@ export default function AgentWalletPage() {
 
   const isLoading = walletLoading || transactionsLoading;
 
+  const animatedBalance = useCountUp(wallet.balance, { start: !walletLoading, duration: 1200 });
+  const animatedTotalEarned = useCountUp(summary.totalEarned, { start: true, duration: 1200 });
+  const animatedThisMonth = useCountUp(summary.thisMonth, { start: true, duration: 1200 });
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Wallet</h1>
           <p className="text-slate-600 mt-1">
@@ -111,7 +116,7 @@ export default function AgentWalletPage() {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Available Balance */}
-        <Card className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
+        <Reveal variant="scale" as={Card} className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
           <Wallet className="absolute right-3 bottom-3 w-24 h-24 text-white/10" />
           <div className="flex items-center justify-between mb-4 relative">
             <span className="text-brand-100 text-sm">Available Balance</span>
@@ -119,47 +124,47 @@ export default function AgentWalletPage() {
               <Wallet className="w-4 h-4 text-white" />
             </div>
           </div>
-          <p className="font-display text-4xl font-bold relative">
-            {walletLoading ? "..." : formatCurrency(wallet.balance)}
+          <p className="font-display text-4xl font-bold relative tabular-nums">
+            {walletLoading ? "..." : formatCurrency(animatedBalance)}
           </p>
           {wallet.pendingBalance > 0 && (
             <p className="text-sm text-brand-100 mt-2 relative">
               + {formatCurrency(wallet.pendingBalance)} pending
             </p>
           )}
-        </Card>
+        </Reveal>
 
         {/* Total Earned */}
-        <Card className="p-6">
+        <Reveal variant="scale" delay={80} as={Card} className="p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-slate-600 text-sm">Total Earned</span>
             <div className="w-9 h-9 rounded-xl bg-action-50 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-action-600" />
             </div>
           </div>
-          <p className="font-display text-3xl font-bold text-slate-900">
-            {formatCurrency(summary.totalEarned)}
+          <p className="font-display text-3xl font-bold text-slate-900 tabular-nums">
+            {formatCurrency(animatedTotalEarned)}
           </p>
           <p className="text-sm text-action-600 mt-2">All time earnings</p>
-        </Card>
+        </Reveal>
 
         {/* This Month */}
-        <Card className="p-6">
+        <Reveal variant="scale" delay={160} as={Card} className="p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-slate-600 text-sm">This Month</span>
             <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-brand-600" />
             </div>
           </div>
-          <p className="font-display text-3xl font-bold text-slate-900">
-            {formatCurrency(summary.thisMonth)}
+          <p className="font-display text-3xl font-bold text-slate-900 tabular-nums">
+            {formatCurrency(animatedThisMonth)}
           </p>
           <p className="text-sm text-slate-500 mt-2">Earned this month</p>
-        </Card>
+        </Reveal>
       </div>
 
       {/* Transactions */}
-      <Card>
+      <Reveal as={Card}>
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-slate-900">
             Transaction History
@@ -304,10 +309,10 @@ export default function AgentWalletPage() {
             </div>
           </div>
         )}
-      </Card>
+      </Reveal>
 
       {/* Info */}
-      <Card className="p-4 bg-action-50 border-action-200">
+      <Reveal as={Card} delay={100} className="p-4 bg-action-50 border-action-200">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 bg-action-100 rounded-xl flex items-center justify-center shrink-0">
             <Wallet className="w-4 h-4 text-action-600" />
@@ -321,7 +326,7 @@ export default function AgentWalletPage() {
             </p>
           </div>
         </div>
-      </Card>
+      </Reveal>
     </div>
   );
 }

@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Smartphone, ShieldAlert, Server, Webhook } from "lucide-react";
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
   CardContent,
   Button,
-  Spinner 
+  Spinner,
+  Reveal,
 } from "../../components/ui";
 import { authApi } from "../../api";
 import { useAuthStore } from "../../stores";
@@ -66,7 +67,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="text-2xl font-display font-bold text-slate-900">Settings</h1>
         <p className="text-slate-600 mt-1">
           Manage your notification preferences and active system configurations.
@@ -75,7 +76,7 @@ export default function SettingsPage() {
 
       <div className="grid gap-6">
         {/* Notification Preferences */}
-        <Card>
+        <Reveal as={Card}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-brand-600" />
@@ -142,11 +143,11 @@ export default function SettingsPage() {
             </div>
 
           </CardContent>
-        </Card>
+        </Reveal>
 
         {/* Admin Platform Config */}
         {isAdmin() && (
-          <Card className="border-brand-100 shadow-sm shadow-brand-100">
+          <Reveal as={Card} delay={100} className="border-brand-100 shadow-sm shadow-brand-100">
             <CardHeader className="bg-brand-50/50 border-b border-brand-100 rounded-t-2xl">
               <CardTitle className="flex items-center gap-2 text-brand-900">
                 <Server className="w-5 h-5 text-brand-600" />
@@ -191,7 +192,7 @@ export default function SettingsPage() {
               </div>
 
             </CardContent>
-          </Card>
+          </Reveal>
         )}
       </div>
     </div>

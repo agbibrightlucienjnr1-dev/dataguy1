@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Clock, HelpCircle, Wifi, ShieldAlert } from "lucide-react";
-import { Card, Button } from "../../components/ui";
+import { Card, Button, Reveal } from "../../components/ui";
 
 export default function SupportPage() {
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ export default function SupportPage() {
 
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 py-12 relative z-10">
-        <div className="text-center mb-10">
+        <div className="animate-fade-in-up text-center mb-10">
           <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/20">
             <HelpCircle className="w-8 h-8 text-white" />
           </div>
@@ -75,7 +75,7 @@ export default function SupportPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Email Support Card */}
-          <Card className="p-6 md:col-span-2 rounded-2xl flex flex-col justify-between border border-slate-200 shadow-sm bg-white/95">
+          <Reveal as={Card} className="p-6 md:col-span-2 rounded-2xl flex flex-col justify-between border border-slate-200 shadow-sm bg-white/95 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
             <div>
               <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
                 <Mail className="w-5 h-5 text-brand-600" />
@@ -91,10 +91,10 @@ export default function SupportPage() {
             >
               admin@dataguy.shop
             </a>
-          </Card>
+          </Reveal>
 
           {/* Working Hours Card */}
-          <Card className="p-6 rounded-2xl border border-slate-200 shadow-sm bg-white/95 flex flex-col justify-between">
+          <Reveal as={Card} delay={100} className="p-6 rounded-2xl border border-slate-200 shadow-sm bg-white/95 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
             <div>
               <div className="w-10 h-10 bg-action-50 rounded-xl flex items-center justify-center mb-4">
                 <Clock className="w-5 h-5 text-action-600" />
@@ -121,7 +121,7 @@ export default function SupportPage() {
                 </Button>
               </Link>
             </div>
-          </Card>
+          </Reveal>
         </div>
 
         {/* FAQs */}
@@ -132,10 +132,10 @@ export default function SupportPage() {
           </h2>
           <div className="grid grid-cols-1 gap-4">
             {faqs.map((faq, i) => (
-              <Card key={i} className="p-6 rounded-2xl border border-slate-200 shadow-[0_2px_8px_rgb(0,0,0,0.02)] bg-white/90">
+              <Reveal as={Card} key={i} delay={i * 80} className="p-6 rounded-2xl border border-slate-200 shadow-[0_2px_8px_rgb(0,0,0,0.02)] bg-white/90 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                 <h3 className="font-display font-bold text-slate-900 mb-2">{faq.q}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{faq.a}</p>
-              </Card>
+              </Reveal>
             ))}
           </div>
         </div>
