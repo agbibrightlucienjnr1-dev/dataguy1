@@ -503,46 +503,69 @@ export default function AdminProfitPage() {
               Operator Margin Ledger
             </h3>
             
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
-                    <th className="pb-3 font-semibold">Operator</th>
-                    <th className="pb-3 font-semibold text-right">Orders</th>
-                    <th className="pb-3 font-semibold text-right">Gross Collected</th>
-                    <th className="pb-3 font-semibold text-right">Gateway Deductions</th>
-                    <th className="pb-3 font-semibold text-right">Commissions</th>
-                    <th className="pb-3 font-semibold text-right">Wholesale Cost</th>
-                    <th className="pb-3 font-semibold text-right">Net Margin</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {networkBreakdown.length === 0 ? (
-                    <tr>
-                      <td colSpan="7" className="text-center py-6 text-slate-400">
-                        No operator records found.
-                      </td>
-                    </tr>
-                  ) : (
-                    networkBreakdown.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-brand-50/50 transition-colors">
-                        <td className="py-3.5 font-bold text-slate-900">{item.network}</td>
-                        <td className="py-3.5 text-right font-medium text-slate-700">{item.orders}</td>
-                        <td className="py-3.5 text-right font-medium text-slate-900">{formatCurrency(item.grossCollected)}</td>
-                        <td className="py-3.5 text-right font-medium text-rose-600">-{formatCurrency(item.gatewayFee)}</td>
-                        <td className="py-3.5 text-right font-medium text-amber-600">-{formatCurrency(item.commission)}</td>
-                        <td className="py-3.5 text-right font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</td>
-                        <td className={`py-3.5 text-right font-bold ${
-                          parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"
-                        }`}>
-                          {formatCurrency(item.netProfit)}
-                        </td>
+            {networkBreakdown.length === 0 ? (
+              <div className="text-center py-6 text-slate-400 text-sm">No operator records found.</div>
+            ) : (
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
+                        <th className="pb-3 font-semibold">Operator</th>
+                        <th className="pb-3 font-semibold text-right">Orders</th>
+                        <th className="pb-3 font-semibold text-right">Gross Collected</th>
+                        <th className="pb-3 font-semibold text-right">Gateway Deductions</th>
+                        <th className="pb-3 font-semibold text-right">Commissions</th>
+                        <th className="pb-3 font-semibold text-right">Wholesale Cost</th>
+                        <th className="pb-3 font-semibold text-right">Net Margin</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {networkBreakdown.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-brand-50/50 transition-colors">
+                          <td className="py-3.5 font-bold text-slate-900">{item.network}</td>
+                          <td className="py-3.5 text-right font-medium text-slate-700">{item.orders}</td>
+                          <td className="py-3.5 text-right font-medium text-slate-900">{formatCurrency(item.grossCollected)}</td>
+                          <td className="py-3.5 text-right font-medium text-rose-600">-{formatCurrency(item.gatewayFee)}</td>
+                          <td className="py-3.5 text-right font-medium text-amber-600">-{formatCurrency(item.commission)}</td>
+                          <td className="py-3.5 text-right font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</td>
+                          <td className={`py-3.5 text-right font-bold ${
+                            parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"
+                          }`}>
+                            {formatCurrency(item.netProfit)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile card list */}
+                <div className="md:hidden space-y-3">
+                  {networkBreakdown.map((item, idx) => (
+                    <div key={idx} className="p-4 rounded-xl border border-slate-100 bg-slate-50/60">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-slate-900">{item.network}</span>
+                        <span className="text-xs text-slate-500">{item.orders} orders</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex justify-between"><span className="text-slate-500">Gross</span><span className="font-medium text-slate-900">{formatCurrency(item.grossCollected)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Gateway</span><span className="font-medium text-rose-600">-{formatCurrency(item.gatewayFee)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Commission</span><span className="font-medium text-amber-600">-{formatCurrency(item.commission)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Wholesale</span><span className="font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</span></div>
+                      </div>
+                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200">
+                        <span className="text-xs font-semibold text-slate-700">Net Margin</span>
+                        <span className={`font-bold ${parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"}`}>
+                          {formatCurrency(item.netProfit)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </Card>
           </Reveal>
 
@@ -636,53 +659,78 @@ export default function AdminProfitPage() {
                   Operational Expenses Log
                 </h3>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
-                        <th className="pb-2 font-semibold">Date</th>
-                        <th className="pb-2 font-semibold">Category</th>
-                        <th className="pb-2 font-semibold">Description</th>
-                        <th className="pb-2 font-semibold text-right">Amount</th>
-                        <th className="pb-2 font-semibold text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {expensesList.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="text-center py-10 text-slate-400">
-                            No operating expenses registered for this month.
-                          </td>
-                        </tr>
-                      ) : (
-                        expensesList.map((exp) => (
-                          <tr key={exp.id} className="hover:bg-brand-50/50 transition-colors">
-                            <td className="py-2.5 text-xs text-slate-500">
-                              {new Date(exp.date).toLocaleDateString()}
-                            </td>
-                            <td className="py-2.5 font-bold text-slate-900">{exp.category}</td>
-                            <td className="py-2.5 text-xs text-slate-600 max-w-xs truncate" title={exp.description}>
-                              {exp.description || "-"}
-                            </td>
-                            <td className="py-2.5 text-right font-medium text-rose-600">
-                              {formatCurrency(exp.amount)}
-                            </td>
-                            <td className="py-2.5 text-center">
-                              <button
-                                onClick={() => handleDeleteExpense(exp.id)}
-                                className="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                                disabled={deleteExpenseMutation.isPending}
-                                title="Remove expense"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </td>
+                {expensesList.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400 text-sm">No operating expenses registered for this month.</div>
+                ) : (
+                  <>
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full text-left text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
+                            <th className="pb-2 font-semibold">Date</th>
+                            <th className="pb-2 font-semibold">Category</th>
+                            <th className="pb-2 font-semibold">Description</th>
+                            <th className="pb-2 font-semibold text-right">Amount</th>
+                            <th className="pb-2 font-semibold text-center">Action</th>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {expensesList.map((exp) => (
+                            <tr key={exp.id} className="hover:bg-brand-50/50 transition-colors">
+                              <td className="py-2.5 text-xs text-slate-500">
+                                {new Date(exp.date).toLocaleDateString()}
+                              </td>
+                              <td className="py-2.5 font-bold text-slate-900">{exp.category}</td>
+                              <td className="py-2.5 text-xs text-slate-600 max-w-xs truncate" title={exp.description}>
+                                {exp.description || "-"}
+                              </td>
+                              <td className="py-2.5 text-right font-medium text-rose-600">
+                                {formatCurrency(exp.amount)}
+                              </td>
+                              <td className="py-2.5 text-center">
+                                <button
+                                  onClick={() => handleDeleteExpense(exp.id)}
+                                  className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                                  disabled={deleteExpenseMutation.isPending}
+                                  title="Remove expense"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile card list */}
+                    <div className="md:hidden space-y-2">
+                      {expensesList.map((exp) => (
+                        <div key={exp.id} className="p-3 rounded-xl border border-slate-100 bg-slate-50/60 flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 text-sm">{exp.category}</span>
+                              <span className="text-xs text-slate-400">{new Date(exp.date).toLocaleDateString()}</span>
+                            </div>
+                            {exp.description && (
+                              <p className="text-xs text-slate-500 mt-0.5 truncate">{exp.description}</p>
+                            )}
+                            <p className="text-sm font-semibold text-rose-600 mt-1">{formatCurrency(exp.amount)}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteExpense(exp.id)}
+                            className="p-1.5 shrink-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            disabled={deleteExpenseMutation.isPending}
+                            title="Remove expense"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {expensesList.length > 0 && (
@@ -725,58 +773,90 @@ export default function AdminProfitPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
-                    <th className="pb-3 font-semibold">Date/Time</th>
-                    <th className="pb-3 font-semibold">Recipient</th>
-                    <th className="pb-3 font-semibold">Operator</th>
-                    <th className="pb-3 font-semibold">Volume</th>
-                    <th className="pb-3 font-semibold text-center">Gateway</th>
-                    <th className="pb-3 font-semibold text-right">Gross Collections</th>
-                    <th className="pb-3 font-semibold text-right">Gateway Cuts</th>
-                    <th className="pb-3 font-semibold text-right">Commissions</th>
-                    <th className="pb-3 font-semibold text-right">Supplier Cost</th>
-                    <th className="pb-3 font-semibold text-right">Net Margin</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {paginatedLedger.length === 0 ? (
-                    <tr>
-                      <td colSpan="10" className="text-center py-12 text-slate-400">
-                        No matching transactions found.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedLedger.map((item) => (
-                      <tr key={item.id} className="hover:bg-brand-50/50 transition-colors text-xs">
-                        <td className="py-3 text-slate-500 whitespace-nowrap">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </td>
-                        <td className="py-3 font-bold text-slate-900">{item.customerPhone}</td>
-                        <td className="py-3 font-bold text-slate-700">{item.network}</td>
-                        <td className="py-3 font-semibold text-slate-600">{item.volume}</td>
-                        <td className="py-3 text-center">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-800 uppercase">
-                            {item.paymentProvider}
-                          </span>
-                        </td>
-                        <td className="py-3 text-right font-medium text-slate-900">{formatCurrency(item.grossCollected)}</td>
-                        <td className="py-3 text-right font-medium text-rose-600">-{formatCurrency(item.gatewayFee)}</td>
-                        <td className="py-3 text-right font-medium text-amber-600">-{formatCurrency(item.commission)}</td>
-                        <td className="py-3 text-right font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</td>
-                        <td className={`py-3 text-right font-bold ${
-                          parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"
-                        }`}>
-                          {formatCurrency(item.netProfit)}
-                        </td>
+            {paginatedLedger.length === 0 ? (
+              <div className="text-center py-12 text-slate-400 text-sm">No matching transactions found.</div>
+            ) : (
+              <>
+                {/* Desktop table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-brand-50/40 text-xs font-bold text-slate-500 uppercase">
+                        <th className="pb-3 font-semibold">Date/Time</th>
+                        <th className="pb-3 font-semibold">Recipient</th>
+                        <th className="pb-3 font-semibold">Operator</th>
+                        <th className="pb-3 font-semibold">Volume</th>
+                        <th className="pb-3 font-semibold text-center">Gateway</th>
+                        <th className="pb-3 font-semibold text-right">Gross Collections</th>
+                        <th className="pb-3 font-semibold text-right">Gateway Cuts</th>
+                        <th className="pb-3 font-semibold text-right">Commissions</th>
+                        <th className="pb-3 font-semibold text-right">Supplier Cost</th>
+                        <th className="pb-3 font-semibold text-right">Net Margin</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {paginatedLedger.map((item) => (
+                        <tr key={item.id} className="hover:bg-brand-50/50 transition-colors text-xs">
+                          <td className="py-3 text-slate-500 whitespace-nowrap">
+                            {new Date(item.createdAt).toLocaleString()}
+                          </td>
+                          <td className="py-3 font-bold text-slate-900">{item.customerPhone}</td>
+                          <td className="py-3 font-bold text-slate-700">{item.network}</td>
+                          <td className="py-3 font-semibold text-slate-600">{item.volume}</td>
+                          <td className="py-3 text-center">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-800 uppercase">
+                              {item.paymentProvider}
+                            </span>
+                          </td>
+                          <td className="py-3 text-right font-medium text-slate-900">{formatCurrency(item.grossCollected)}</td>
+                          <td className="py-3 text-right font-medium text-rose-600">-{formatCurrency(item.gatewayFee)}</td>
+                          <td className="py-3 text-right font-medium text-amber-600">-{formatCurrency(item.commission)}</td>
+                          <td className="py-3 text-right font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</td>
+                          <td className={`py-3 text-right font-bold ${
+                            parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"
+                          }`}>
+                            {formatCurrency(item.netProfit)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile card list */}
+                <div className="lg:hidden space-y-3">
+                  {paginatedLedger.map((item) => (
+                    <div key={item.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/60">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-slate-900 text-sm">{item.customerPhone}</span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-800 uppercase">
+                          {item.paymentProvider}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
+                        <span className="font-semibold text-slate-700">{item.network}</span>
+                        <span>•</span>
+                        <span>{item.volume}</span>
+                        <span>•</span>
+                        <span>{new Date(item.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex justify-between"><span className="text-slate-500">Gross</span><span className="font-medium text-slate-900">{formatCurrency(item.grossCollected)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Gateway</span><span className="font-medium text-rose-600">-{formatCurrency(item.gatewayFee)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Commission</span><span className="font-medium text-amber-600">-{formatCurrency(item.commission)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Supplier</span><span className="font-medium text-slate-800">-{formatCurrency(item.actualHubnetCost)}</span></div>
+                      </div>
+                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200">
+                        <span className="text-xs font-semibold text-slate-700">Net Margin</span>
+                        <span className={`font-bold ${parseFloat(item.netProfit) >= 0 ? "text-action-600" : "text-red-600"}`}>
+                          {formatCurrency(item.netProfit)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
