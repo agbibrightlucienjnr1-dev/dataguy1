@@ -149,7 +149,7 @@ export const AdminAnalyticsPage = () => {
             <h3 className="font-display text-lg font-semibold text-slate-900">Device Analytics</h3>
             <p className="text-sm text-slate-500">Traffic breakdown by hardware.</p>
           </div>
-          <div className="flex-1 min-h-[300px]">
+          <div className="h-[300px]">
              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
