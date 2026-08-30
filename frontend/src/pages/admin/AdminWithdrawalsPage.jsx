@@ -10,7 +10,7 @@ import {
   XCircle,
   Filter,
 } from "lucide-react";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { getErrorMessage } from "../../utils/helpers";
@@ -171,7 +171,7 @@ export default function AdminWithdrawalsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Withdrawals</h1>
           <p className="text-slate-600 mt-1">
@@ -185,13 +185,13 @@ export default function AdminWithdrawalsPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4 rounded-2xl">
+      <Card className="p-4 rounded-2xl animate-fade-in-up animation-delay-150">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
             <span className="text-sm text-slate-600">Status:</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {["pending", "processing", "completed", "rejected", ""].map(
               (status) => (
                 <Button
@@ -214,6 +214,7 @@ export default function AdminWithdrawalsPage() {
       </Card>
 
       {/* Withdrawals Table */}
+      <Reveal>
       <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
@@ -226,112 +227,178 @@ export default function AdminWithdrawalsPage() {
             description="There are currently no withdrawal requests matching your filters."
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-violet-50/60 text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Requested</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Charges</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Net Payout</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Account Details</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Status</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {withdrawals.map((withdrawal) => (
-                  <tr
-                    key={withdrawal.id}
-                    className="border-b border-slate-50 hover:bg-violet-50/50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-tr from-brand-600 to-violet-400 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-white">
-                            {withdrawal.user?.name?.charAt(0)?.toUpperCase()}
-                          </span>
+          <>
+            {/* Desktop table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-brand-50/60 text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Requested</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Charges</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Net Payout</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Account Details</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Status</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {withdrawals.map((withdrawal) => (
+                    <tr
+                      key={withdrawal.id}
+                      className="border-b border-slate-50 hover:bg-brand-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-white">
+                              {withdrawal.user?.name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-slate-900">
+                              {withdrawal.user?.name}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {withdrawal.user?.phone}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-slate-900">
-                            {withdrawal.user?.name}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {withdrawal.user?.phone}
-                          </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-500 font-medium">
+                          {formatCurrency(withdrawal.amount)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-500 font-medium">
+                          {formatCurrency(withdrawal.fee || 0)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-display text-lg font-bold text-slate-900">
+                          {formatCurrency(parseFloat(withdrawal.amount) - parseFloat(withdrawal.fee || 0))}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-slate-900">
+                          {withdrawal.accountName}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {withdrawal.accountNumber} • {withdrawal.provider}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(withdrawal.status)}
+                          {getStatusBadge(withdrawal.status)}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-500 font-medium">
-                        {formatCurrency(withdrawal.amount)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-500 font-medium">
-                        {formatCurrency(withdrawal.fee || 0)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-display text-lg font-bold text-slate-900">
-                        {formatCurrency(parseFloat(withdrawal.amount) - parseFloat(withdrawal.fee || 0))}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-slate-900">
-                        {withdrawal.accountName}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {withdrawal.accountNumber} • {withdrawal.provider}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(withdrawal.status)}
-                        {getStatusBadge(withdrawal.status)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-500">
-                        {formatDate(withdrawal.createdAt)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {withdrawal.status === "pending" ? (
-                        <div className="flex items-center justify-end gap-2">
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-500">
+                          {formatDate(withdrawal.createdAt)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {withdrawal.status === "pending" ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => handleApprove(withdrawal)}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleReject(withdrawal)}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        ) : withdrawal.status === "processing" ? (
                           <Button
                             variant="success"
                             size="sm"
-                            onClick={() => handleApprove(withdrawal)}
+                            onClick={() => handleComplete(withdrawal)}
                           >
-                            Approve
+                            Mark Complete
                           </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleReject(withdrawal)}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      ) : withdrawal.status === "processing" ? (
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => handleComplete(withdrawal)}
-                        >
-                          Mark Complete
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-slate-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        ) : (
+                          <span className="text-sm text-slate-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="lg:hidden divide-y divide-slate-100">
+              {withdrawals.map((withdrawal) => (
+                <div key={withdrawal.id} className="p-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 shrink-0 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-white">
+                          {withdrawal.user?.name?.charAt(0)?.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-900 truncate">{withdrawal.user?.name}</p>
+                        <p className="text-xs text-slate-500">{withdrawal.user?.phone}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {getStatusIcon(withdrawal.status)}
+                      {getStatusBadge(withdrawal.status)}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl mb-3">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-0.5">Requested</p>
+                      <p className="text-sm font-semibold text-slate-900">{formatCurrency(withdrawal.amount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-0.5">Charges</p>
+                      <p className="text-sm font-semibold text-slate-900">{formatCurrency(withdrawal.fee || 0)}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-slate-500 mb-0.5">Net Payout</p>
+                      <p className="font-display text-lg font-bold text-action-600">
+                        {formatCurrency(parseFloat(withdrawal.amount) - parseFloat(withdrawal.fee || 0))}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-slate-600 mb-3">
+                    <p className="text-slate-900">{withdrawal.accountName}</p>
+                    <p className="text-xs text-slate-500">{withdrawal.accountNumber} • {withdrawal.provider}</p>
+                    <p className="text-xs text-slate-400 mt-1">{formatDate(withdrawal.createdAt)}</p>
+                  </div>
+
+                  {withdrawal.status === "pending" ? (
+                    <div className="flex items-center gap-2">
+                      <Button variant="success" size="sm" className="flex-1" onClick={() => handleApprove(withdrawal)}>
+                        Approve
+                      </Button>
+                      <Button variant="danger" size="sm" className="flex-1" onClick={() => handleReject(withdrawal)}>
+                        Reject
+                      </Button>
+                    </div>
+                  ) : withdrawal.status === "processing" ? (
+                    <Button variant="success" size="sm" className="w-full" onClick={() => handleComplete(withdrawal)}>
+                      Mark Complete
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Pagination */}
@@ -363,6 +430,7 @@ export default function AdminWithdrawalsPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Approval/Rejection/Complete Modal */}
       <Modal
@@ -456,7 +524,7 @@ export default function AdminWithdrawalsPage() {
                   </label>
                 </div>
                 {!useManualMode && (
-                  <div className="p-3 bg-violet-50 border border-violet-200 rounded-xl">
+                  <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl">
                     <p className="text-sm text-brand-800">
                       ⚠️ Automatic Paystack transfer requires a Registered
                       Business account.
@@ -508,7 +576,7 @@ export default function AdminWithdrawalsPage() {
               </Button>
               <Button
                 variant={actionType === "reject" ? "danger" : "success"}
-                className="flex-1"
+                className={actionType === "reject" ? "flex-1" : "shimmer-sweep flex-1"}
                 onClick={confirmAction}
                 disabled={
                   (actionType === "reject" && !rejectionReason.trim()) ||

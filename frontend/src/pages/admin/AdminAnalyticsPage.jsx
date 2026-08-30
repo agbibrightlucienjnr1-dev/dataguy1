@@ -21,6 +21,7 @@ import {
   Cell
 } from "recharts";
 import { adminApi } from "../../api/admin";
+import { Reveal } from "../../components/ui";
 
 export const AdminAnalyticsPage = () => {
   const [data, setData] = useState({ stats: null, chartData: [] });
@@ -68,10 +69,10 @@ export const AdminAnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="animate-fade-in-up flex items-center gap-4">
         <Link
           to="/admin"
-          className="p-2 hover:bg-violet-50 rounded-xl transition-colors"
+          className="p-2 hover:bg-brand-50 rounded-xl transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-500" />
         </Link>
@@ -82,34 +83,43 @@ export const AdminAnalyticsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Total Page Views (30d)"
-          value={stats?.totalPageViews || 0}
-          icon={<MousePointerClick className="w-6 h-6 text-action-600" />}
-          bgColor="bg-emerald-50"
-        />
-        <MetricCard
-          title="Unique Visitors (30d)"
-          value={stats?.uniqueVisitors || 0}
-          icon={<Users className="w-6 h-6 text-brand-600" />}
-          bgColor="bg-violet-50"
-        />
-        <MetricCard
-          title="Total USSD Dials (30d)"
-          value={stats?.ussdDials || 0}
-          icon={<Smartphone className="w-6 h-6 text-fuchsia-600" />}
-          bgColor="bg-fuchsia-50"
-        />
-        <MetricCard
-          title="Conversion Rate"
-          value={`${stats?.conversionRate || "0.00"}%`}
-          icon={<Activity className="w-6 h-6 text-amber-600" />}
-          bgColor="bg-amber-50"
-        />
+        <Reveal variant="scale" delay={0}>
+          <MetricCard
+            title="Total Page Views (30d)"
+            value={stats?.totalPageViews || 0}
+            icon={<MousePointerClick className="w-6 h-6 text-action-600" />}
+            bgColor="bg-emerald-50"
+          />
+        </Reveal>
+        <Reveal variant="scale" delay={80}>
+          <MetricCard
+            title="Unique Visitors (30d)"
+            value={stats?.uniqueVisitors || 0}
+            icon={<Users className="w-6 h-6 text-brand-600" />}
+            bgColor="bg-brand-50"
+          />
+        </Reveal>
+        <Reveal variant="scale" delay={160}>
+          <MetricCard
+            title="Total USSD Dials (30d)"
+            value={stats?.ussdDials || 0}
+            icon={<Smartphone className="w-6 h-6 text-sky-600" />}
+            bgColor="bg-sky-50"
+          />
+        </Reveal>
+        <Reveal variant="scale" delay={240}>
+          <MetricCard
+            title="Conversion Rate"
+            value={`${stats?.conversionRate || "0.00"}%`}
+            icon={<Activity className="w-6 h-6 text-amber-600" />}
+            bgColor="bg-amber-50"
+          />
+        </Reveal>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 col-span-1 lg:col-span-2">
+        <Reveal className="col-span-1 lg:col-span-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-6">
              <h3 className="font-display text-lg font-semibold text-slate-900">Traffic Trends (Last 7 Days)</h3>
              <p className="text-sm text-slate-500">Compare web visits against offline USSD dial usage.</p>
@@ -124,20 +134,22 @@ export const AdminAnalyticsPage = () => {
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="top" height={36}/>
-                <Line type="monotone" name="Web Views" dataKey="views" stroke="#7C3AED" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                <Line type="monotone" name="Web Views" dataKey="views" stroke="#1E3C66" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
                 <Line type="monotone" name="Unique Web Users" dataKey="unique" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} />
                 <Line type="monotone" name="USSD Dials" dataKey="ussd" stroke="#D97706" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
+        </Reveal>
 
+        <Reveal delay={120}>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col">
           <div className="mb-4">
             <h3 className="font-display text-lg font-semibold text-slate-900">Device Analytics</h3>
             <p className="text-sm text-slate-500">Traffic breakdown by hardware.</p>
           </div>
-          <div className="flex-1 min-h-[300px]">
+          <div className="h-[300px]">
              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -150,7 +162,7 @@ export const AdminAnalyticsPage = () => {
                     dataKey="value"
                   >
                     {(stats?.deviceBreakdown || []).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={["#7C3AED", "#059669", "#D97706", "#DC2626"][index % 4]} />
+                      <Cell key={`cell-${index}`} fill={["#1E3C66", "#059669", "#D97706", "#DC2626"][index % 4]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -162,10 +174,12 @@ export const AdminAnalyticsPage = () => {
              </ResponsiveContainer>
           </div>
         </div>
+        </Reveal>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Agents */}
+        <Reveal>
         <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-4">
              <h3 className="font-display text-lg font-semibold text-slate-900">Top Performing Agents</h3>
@@ -174,7 +188,7 @@ export const AdminAnalyticsPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-violet-50/40">
+                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-brand-50/40">
                   <th className="pb-3 pt-2 px-2 font-medium">Agent</th>
                   <th className="pb-3 pt-2 px-2 font-medium">Code</th>
                   <th className="pb-3 pt-2 px-2 font-medium text-right">Traffic Generated</th>
@@ -182,9 +196,9 @@ export const AdminAnalyticsPage = () => {
               </thead>
               <tbody>
                 {(stats?.topAgents || []).map((agent, i) => (
-                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-violet-50/50 transition-colors">
-                    <td className="py-4 px-2 text-sm font-medium text-slate-900">{agent.name}</td>
-                    <td className="py-4 px-2 text-sm font-mono text-slate-500">{agent.code}</td>
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-brand-50/50 transition-colors">
+                    <td className="py-4 px-2 text-sm font-medium text-slate-900 break-words">{agent.name}</td>
+                    <td className="py-4 px-2 text-sm font-mono text-slate-500 break-all">{agent.code}</td>
                     <td className="py-4 px-2 text-sm text-right font-bold text-brand-600">{agent.views.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -197,8 +211,10 @@ export const AdminAnalyticsPage = () => {
             </table>
           </div>
         </div>
+        </Reveal>
 
         {/* Top Paths */}
+        <Reveal delay={100}>
         <div className="bg-white p-6 rounded-2xl border border-slate-200">
           <div className="mb-4">
              <h3 className="font-display text-lg font-semibold text-slate-900">Popular Paths</h3>
@@ -207,15 +223,15 @@ export const AdminAnalyticsPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-violet-50/40">
+                <tr className="border-b border-slate-200 text-slate-500 text-sm bg-brand-50/40">
                   <th className="pb-3 pt-2 px-2 font-medium">URL Source</th>
                   <th className="pb-3 pt-2 px-2 font-medium text-right">Footprints</th>
                 </tr>
               </thead>
               <tbody>
                 {(stats?.topPaths || []).map((path, i) => (
-                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-violet-50/50 transition-colors">
-                    <td className="py-4 px-2 text-sm font-medium font-mono text-slate-700 truncate max-w-xs">{path.path}</td>
+                  <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-brand-50/50 transition-colors">
+                    <td className="py-4 px-2 text-sm font-medium font-mono text-slate-700 break-all">{path.path}</td>
                     <td className="py-4 px-2 text-sm text-right font-bold text-action-600">{path.views.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -228,13 +244,14 @@ export const AdminAnalyticsPage = () => {
             </table>
           </div>
         </div>
+        </Reveal>
       </div>
     </div>
   );
 };
 
 const MetricCard = ({ title, value, icon, bgColor }) => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:shadow-md transition-shadow">
+  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
     <div className="flex items-center gap-4">
       <div className={`p-4 rounded-2xl ${bgColor}`}>{icon}</div>
       <div>

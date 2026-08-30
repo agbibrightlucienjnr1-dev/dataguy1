@@ -34,8 +34,8 @@ const STATUS_CONFIG = {
   },
   processing: {
     icon: Loader2,
-    color: "text-fuchsia-600",
-    bgColor: "bg-fuchsia-100",
+    color: "text-sky-600",
+    bgColor: "bg-sky-100",
     label: "Processing",
     description: "Your data bundle is being delivered",
     animate: true,
@@ -216,7 +216,7 @@ export default function PaymentCallbackPage() {
   if (showError) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 rounded-3xl text-center shadow-lg shadow-red-500/5 border-red-100">
+        <Card className="animate-fade-in-up max-w-md w-full p-8 rounded-3xl text-center shadow-lg shadow-red-500/5 border-red-100">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
@@ -232,7 +232,7 @@ export default function PaymentCallbackPage() {
               <Button variant="outline">Track Another Order</Button>
             </Link>
             <Link to="/">
-              <Button>Go Home</Button>
+              <Button className="shimmer-sweep">Go Home</Button>
             </Link>
           </div>
         </Card>
@@ -257,7 +257,7 @@ export default function PaymentCallbackPage() {
       <main className="max-w-2xl mx-auto px-4 py-12">
         {/* Status Card */}
         <Card
-          className={`p-8 rounded-3xl text-center mb-6 ${
+          className={`animate-fade-in-up p-8 rounded-3xl text-center mb-6 ${
             order?.status === "completed"
               ? "border-action-200 shadow-lg shadow-action-500/10"
               : order?.status === "failed"
@@ -331,13 +331,13 @@ export default function PaymentCallbackPage() {
         </Card>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="animate-fade-in-up animation-delay-150 flex flex-col sm:flex-row gap-3 justify-center">
           <Button variant="outline" onClick={() => refetch()} className="gap-2">
             <Loader2 className="w-4 h-4" />
             Refresh Status
           </Button>
           <Button
-            className="gap-2 w-full sm:w-auto"
+            className="shimmer-sweep gap-2 w-full sm:w-auto"
             onClick={() => navigate(-1)}
           >
             Back
@@ -347,7 +347,7 @@ export default function PaymentCallbackPage() {
 
         {/* Help Text */}
         {order?.status === "pending" && (
-          <Card className="mt-6 p-4 rounded-2xl bg-amber-50 border-amber-200">
+          <Card className="animate-fade-in-up animation-delay-300 mt-6 p-4 rounded-2xl bg-amber-50 border-amber-200">
             <div className="flex items-center gap-3 mb-2">
               {isPolling && (
                 <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
@@ -367,7 +367,7 @@ export default function PaymentCallbackPage() {
         )}
 
         {order?.status === "completed" && (
-          <Card className="mt-6 p-4 rounded-2xl bg-action-50 border-action-200">
+          <Card className="animate-fade-in-up animation-delay-300 mt-6 p-4 rounded-2xl bg-action-50 border-action-200">
             <p className="text-sm text-action-800 text-center">
               🎉 Your data bundle has been delivered! Check your phone for
               confirmation.
@@ -376,7 +376,7 @@ export default function PaymentCallbackPage() {
         )}
 
         {order?.status === "failed" && (
-          <Card className="mt-6 p-4 rounded-2xl bg-red-50 border-red-200">
+          <Card className="animate-fade-in-up animation-delay-300 mt-6 p-4 rounded-2xl bg-red-50 border-red-200">
             <p className="text-sm text-red-800 text-center">
               If you were charged, please contact support with your Order ID for
               a refund.

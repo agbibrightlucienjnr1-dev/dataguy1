@@ -66,7 +66,7 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="animate-fade-in-up mb-8">
         <h1 className="text-2xl font-display font-bold text-slate-900">Create an account</h1>
         <p className="text-slate-600 mt-2">
           Start selling data bundles and earning commissions today
@@ -85,7 +85,7 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name */}
-        <div>
+        <div className="animate-fade-in-up" style={{ animationDelay: "60ms" }}>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">
             Full Name
           </label>
@@ -106,7 +106,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Email */}
-        <div>
+        <div className="animate-fade-in-up" style={{ animationDelay: "120ms" }}>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">
             Email address
           </label>
@@ -127,7 +127,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Phone */}
-        <div>
+        <div className="animate-fade-in-up" style={{ animationDelay: "180ms" }}>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">
             Phone Number
           </label>
@@ -148,7 +148,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Password */}
-        <div>
+        <div className="animate-fade-in-up" style={{ animationDelay: "240ms" }}>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">
             Password
           </label>
@@ -187,7 +187,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Confirm Password */}
-        <div>
+        <div className="animate-fade-in-up" style={{ animationDelay: "300ms" }}>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">
             Confirm Password
           </label>
@@ -226,7 +226,7 @@ export default function RegisterPage() {
         )}
 
         {/* Terms */}
-        <div className="flex items-start gap-2 pt-2">
+        <div className="animate-fade-in-up flex items-start gap-2 pt-2" style={{ animationDelay: "360ms" }}>
           <input
             type="checkbox"
             id="terms"
@@ -247,14 +247,15 @@ export default function RegisterPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 text-[15px] hover:-translate-y-0.5 mt-2"
+          className="shimmer-sweep animate-fade-in-up w-full h-12 text-[15px] hover:-translate-y-0.5 mt-2"
+          style={{ animationDelay: "420ms" }}
           isLoading={registerMutation.isPending}
         >
           Create Account
         </Button>
       </form>
 
-      <div className="mt-8 text-center bg-brand-50/50 p-4 rounded-xl border border-brand-100">
+      <div className="animate-fade-in-up mt-8 text-center bg-brand-50/50 p-4 rounded-xl border border-brand-100" style={{ animationDelay: "480ms" }}>
         <p className="text-slate-600 text-sm">
           Already have an account?{" "}
           <Link

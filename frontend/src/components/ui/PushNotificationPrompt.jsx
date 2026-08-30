@@ -63,7 +63,7 @@ export default function PushNotificationPrompt({
       size="sm"
     >
       <div className="space-y-5 text-center p-2">
-        <div className="mx-auto w-14 h-14 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center text-brand-600 animate-bounce">
+        <div className="mx-auto w-14 h-14 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 animate-bounce">
           <Bell className="w-7 h-7" />
         </div>
 

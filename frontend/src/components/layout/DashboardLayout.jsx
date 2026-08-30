@@ -112,7 +112,7 @@ function NavGroup({ group, setSidebarOpen }) {
     <div className="mb-2">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold tracking-wider text-violet-300/60 uppercase hover:text-violet-100 transition-colors"
+        className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold tracking-wider text-brand-300/60 uppercase hover:text-brand-100 transition-colors"
       >
         <span>{group.title}</span>
         <ChevronRight
@@ -135,11 +135,11 @@ function NavGroup({ group, setSidebarOpen }) {
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-brand-600 text-white shadow-sm shadow-brand-900/40"
-                  : "text-violet-200/80 hover:bg-white/5 hover:text-white"
+                  : "text-brand-200/80 hover:bg-white/5 hover:text-white"
               }`
             }
           >
-            <item.icon className={`w-5 h-5 ${pathname === item.to || (item.to !== "/dashboard" && item.to !== "/admin" && pathname.startsWith(item.to)) ? "text-violet-200" : ""}`} />
+            <item.icon className={`w-5 h-5 ${pathname === item.to || (item.to !== "/dashboard" && item.to !== "/admin" && pathname.startsWith(item.to)) ? "text-brand-200" : ""}`} />
             {item.label}
           </NavLink>
         ))}
@@ -228,14 +228,15 @@ export default function DashboardLayout() {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="animate-fade-in-up fixed inset-0 bg-black/50 z-40 lg:hidden"
+          style={{ animationDuration: "0.2s" }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gradient-to-b from-brand-950 to-violet-950 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gradient-to-b from-brand-950 to-slate-950 transform transition-transform duration-300 ease-out lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -244,16 +245,16 @@ export default function DashboardLayout() {
           <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
             <Link
               to={isAdmin() ? "/admin" : "/dashboard"}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 group"
             >
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                 <Wifi className="w-5 h-5 text-brand-700" />
               </div>
               <span className="font-display text-lg font-bold text-white">DataGuy</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-violet-300 hover:text-white"
+              className="lg:hidden text-brand-300 hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
@@ -301,7 +302,7 @@ export default function DashboardLayout() {
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-white text-brand-800"
-                    : "text-violet-200/80 hover:bg-white/5 hover:text-white"
+                    : "text-brand-200/80 hover:bg-white/5 hover:text-white"
                 }`
               }
             >
@@ -365,7 +366,7 @@ export default function DashboardLayout() {
 
               {/* Hubnet Balance (Admin only) */}
               {isAdmin() && (
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-violet-50 rounded-lg border border-violet-200">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-brand-50 rounded-lg border border-brand-200">
                   <Wallet className="w-4 h-4 text-brand-600" />
                   <div className="flex flex-col">
                     <span className="text-xs text-slate-500 leading-none">
@@ -384,7 +385,7 @@ export default function DashboardLayout() {
                   </div>
                   <button
                     onClick={() => refetchHubnetBalance()}
-                    className="ml-1 p-1 hover:bg-violet-100 rounded transition-colors"
+                    className="ml-1 p-1 hover:bg-brand-100 rounded transition-colors"
                     title="Refresh Hubnet balance"
                   >
                     <RefreshCw
@@ -435,7 +436,7 @@ export default function DashboardLayout() {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-fuchsia-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-sky-600 rounded-full flex items-center justify-center">
                     <span className="text-sm font-medium text-white">
                       {user?.name?.charAt(0)?.toUpperCase() || "U"}
                     </span>
@@ -458,11 +459,11 @@ export default function DashboardLayout() {
                       className="fixed inset-0 z-40"
                       onClick={() => setUserMenuOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-violet-950/10 border border-slate-200 py-1 z-50">
+                    <div className="animate-fade-in-up absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-brand-950/10 border border-slate-200 py-1 z-50" style={{ animationDuration: "0.18s" }}>
                       <Link
                         to="/profile"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50 hover:text-brand-700"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
                       >
                         <User className="w-4 h-4" />
                         Profile
@@ -470,7 +471,7 @@ export default function DashboardLayout() {
                       <Link
                         to="/settings"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50 hover:text-brand-700"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
                       >
                         <Settings className="w-4 h-4" />
                         Settings

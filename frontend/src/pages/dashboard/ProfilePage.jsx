@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardContent,
   Button,
+  Reveal,
 } from "../../components/ui";
 import Input from "../../components/ui/Input";
 import { changePasswordSchema } from "../../utils/validators";
@@ -91,7 +92,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Page Header */}
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="text-2xl font-display font-bold text-slate-900">Profile</h1>
         <p className="text-slate-600 mt-1">
           Manage your account information and security settings
@@ -101,7 +102,7 @@ export default function ProfilePage() {
       <div className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Profile Information */}
-          <Card>
+          <Reveal as={Card}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5 text-brand-600" />
@@ -153,7 +154,7 @@ export default function ProfilePage() {
                   Role
                 </label>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-violet-100 text-brand-700">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-brand-100 text-brand-700">
                     {user?.role || "N/A"}
                   </span>
                 </div>
@@ -185,11 +186,11 @@ export default function ProfilePage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Reveal>
 
           {/* Shop Name (for agents and sub-agents only) */}
           {(user?.role === "agent" || user?.role === "sub_agent") && (
-            <Card>
+            <Reveal as={Card} delay={100}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Store className="w-5 h-5 text-brand-600" />
@@ -239,12 +240,12 @@ export default function ProfilePage() {
                   )}
                 </Button>
               </CardContent>
-            </Card>
+            </Reveal>
           )}
         </div>
 
         {/* Change Password */}
-        <Card>
+        <Reveal as={Card} delay={150}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Key className="w-5 h-5 text-brand-600" />
@@ -355,7 +356,7 @@ export default function ProfilePage() {
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full"
+                className="shimmer-sweep w-full"
                 disabled={changePasswordMutation.isPending}
               >
                 {changePasswordMutation.isPending ? (
@@ -369,7 +370,7 @@ export default function ProfilePage() {
               </Button>
             </form>
           </CardContent>
-        </Card>
+        </Reveal>
       </div>
     </div>
   );

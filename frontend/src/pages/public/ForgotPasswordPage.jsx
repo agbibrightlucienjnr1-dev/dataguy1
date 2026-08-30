@@ -56,19 +56,19 @@ export default function ForgotPasswordPage() {
       <div className="flex items-center justify-center">
         <div className="w-full max-w-md">
           <div className="text-center">
-            <div className="w-16 h-16 bg-action-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="animate-fade-in-up w-16 h-16 bg-action-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-action-600" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-slate-900 mb-2">
+            <h1 className="animate-fade-in-up animation-delay-150 text-2xl font-display font-bold text-slate-900 mb-2">
               Password Reset Successful
             </h1>
-            <p className="text-slate-600 mb-6">
+            <p className="animate-fade-in-up animation-delay-150 text-slate-600 mb-6">
               Your password has been reset successfully. You can now log in with
               your new password.
             </p>
             <Button
               onClick={() => navigate("/login")}
-              className="w-full h-12 text-[15px] hover:-translate-y-0.5"
+              className="shimmer-sweep animate-fade-in-up animation-delay-300 w-full h-12 text-[15px] hover:-translate-y-0.5"
             >
               Go to Login
             </Button>
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
     <div className="flex items-center justify-center">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="animate-fade-in-up text-center mb-8">
           <Link
             to="/login"
             className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-brand-600 transition-colors mb-4"
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
             onSubmit={requestForm.handleSubmit(onRequestSubmit)}
             className="space-y-6"
           >
-            <div>
+            <div className="animate-fade-in-up animation-delay-150">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Phone Number
               </label>
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-[15px] hover:-translate-y-0.5"
+              className="shimmer-sweep animate-fade-in-up animation-delay-300 w-full h-12 text-[15px] hover:-translate-y-0.5"
               isLoading={forgotPasswordMutation.isPending}
             >
               Send Reset Code
@@ -142,7 +142,7 @@ export default function ForgotPasswordPage() {
             onSubmit={resetForm.handleSubmit(onResetSubmit)}
             className="space-y-6"
           >
-            <div>
+            <div className="animate-fade-in-up" style={{ animationDelay: "60ms" }}>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Phone Number
               </label>
@@ -166,7 +166,7 @@ export default function ForgotPasswordPage() {
               )}
             </div>
 
-            <div>
+            <div className="animate-fade-in-up" style={{ animationDelay: "120ms" }}>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Reset Code
               </label>
@@ -191,7 +191,7 @@ export default function ForgotPasswordPage() {
               )}
             </div>
 
-            <div>
+            <div className="animate-fade-in-up" style={{ animationDelay: "180ms" }}>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 New Password
               </label>
@@ -215,7 +215,7 @@ export default function ForgotPasswordPage() {
               )}
             </div>
 
-            <div>
+            <div className="animate-fade-in-up" style={{ animationDelay: "240ms" }}>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Confirm New Password
               </label>
@@ -239,7 +239,7 @@ export default function ForgotPasswordPage() {
               )}
             </div>
 
-            <div className="flex gap-3">
+            <div className="animate-fade-in-up flex gap-3" style={{ animationDelay: "300ms" }}>
               <Button
                 type="button"
                 variant="outline"
@@ -250,7 +250,7 @@ export default function ForgotPasswordPage() {
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-12 text-[15px] hover:-translate-y-0.5"
+                className="shimmer-sweep flex-1 h-12 text-[15px] hover:-translate-y-0.5"
                 isLoading={resetPasswordMutation.isPending}
               >
                 Reset Password

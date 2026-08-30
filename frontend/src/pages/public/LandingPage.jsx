@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Wifi,
@@ -15,8 +16,27 @@ import {
   Instagram,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "../../components/ui";
+import { Button, Reveal } from "../../components/ui";
+import { useCountUp } from "../../hooks";
 import { ordersApi } from "../../api";
+
+function formatCount(value, decimals) {
+  if (decimals > 0) return value.toFixed(decimals);
+  if (value >= 1000) {
+    return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K+";
+  }
+  return Math.round(value).toLocaleString();
+}
+
+function StatCounter({ target, fallback, isLoading, suffix = "", decimals = 0, className }) {
+  const numeric = Number.isFinite(target) ? target : fallback;
+  const animated = useCountUp(numeric, { start: !isLoading });
+  return (
+    <div className={className}>
+      {isLoading ? "…" : `${formatCount(animated, decimals)}${suffix}`}
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const { data: statsData, isLoading } = useQuery({
@@ -27,26 +47,29 @@ export default function LandingPage() {
 
   const stats = statsData?.data || {};
 
-  const formatStatNumber = (value, fallback) => {
-    if (isLoading) return "...";
-    if (value === undefined || value === null) return fallback;
-    if (value >= 1000) {
-      return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K+";
-    }
-    return value;
-  };
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Navigation */}
-      <nav className="z-30 glass-panel border-b border-white/40 sticky top-0">
+      <nav
+        className={`z-30 glass-panel sticky top-0 transition-shadow duration-300 ${
+          scrolled ? "border-b border-white/40 shadow-sm shadow-brand-900/5" : "border-b border-transparent"
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-linear-to-br from-brand-600 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-300/50 transform group-hover:scale-105 transition-all">
+              <div className="w-10 h-10 bg-linear-to-br from-brand-600 to-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-300/50 transform group-hover:scale-105 transition-all">
                 <Wifi className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-display font-extrabold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-fuchsia-600 tracking-tight">DataGuy</span>
+              <span className="text-2xl font-display font-extrabold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-sky-600 tracking-tight">DataGuy</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
@@ -66,7 +89,7 @@ export default function LandingPage() {
                 <Button variant="ghost" className="font-semibold hover:bg-brand-50 hover:text-brand-700">Sign in</Button>
               </Link>
               <Link to="/register">
-                <Button variant="primary" className="font-semibold shadow-md shadow-violet-300/40 hover:shadow-lg transition-shadow">Get Started</Button>
+                <Button variant="primary" className="font-semibold shadow-md shadow-brand-300/40 hover:shadow-lg transition-shadow">Get Started</Button>
               </Link>
             </div>
           </div>
@@ -82,27 +105,27 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-12 gap-16 items-center">
             {/* Copy column */}
             <div className="lg:col-span-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-200 bg-brand-50 text-brand-700 text-sm font-medium mb-6">
-                <span className="flex h-2 w-2 rounded-full bg-action-500"></span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-200 bg-brand-50 text-brand-700 text-sm font-medium mb-6 animate-fade-in-up">
+                <span className="flex h-2 w-2 rounded-full bg-action-500 animate-pulse-ring"></span>
                 The #1 Data Reselling Platform in Ghana
               </div>
 
-              <h1 className="text-5xl sm:text-6xl font-display font-extrabold text-slate-900 leading-[1.08] tracking-tight text-balance">
+              <h1 className="animate-fade-in-up animation-delay-150 text-5xl sm:text-6xl font-display font-extrabold text-slate-900 leading-[1.08] tracking-tight text-balance">
                 Sell data bundles.
                 <br />
-                <span className="bg-clip-text text-transparent bg-linear-to-r from-brand-600 via-violet-500 to-fuchsia-500">
+                <span className="bg-clip-text text-transparent bg-linear-to-r from-brand-600 via-brand-500 to-sky-500">
                   Earn more daily.
                 </span>
               </h1>
-              <p className="mt-6 text-lg text-slate-600 max-w-lg leading-relaxed">
+              <p className="animate-fade-in-up animation-delay-150 mt-6 text-lg text-slate-600 max-w-lg leading-relaxed">
                 Become a DataGuy agent and start selling MTN, Telecel &amp; AirtelTigo data
                 bundles. Set your own prices, earn commissions on every sale, and grow a
                 business you control.
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
+              <div className="animate-fade-in-up animation-delay-300 mt-8 flex flex-col sm:flex-row items-start gap-4">
                 <Link to="/register" className="w-full sm:w-auto">
-                  <Button variant="success" size="lg" className="w-full sm:w-auto px-8 h-12 shadow-lg shadow-action-500/30 hover:-translate-y-0.5 transition-all">
+                  <Button variant="success" size="lg" className="shimmer-sweep w-full sm:w-auto px-8 h-12 shadow-lg shadow-action-500/30 hover:-translate-y-0.5 transition-all">
                     Start Selling Now
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -115,25 +138,36 @@ export default function LandingPage() {
               </div>
 
               {/* Inline stat row, not boxed */}
-              <div className="mt-12 flex items-center gap-8 flex-wrap">
+              <div className="mt-12 flex items-center gap-8 flex-wrap animate-fade-in-up animation-delay-300">
                 <div>
-                  <div className="text-3xl font-display font-extrabold text-slate-900">
-                    {formatStatNumber(stats.activeAgents, "5K+")}
-                  </div>
+                  <StatCounter
+                    target={stats.activeAgents}
+                    fallback={5000}
+                    isLoading={isLoading}
+                    className="text-3xl font-display font-extrabold text-slate-900 tabular-nums"
+                  />
                   <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-1">Active Agents</div>
                 </div>
                 <div className="w-px h-10 bg-slate-200"></div>
                 <div>
-                  <div className="text-3xl font-display font-extrabold text-slate-900">
-                    {formatStatNumber(stats.ordersDelivered, "100K+")}
-                  </div>
+                  <StatCounter
+                    target={stats.ordersDelivered}
+                    fallback={100000}
+                    isLoading={isLoading}
+                    className="text-3xl font-display font-extrabold text-slate-900 tabular-nums"
+                  />
                   <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-1">Orders Delivered</div>
                 </div>
                 <div className="w-px h-10 bg-slate-200"></div>
                 <div>
-                  <div className="text-3xl font-display font-extrabold text-action-600">
-                    {isLoading ? "..." : (stats.successRate !== undefined ? `${stats.successRate}%` : "99.9%")}
-                  </div>
+                  <StatCounter
+                    target={stats.successRate}
+                    fallback={99.9}
+                    isLoading={isLoading}
+                    suffix="%"
+                    decimals={1}
+                    className="text-3xl font-display font-extrabold text-action-600 tabular-nums"
+                  />
                   <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-1">Success Rate</div>
                 </div>
               </div>
@@ -143,10 +177,10 @@ export default function LandingPage() {
             <div className="lg:col-span-6 relative">
               <div className="relative mx-auto max-w-md animate-float-slow">
                 {/* Main app-preview card */}
-                <div className="relative rounded-[2rem] bg-white shadow-2xl shadow-violet-300/40 border border-slate-100 p-6 rotate-2">
+                <div className="relative rounded-[2rem] bg-white shadow-2xl shadow-brand-300/40 border border-slate-100 p-6 rotate-2">
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full bg-linear-to-br from-brand-600 to-fuchsia-500 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-full bg-linear-to-br from-brand-600 to-sky-500 flex items-center justify-center">
                         <Smartphone className="w-4.5 h-4.5 text-white" />
                       </div>
                       <div>
@@ -179,23 +213,23 @@ export default function LandingPage() {
                 </div>
 
                 {/* Floating success toast */}
-                <div className="absolute -bottom-6 -left-8 bg-white rounded-2xl shadow-xl shadow-slate-300/40 border border-slate-100 p-4 flex items-center gap-3 -rotate-3 animate-float">
-                  <div className="w-10 h-10 rounded-full bg-action-100 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-action-600" />
+                <div className="absolute -bottom-8 -left-2 sm:-bottom-6 sm:-left-8 max-w-[65%] sm:max-w-none bg-white rounded-xl sm:rounded-2xl shadow-xl shadow-slate-300/40 border border-slate-100 p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 -rotate-3 animate-float">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-action-100 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-action-600" />
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-slate-900">Delivered instantly</div>
-                    <div className="text-xs text-slate-500">to 024 XXX XXXX</div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">Delivered instantly</div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 truncate">to 024 XXX XXXX</div>
                   </div>
                 </div>
 
                 {/* Floating earnings chip */}
-                <div className="absolute -top-6 -right-4 bg-linear-to-br from-brand-600 to-fuchsia-500 rounded-2xl shadow-xl shadow-violet-400/40 p-4 text-white animate-float animation-delay-2000">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-violet-100">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    Commission earned
+                <div className="absolute -top-3 -right-2 sm:-top-6 sm:-right-4 max-w-[60%] sm:max-w-none bg-linear-to-br from-brand-600 to-sky-500 rounded-xl sm:rounded-2xl shadow-xl shadow-brand-400/40 p-2 sm:p-4 text-white animate-float animation-delay-2000">
+                  <div className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-xs font-semibold text-brand-100">
+                    <TrendingUp className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 shrink-0" />
+                    <span className="truncate">Commission earned</span>
                   </div>
-                  <div className="text-xl font-display font-extrabold mt-1">+₵6.50</div>
+                  <div className="text-sm sm:text-xl font-display font-extrabold mt-0.5 sm:mt-1">+₵6.50</div>
                 </div>
               </div>
             </div>
@@ -212,7 +246,7 @@ export default function LandingPage() {
                 <span className="w-3 h-3 rounded-full bg-red-500"></span>Telecel
               </span>
               <span className="flex items-center gap-2 text-slate-700 font-display font-bold">
-                <span className="w-3 h-3 rounded-full bg-blue-600"></span>AirtelTigo
+                <span className="w-3 h-3 rounded-full bg-indigo-600"></span>AirtelTigo
               </span>
             </div>
           </div>
@@ -222,7 +256,7 @@ export default function LandingPage() {
       {/* Features — asymmetric bento grid */}
       <section id="features" className="py-24 relative bg-slate-50 border-y border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-16">
+          <Reveal className="max-w-2xl mb-16">
             <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900">
               Why choose DataGuy?
             </h2>
@@ -230,18 +264,18 @@ export default function LandingPage() {
               Everything you need to run your data reselling business efficiently, with
               premium tools at your fingertips.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-6">
             {/* Large featured card */}
-            <div className="lg:col-span-2 lg:row-span-2 rounded-3xl bg-linear-to-br from-brand-700 via-violet-700 to-fuchsia-700 p-8 flex flex-col justify-between text-white relative overflow-hidden">
+            <Reveal variant="scale" className="lg:col-span-2 lg:row-span-2 rounded-3xl bg-linear-to-br from-brand-900 via-brand-700 to-sky-800 p-8 flex flex-col justify-between text-white relative overflow-hidden">
               <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
               <div className="relative z-10">
                 <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Wallet className="h-7 w-7 text-white" />
                 </div>
                 <h3 className="text-2xl font-display font-bold mb-3">Earn commissions on every sale</h3>
-                <p className="text-violet-100 leading-relaxed max-w-sm">
+                <p className="text-brand-100 leading-relaxed max-w-sm">
                   Set your own resale prices above the wholesale rate and keep the
                   difference. Withdraw straight to your Mobile Money, anytime.
                 </p>
@@ -249,9 +283,9 @@ export default function LandingPage() {
               <div className="relative z-10 mt-8 flex items-center gap-2 text-sm font-semibold text-white">
                 No caps. No waiting periods. <ArrowRight className="w-4 h-4" />
               </div>
-            </div>
+            </Reveal>
 
-            <div className="rounded-3xl bg-white border border-slate-200 p-7 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-100 transition-all duration-300">
+            <Reveal delay={100} className="rounded-3xl bg-white border border-slate-200 p-7 hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-100 transition-all duration-300">
               <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-5">
                 <Zap className="h-6 w-6 text-amber-600" />
               </div>
@@ -259,19 +293,19 @@ export default function LandingPage() {
               <p className="text-slate-600 text-sm leading-relaxed">
                 Bundles land on the recipient's line seconds after payment confirms.
               </p>
-            </div>
+            </Reveal>
 
-            <div className="rounded-3xl bg-white border border-slate-200 p-7 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-100 transition-all duration-300">
-              <div className="w-12 h-12 bg-fuchsia-100 rounded-xl flex items-center justify-center mb-5">
-                <Shield className="h-6 w-6 text-fuchsia-600" />
+            <Reveal delay={200} className="rounded-3xl bg-white border border-slate-200 p-7 hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-100 transition-all duration-300">
+              <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center mb-5">
+                <Shield className="h-6 w-6 text-sky-600" />
               </div>
               <h3 className="text-lg font-display font-bold text-slate-900 mb-2">Secure Payments</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 Every transaction runs through Paystack — safe, reliable, automated.
               </p>
-            </div>
+            </Reveal>
 
-            <div className="lg:col-span-2 rounded-3xl bg-white border border-slate-200 p-7 flex items-center gap-6 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-100 transition-all duration-300">
+            <Reveal delay={300} className="lg:col-span-2 rounded-3xl bg-white border border-slate-200 p-7 flex items-center gap-6 hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-100 transition-all duration-300">
               <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center shrink-0">
                 <Users className="h-6 w-6 text-brand-600" />
               </div>
@@ -281,7 +315,7 @@ export default function LandingPage() {
                   Recruit sub-agents under you and earn passive income from every sale they make. Scale infinitely.
                 </p>
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -289,14 +323,14 @@ export default function LandingPage() {
       {/* How it Works — connected stepper */}
       <section id="how-it-works" className="py-24 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
+          <Reveal className="text-center mb-20">
             <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900">How it works</h2>
             <p className="mt-4 text-lg text-slate-600">Get started and make your first sale in under 5 minutes</p>
-          </div>
+          </Reveal>
 
           <div className="relative max-w-5xl mx-auto">
             {/* Connecting line */}
-            <div className="hidden md:block absolute top-8 left-[16.6%] right-[16.6%] h-0.5 bg-linear-to-r from-brand-300 via-violet-300 to-action-300"></div>
+            <div className="hidden md:block absolute top-8 left-[16.6%] right-[16.6%] h-0.5 bg-linear-to-r from-brand-300 via-sky-300 to-action-300"></div>
 
             <div className="grid md:grid-cols-3 gap-12 md:gap-8">
               {[
@@ -304,13 +338,13 @@ export default function LandingPage() {
                   n: "1",
                   title: "Create Account",
                   desc: "Sign up as an agent or sub-agent instantly. No upfront fees required.",
-                  grad: "from-brand-600 to-violet-500",
+                  grad: "from-brand-600 to-brand-500",
                 },
                 {
                   n: "2",
                   title: "Share Your Link",
                   desc: "Get your unique payment link and share with customers on WhatsApp or social media.",
-                  grad: "from-violet-500 to-fuchsia-500",
+                  grad: "from-brand-500 to-sky-500",
                 },
                 {
                   n: "3",
@@ -318,16 +352,16 @@ export default function LandingPage() {
                   desc: "Earn commission instantly on every fully automated sale. Withdraw anytime.",
                   grad: "from-action-500 to-emerald-600",
                 },
-              ].map((step) => (
-                <div key={step.n} className="relative text-center">
+              ].map((step, i) => (
+                <Reveal key={step.n} delay={i * 150} className="relative text-center">
                   <div
-                    className={`relative z-10 w-16 h-16 mx-auto rounded-2xl bg-linear-to-br ${step.grad} shadow-lg shadow-violet-200 flex items-center justify-center text-2xl font-display font-extrabold text-white`}
+                    className={`relative z-10 w-16 h-16 mx-auto rounded-2xl bg-linear-to-br ${step.grad} shadow-lg shadow-brand-200 flex items-center justify-center text-2xl font-display font-extrabold text-white transition-transform duration-300 hover:scale-110 hover:rotate-3`}
                   >
                     {step.n}
                   </div>
                   <h3 className="mt-6 text-xl font-display font-bold text-slate-900 mb-2">{step.title}</h3>
                   <p className="text-slate-600 leading-relaxed px-2">{step.desc}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -336,38 +370,38 @@ export default function LandingPage() {
 
       {/* CTA — split layout with checklist, not a centered box */}
       <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-brand-700 via-violet-700 to-fuchsia-700"></div>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-fuchsia-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-brand-900 via-brand-700 to-sky-800"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-sky-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-action-400 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <Reveal>
               <h2 className="text-4xl md:text-5xl font-display font-extrabold text-white mb-6">
                 Ready to start earning?
               </h2>
-              <p className="text-violet-100 text-lg mb-8 max-w-lg">
+              <p className="text-brand-100 text-lg mb-8 max-w-lg">
                 Join the platform empowering thousands of agents to build reliable
                 income streams selling data bundles across Ghana.
               </p>
               <Link to="/register">
-                <Button variant="success" size="lg" className="h-14 px-10 text-lg font-bold shadow-xl shadow-action-900/30 hover:-translate-y-1 transition-all">
+                <Button variant="success" size="lg" className="shimmer-sweep h-14 px-10 text-lg font-bold shadow-xl shadow-action-900/30 hover:-translate-y-1 transition-all">
                   Create Free Account
                   <ArrowRight className="ml-2 h-6 w-6" />
                 </Button>
               </Link>
-            </div>
+            </Reveal>
             <div className="grid grid-cols-2 gap-4">
               {[
                 "No setup or listing fees",
                 "Instant Mobile Money payouts",
                 "Unlimited sub-agent network",
                 "24/7 automated delivery",
-              ].map((item) => (
-                <div key={item} className="glass-panel-dark rounded-2xl p-5">
+              ].map((item, i) => (
+                <Reveal key={item} variant="scale" delay={i * 100} className="glass-panel-dark rounded-2xl p-5 hover:-translate-y-1 transition-transform duration-300">
                   <CheckCircle2 className="w-5 h-5 text-action-400 mb-3" />
                   <p className="text-white text-sm font-medium leading-snug">{item}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -380,7 +414,7 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-linear-to-br from-brand-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-linear-to-br from-brand-500 to-sky-500 rounded-lg flex items-center justify-center">
                   <Wifi className="w-4 h-4 text-white" />
                 </div>
                 <span className="font-display font-bold text-white text-lg">DataGuy</span>

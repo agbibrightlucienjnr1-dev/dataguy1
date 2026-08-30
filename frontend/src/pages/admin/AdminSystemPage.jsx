@@ -16,6 +16,7 @@ import {
 import { Card } from "../../components/ui";
 import { Button } from "../../components/ui";
 import { Spinner } from "../../components/ui";
+import { Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import toast from "react-hot-toast";
 
@@ -160,7 +161,7 @@ export default function AdminSystemPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="text-2xl font-bold text-slate-900">System Management</h1>
         <p className="text-slate-600 mt-1">
           Monitor database size, memory usage, and perform maintenance tasks
@@ -168,6 +169,7 @@ export default function AdminSystemPage() {
       </div>
 
       {/* Settings Card */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <CreditCard className="w-5 h-5 text-brand-600" />
@@ -363,8 +365,10 @@ export default function AdminSystemPage() {
             </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Memory Statistics */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -457,8 +461,10 @@ export default function AdminSystemPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Database Statistics */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -564,8 +570,10 @@ export default function AdminSystemPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Cache Management */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -654,10 +662,12 @@ export default function AdminSystemPage() {
           </>
         )}
       </Card>
+      </Reveal>
 
       {/* Database Maintenance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cleanup */}
+        <Reveal>
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Trash2 className="w-5 h-5 text-red-600" />
@@ -794,8 +804,10 @@ export default function AdminSystemPage() {
             </Button>
           </div>
         </Card>
+        </Reveal>
 
         {/* Optimize */}
+        <Reveal delay={100}>
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Activity className="w-5 h-5 text-brand-600" />
@@ -811,7 +823,7 @@ export default function AdminSystemPage() {
           <Button
             onClick={handleOptimize}
             disabled={optimizeMutation.isPending}
-            className="w-full"
+            className="shimmer-sweep w-full"
             variant="primary"
           >
             {optimizeMutation.isPending ? (
@@ -837,6 +849,7 @@ export default function AdminSystemPage() {
             </div>
           </div>
         </Card>
+        </Reveal>
       </div>
     </div>
   );
