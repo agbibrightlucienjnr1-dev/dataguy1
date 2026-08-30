@@ -48,6 +48,29 @@ export const paystackWebhook = asyncHandler(async (req, res) => {
 
   // Handle charge.success event
   if (event.event === "charge.success") {
+    // Check if this is an event registration payment
+    if (
+      event.metadata?.type === "event_registration" ||
+      event.reference?.startsWith("EVT_")
+    ) {
+      try {
+        const { verifyEventPayment } = await import(
+          "../services/eventService.js"
+        );
+        await verifyEventPayment(event.reference);
+        return res.status(200).json({
+          success: true,
+          message: "Event registration payment processed",
+        });
+      } catch (evtError) {
+        logger.error("Error processing event registration in webhook", {
+          error: evtError.message,
+          reference: event.reference,
+        });
+        return res.status(200).json({ received: true });
+      }
+    }
+
     const orderId = event.reference; // We use orderId as reference
     const paymentReference = event.reference;
 

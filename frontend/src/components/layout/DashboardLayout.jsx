@@ -24,6 +24,7 @@ import {
   MessageCircle,
   PlayCircle,
   Bell,
+  Video,
 } from "lucide-react";
 import { useAuthStore } from "../../stores";
 import { useLogout } from "../../hooks";
@@ -65,10 +66,11 @@ const adminNavGroups = [
     items: [{ to: "/admin", icon: LayoutDashboard, label: "Dashboard" }],
   },
   {
-    title: "Store",
+    title: "Store & Events",
     items: [
       { to: "/admin/bundles", icon: Package, label: "Bundles" },
       { to: "/admin/orders", icon: ShoppingCart, label: "All Orders" },
+      { to: "/admin/events", icon: Video, label: "Masterclass Event" },
     ],
   },
   {

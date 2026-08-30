@@ -23,6 +23,7 @@ import settingsRoutes from "./routes/settingsRoutes.js";
 import ussdRoutes from "./routes/ussdRoutes.js";
 import trackingRoutes from "./routes/trackingRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
 
 const app = express();
 
@@ -82,7 +83,12 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
   : process.env.NODE_ENV === "production"
     ? [] // Must be set in production
-    : ["http://localhost:5173", "http://localhost:3000"]; // Development defaults
+    : [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:3000",
+      ]; // Development defaults
 
 app.use(
   cors({
@@ -203,6 +209,7 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/ussd", ussdRoutes);
 app.use("/api/track", trackingRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/events", eventRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

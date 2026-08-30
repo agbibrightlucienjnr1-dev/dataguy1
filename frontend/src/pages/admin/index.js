@@ -10,4 +10,6 @@ export { default as AdminSmsPage } from "./AdminSmsPage";
 export { default as AdminPushPage } from "./AdminPushPage";
 export { AdminAnalyticsPage } from "./AdminAnalyticsPage";
 export { default as AdminProfitPage } from "./AdminProfitPage";
+export { default as AdminEventsPage } from "./AdminEventsPage";
+
 
