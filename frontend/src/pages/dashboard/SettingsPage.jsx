@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Smartphone, ShieldAlert, Server, Webhook } from "lucide-react";
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
   CardContent,
   Button,
-  Spinner 
+  Spinner,
+  Reveal,
 } from "../../components/ui";
 import { authApi } from "../../api";
 import { useAuthStore } from "../../stores";
@@ -66,8 +67,8 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+      <div className="animate-fade-in-up">
+        <h1 className="text-2xl font-display font-bold text-slate-900">Settings</h1>
         <p className="text-slate-600 mt-1">
           Manage your notification preferences and active system configurations.
         </p>
@@ -75,10 +76,10 @@ export default function SettingsPage() {
 
       <div className="grid gap-6">
         {/* Notification Preferences */}
-        <Card>
+        <Reveal as={Card}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
+              <Bell className="w-5 h-5 text-brand-600" />
               Notification Preferences
             </CardTitle>
             <CardDescription>
@@ -87,7 +88,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             
-            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <div>
                 <p className="font-medium text-slate-900">New Order Alerts</p>
                 <p className="text-sm text-slate-500">Receive notifications when a new order is placed</p>
@@ -100,11 +101,11 @@ export default function SettingsPage() {
                   onChange={() => handleToggle("notifyNewOrders")}
                   disabled={updatePreferencesMutation.isPending}
                 />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
               </label>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <div>
                 <p className="font-medium text-slate-900">Withdrawal Updates</p>
                 <p className="text-sm text-slate-500">Get notified when withdrawal requests are processed</p>
@@ -117,11 +118,11 @@ export default function SettingsPage() {
                   onChange={() => handleToggle("notifyWithdrawals")}
                   disabled={updatePreferencesMutation.isPending}
                 />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
               </label>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <div>
                 <div className="flex items-center gap-2">
                   <Smartphone className="w-4 h-4 text-slate-500" />
@@ -137,19 +138,19 @@ export default function SettingsPage() {
                   onChange={() => handleToggle("smsAlerts")}
                   disabled={updatePreferencesMutation.isPending}
                 />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
               </label>
             </div>
 
           </CardContent>
-        </Card>
+        </Reveal>
 
         {/* Admin Platform Config */}
         {isAdmin() && (
-          <Card className="border-indigo-100 shadow-sm">
-            <CardHeader className="bg-indigo-50/50 border-b border-indigo-100 rounded-t-xl">
-              <CardTitle className="flex items-center gap-2 text-indigo-900">
-                <Server className="w-5 h-5 text-indigo-600" />
+          <Reveal as={Card} delay={100} className="border-brand-100 shadow-sm shadow-brand-100">
+            <CardHeader className="bg-brand-50/50 border-b border-brand-100 rounded-t-2xl">
+              <CardTitle className="flex items-center gap-2 text-brand-900">
+                <Server className="w-5 h-5 text-brand-600" />
                 Global Platform Configuration
               </CardTitle>
               <CardDescription>
@@ -158,7 +159,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
               
-              <div className="p-4 border border-slate-200 rounded-lg bg-white">
+              <div className="p-4 border border-slate-200 rounded-xl bg-white">
                  <div className="flex justify-between items-start">
                     <div className="flex gap-3">
                        <Webhook className="w-5 h-5 text-slate-400 mt-0.5" />
@@ -167,13 +168,13 @@ export default function SettingsPage() {
                          <p className="text-sm text-slate-500 mt-1">Status of the Hubnet wholesale data connection.</p>
                        </div>
                     </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-action-100 text-action-800">
                       Active
                     </span>
                  </div>
               </div>
 
-              <div className="p-4 border border-slate-200 rounded-lg bg-white">
+              <div className="p-4 border border-slate-200 rounded-xl bg-white">
                  <div className="flex justify-between items-start">
                     <div className="flex gap-3">
                        <ShieldAlert className="w-5 h-5 text-slate-400 mt-0.5" />
@@ -191,7 +192,7 @@ export default function SettingsPage() {
               </div>
 
             </CardContent>
-          </Card>
+          </Reveal>
         )}
       </div>
     </div>

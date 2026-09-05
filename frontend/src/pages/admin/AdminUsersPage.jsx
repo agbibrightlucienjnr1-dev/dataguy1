@@ -18,7 +18,7 @@ import {
   Settings2
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Input } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Input, Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -42,11 +42,11 @@ export default function AdminUsersPage() {
       setShowAdjustForm(false);
       setAdjustAmount("");
       setAdjustReason("");
-      
+
       if (res.data?.wallet) {
         setSelectedUser((prev) => ({ ...prev, walletBalance: res.data.wallet.balance }));
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
     onError: (err) => {
@@ -115,9 +115,9 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Users</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Users</h1>
           <p className="text-slate-600 mt-1">
             Manage agents and sub-agents on the platform
           </p>
@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="p-4 rounded-2xl animate-fade-in-up animation-delay-150">
         <form
           onSubmit={handleSearch}
           className="flex flex-col sm:flex-row gap-4"
@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
               placeholder="Search by name, email, or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+              className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             />
           </div>
           <select
@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
               setRoleFilter(e.target.value);
               setPage(1);
             }}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Roles</option>
             <option value="agent">Agents</option>
@@ -161,7 +161,8 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card className="overflow-hidden">
+      <Reveal>
+      <Card className="overflow-hidden rounded-2xl">
         {isLoading ? (
           <div className="p-6">
             <SkeletonTable rows={5} columns={7} />
@@ -173,76 +174,115 @@ export default function AdminUsersPage() {
             description="There are currently no users matching your criteria."
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Contact</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Role</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Orders</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Wallet</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Joined</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-slate-50 hover:bg-slate-50"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-white">
-                            {user.name?.charAt(0)?.toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-900">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-slate-500 font-mono">
-                            {user.paymentLinkCode?.slice(0, 8)}...
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-slate-900">{user.phone}</p>
-                      <p className="text-xs text-slate-500">{user.email}</p>
-                    </td>
-                    <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-900">
-                        {user.totalOrders || 0}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-slate-900">
-                        {formatCurrency(user.walletBalance || 0)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-500">
-                        {formatDate(user.createdAt)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => viewUserDetails(user)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </td>
+          <>
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-brand-50/60 text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">User</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Contact</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Role</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Orders</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Wallet</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Joined</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {users.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="border-b border-slate-50 hover:bg-brand-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-white">
+                              {user.name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-slate-900">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-slate-500 font-mono">
+                              {user.paymentLinkCode?.slice(0, 8)}...
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-slate-900">{user.phone}</p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </td>
+                      <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-900">
+                          {user.totalOrders || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium text-slate-900">
+                          {formatCurrency(user.walletBalance || 0)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-500">
+                          {formatDate(user.createdAt)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => viewUserDetails(user)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {users.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => viewUserDetails(user)}
+                  className="w-full text-left p-4 hover:bg-brand-50/50 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 shrink-0 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-white">
+                          {user.name?.charAt(0)?.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-900 truncate">{user.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.phone}</p>
+                      </div>
+                    </div>
+                    <div className="shrink-0">{getRoleBadge(user.role)}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="bg-slate-50 rounded-lg p-2">
+                      <p className="text-xs text-slate-500">Orders</p>
+                      <p className="font-medium text-slate-900">{user.totalOrders || 0}</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-lg p-2">
+                      <p className="text-xs text-slate-500">Wallet</p>
+                      <p className="font-medium text-slate-900">{formatCurrency(user.walletBalance || 0)}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">Joined {formatDate(user.createdAt)}</p>
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Pagination */}
@@ -274,6 +314,7 @@ export default function AdminUsersPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* User Details Modal */}
       <Modal
@@ -285,7 +326,7 @@ export default function AdminUsersPage() {
           <div className="space-y-6">
             {/* User Header */}
             <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
-              <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-indigo-400 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200">
+              <div className="w-16 h-16 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center shadow-lg shadow-brand-200">
                 <span className="text-2xl font-bold text-white">
                   {selectedUser.name?.charAt(0)?.toUpperCase()}
                 </span>
@@ -324,16 +365,16 @@ export default function AdminUsersPage() {
               <div>
                 <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Activity & Earnings</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <div className="flex items-center gap-2 text-blue-600 text-sm font-medium mb-1">
+                  <div className="p-4 bg-brand-50 border border-brand-100 rounded-2xl">
+                    <div className="flex items-center gap-2 text-brand-600 text-sm font-medium mb-1">
                       <ShoppingCart className="w-4 h-4" />
                       Total Orders
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">
+                    <p className="font-display text-3xl font-bold text-slate-900">
                       {selectedUser.totalOrders || 0}
                     </p>
                   </div>
-                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
                         <Wallet className="w-4 h-4" />
@@ -349,7 +390,7 @@ export default function AdminUsersPage() {
                         <Settings2 className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">
+                    <p className="font-display text-3xl font-bold text-slate-900">
                       {formatCurrency(selectedUser.walletBalance || 0)}
                     </p>
                   </div>
@@ -366,7 +407,7 @@ export default function AdminUsersPage() {
                           <select
                             value={adjustAction}
                             onChange={(e) => setAdjustAction(e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                           >
                             <option value="add">Add Funds</option>
                             <option value="deduct">Deduct Funds</option>
@@ -431,7 +472,7 @@ export default function AdminUsersPage() {
                 <div className="p-4 bg-slate-900 rounded-xl text-white flex items-center justify-between">
                   <div>
                     <p className="text-xs text-slate-400 mb-1 uppercase font-semibold">Payment Link Code</p>
-                    <p className="font-mono text-lg font-medium text-indigo-400">
+                    <p className="font-mono text-lg font-medium text-brand-300">
                       {selectedUser.paymentLinkCode}
                     </p>
                   </div>

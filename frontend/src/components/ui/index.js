@@ -21,3 +21,4 @@ export {
 } from "./Skeleton";
 export { default as Modal, ConfirmModal } from "./Modal";
 export { default as PushNotificationPrompt } from "./PushNotificationPrompt";
+export { default as Reveal } from "./Reveal";

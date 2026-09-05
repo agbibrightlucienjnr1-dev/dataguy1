@@ -16,6 +16,7 @@ import {
 import { Card } from "../../components/ui";
 import { Button } from "../../components/ui";
 import { Spinner } from "../../components/ui";
+import { Reveal } from "../../components/ui";
 import { adminApi } from "../../api";
 import toast from "react-hot-toast";
 
@@ -160,7 +161,7 @@ export default function AdminSystemPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="text-2xl font-bold text-slate-900">System Management</h1>
         <p className="text-slate-600 mt-1">
           Monitor database size, memory usage, and perform maintenance tasks
@@ -168,9 +169,10 @@ export default function AdminSystemPage() {
       </div>
 
       {/* Settings Card */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-6">
-          <CreditCard className="w-5 h-5 text-indigo-600" />
+          <CreditCard className="w-5 h-5 text-brand-600" />
           <h2 className="text-lg font-semibold text-slate-900">
             Payment & System Settings
           </h2>
@@ -185,7 +187,7 @@ export default function AdminSystemPage() {
                   Active Payment Provider
                 </label>
                 <select
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   value={settingsData?.data?.activePaymentProvider || "paystack"}
                   onChange={(e) => updateSettingsMutation.mutate({ activePaymentProvider: e.target.value })}
                   disabled={updateSettingsMutation.isPending}
@@ -203,7 +205,7 @@ export default function AdminSystemPage() {
                   Active Delivery Provider
                 </label>
                 <select
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   value={settingsData?.data?.activeDeliveryProvider || "hubnet"}
                   onChange={(e) => updateSettingsMutation.mutate({ activeDeliveryProvider: e.target.value })}
                   disabled={updateSettingsMutation.isPending}
@@ -221,7 +223,7 @@ export default function AdminSystemPage() {
                   USSD Access Policy
                 </label>
                 <select
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   value={settingsData?.data?.allowAllUssdAccess ? "all" : "customers_only"}
                   onChange={(e) => updateSettingsMutation.mutate({ allowAllUssdAccess: e.target.value === "all" })}
                   disabled={updateSettingsMutation.isPending}
@@ -239,7 +241,7 @@ export default function AdminSystemPage() {
                   Agent Withdrawals Policy
                 </label>
                 <select
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   value={settingsData?.data?.disableWithdrawals ? "disabled" : "enabled"}
                   onChange={(e) => updateSettingsMutation.mutate({ disableWithdrawals: e.target.value === "disabled" })}
                   disabled={updateSettingsMutation.isPending}
@@ -259,7 +261,7 @@ export default function AdminSystemPage() {
                 <input
                   type="number"
                   step="0.01"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   value={settingsData?.data?.hubnetDepositFeePercentage ?? 3.0}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
@@ -276,7 +278,7 @@ export default function AdminSystemPage() {
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                   Moolre Service Fees
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -285,7 +287,7 @@ export default function AdminSystemPage() {
                     <input 
                       type="number" 
                       step="0.01"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                       value={settingsData?.data?.moolreFlatFee || 0}
                       onChange={(e) => updateSettingsMutation.mutate({ moolreFlatFee: parseFloat(e.target.value) })}
                     />
@@ -295,7 +297,7 @@ export default function AdminSystemPage() {
                     <input 
                       type="number" 
                       step="0.1"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                       value={settingsData?.data?.moolreFeePercentage || 0}
                       onChange={(e) => updateSettingsMutation.mutate({ moolreFeePercentage: parseFloat(e.target.value) })}
                     />
@@ -305,7 +307,7 @@ export default function AdminSystemPage() {
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                   Paystack Service Fees
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -314,7 +316,7 @@ export default function AdminSystemPage() {
                     <input 
                       type="number" 
                       step="0.01"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                       value={settingsData?.data?.paystackFlatFee || 0}
                       onChange={(e) => updateSettingsMutation.mutate({ paystackFlatFee: parseFloat(e.target.value) })}
                     />
@@ -324,7 +326,7 @@ export default function AdminSystemPage() {
                     <input 
                       type="number" 
                       step="0.1"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                       value={settingsData?.data?.paystackFeePercentage || 0}
                       onChange={(e) => updateSettingsMutation.mutate({ paystackFeePercentage: parseFloat(e.target.value) })}
                     />
@@ -334,7 +336,7 @@ export default function AdminSystemPage() {
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
                   Withdrawal Network Charges (Payouts)
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -343,7 +345,7 @@ export default function AdminSystemPage() {
                     <input 
                       type="number" 
                       step="0.01"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                       value={settingsData?.data?.withdrawalFlatFee ?? 0.5}
                       onChange={(e) => updateSettingsMutation.mutate({ withdrawalFlatFee: parseFloat(e.target.value) })}
                     />
@@ -353,7 +355,7 @@ export default function AdminSystemPage() {
                     <input 
                       type="number" 
                       step="0.1"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                       value={settingsData?.data?.withdrawalFeePercentage ?? 2.0}
                       onChange={(e) => updateSettingsMutation.mutate({ withdrawalFeePercentage: parseFloat(e.target.value) })}
                     />
@@ -363,12 +365,14 @@ export default function AdminSystemPage() {
             </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Memory Statistics */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-blue-600" />
+            <Cpu className="w-5 h-5 text-brand-600" />
             <h2 className="text-lg font-semibold text-slate-900">
               Memory Usage
             </h2>
@@ -394,25 +398,25 @@ export default function AdminSystemPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <div className="text-sm text-slate-500 mb-1">Process RSS</div>
               <div className="text-xl font-bold text-slate-900">
                 {memoryData.formatted?.rss || "N/A"}
               </div>
             </div>
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <div className="text-sm text-slate-500 mb-1">Heap Used</div>
               <div className="text-xl font-bold text-slate-900">
                 {memoryData.formatted?.heapUsed || "N/A"}
               </div>
             </div>
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <div className="text-sm text-slate-500 mb-1">Heap Total</div>
               <div className="text-xl font-bold text-slate-900">
                 {memoryData.formatted?.heapTotal || "N/A"}
               </div>
             </div>
-            <div className="p-4 bg-slate-50 rounded-lg flex flex-col justify-between">
+            <div className="p-4 bg-slate-50 rounded-xl flex flex-col justify-between">
               <div>
                 <div className="text-sm text-slate-500 mb-1">System Usage</div>
                 <div className="text-xl font-bold text-slate-900 mb-2">
@@ -442,10 +446,10 @@ export default function AdminSystemPage() {
         )}
 
         {memoryStatus.warnings && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-              <div className="text-sm text-yellow-800">
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+              <div className="text-sm text-amber-800">
                 {memoryStatus.warnings.process && (
                   <div>{memoryStatus.warnings.process}</div>
                 )}
@@ -457,12 +461,14 @@ export default function AdminSystemPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Database Statistics */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Database className="w-5 h-5 text-green-600" />
+            <Database className="w-5 h-5 text-action-600" />
             <h2 className="text-lg font-semibold text-slate-900">
               Database Statistics
             </h2>
@@ -489,7 +495,7 @@ export default function AdminSystemPage() {
         ) : (
           <div className="space-y-4">
             {/* Database Size */}
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HardDrive className="w-4 h-4 text-slate-600" />
@@ -505,32 +511,32 @@ export default function AdminSystemPage() {
 
             {/* Row Counts */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Users</div>
                 <div className="text-lg font-bold text-slate-900">
                   {dbData.rowCounts?.users?.toLocaleString() || 0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Orders</div>
                 <div className="text-lg font-bold text-slate-900">
                   {dbData.rowCounts?.orders?.toLocaleString() || 0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Transactions</div>
                 <div className="text-lg font-bold text-slate-900">
                   {dbData.rowCounts?.walletTransactions?.toLocaleString() ||
                     0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Withdrawals</div>
                 <div className="text-lg font-bold text-slate-900">
                   {dbData.rowCounts?.withdrawals?.toLocaleString() || 0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Bundles</div>
                 <div className="text-lg font-bold text-slate-900">
                   {dbData.rowCounts?.dataBundles?.toLocaleString() || 0}
@@ -564,12 +570,14 @@ export default function AdminSystemPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Cache Management */}
+      <Reveal>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-purple-600" />
+            <Activity className="w-5 h-5 text-brand-600" />
             <h2 className="text-lg font-semibold text-slate-900">
               Cache Management
             </h2>
@@ -599,25 +607,25 @@ export default function AdminSystemPage() {
         ) : (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Total Entries</div>
                 <div className="text-lg font-bold text-slate-900">
                   {cacheStatsData?.total || 0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Active</div>
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-lg font-bold text-action-600">
                   {cacheStatsData?.active || 0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Expired</div>
                 <div className="text-lg font-bold text-slate-600">
                   {cacheStatsData?.expired || 0}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <div className="p-3 bg-slate-50 rounded-xl text-center">
                 <div className="text-xs text-slate-500 mb-1">Memory Usage</div>
                 <div className="text-lg font-bold text-slate-900">
                   {cacheStatsData?.memoryUsage || "0 MB"}
@@ -654,10 +662,12 @@ export default function AdminSystemPage() {
           </>
         )}
       </Card>
+      </Reveal>
 
       {/* Database Maintenance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cleanup */}
+        <Reveal>
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Trash2 className="w-5 h-5 text-red-600" />
@@ -684,7 +694,7 @@ export default function AdminSystemPage() {
                     archiveOrdersDays: parseInt(e.target.value) || 0,
                   })
                 }
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+                className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               />
             </div>
 
@@ -702,7 +712,7 @@ export default function AdminSystemPage() {
                     cleanupTransactionsDays: parseInt(e.target.value) || 0,
                   })
                 }
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+                className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               />
             </div>
 
@@ -710,7 +720,7 @@ export default function AdminSystemPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Order Statuses to Cleanup
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 {[
                   { id: "pending", label: "Pending" },
                   { id: "payment_confirmed", label: "Payment Confirmed" },
@@ -746,7 +756,7 @@ export default function AdminSystemPage() {
                           });
                         }
                       }}
-                      className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900/10"
+                      className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500/20"
                     />
                     {status.label}
                   </label>
@@ -767,7 +777,7 @@ export default function AdminSystemPage() {
                     optimize: e.target.checked,
                   })
                 }
-                className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900/10"
+                className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500/20"
               />
               <label htmlFor="optimize" className="text-sm text-slate-700">
                 Run database optimization after cleanup
@@ -778,7 +788,7 @@ export default function AdminSystemPage() {
               onClick={handleCleanup}
               disabled={cleanupMutation.isPending}
               className="w-full"
-              variant="destructive"
+              variant="danger"
             >
               {cleanupMutation.isPending ? (
                 <>
@@ -794,11 +804,13 @@ export default function AdminSystemPage() {
             </Button>
           </div>
         </Card>
+        </Reveal>
 
         {/* Optimize */}
+        <Reveal delay={100}>
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-blue-600" />
+            <Activity className="w-5 h-5 text-brand-600" />
             <h2 className="text-lg font-semibold text-slate-900">
               Database Optimization
             </h2>
@@ -811,8 +823,8 @@ export default function AdminSystemPage() {
           <Button
             onClick={handleOptimize}
             disabled={optimizeMutation.isPending}
-            className="w-full"
-            variant="default"
+            className="shimmer-sweep w-full"
+            variant="primary"
           >
             {optimizeMutation.isPending ? (
               <>
@@ -827,16 +839,17 @@ export default function AdminSystemPage() {
             )}
           </Button>
 
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mt-4 p-3 bg-brand-50 border border-brand-200 rounded-xl">
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5" />
-              <div className="text-xs text-blue-800">
+              <CheckCircle className="w-4 h-4 text-brand-600 mt-0.5" />
+              <div className="text-xs text-brand-800">
                 Optimization helps improve query performance and reclaim unused
                 space.
               </div>
             </div>
           </div>
         </Card>
+        </Reveal>
       </div>
     </div>
   );

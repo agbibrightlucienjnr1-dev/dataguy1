@@ -13,7 +13,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
-import { Card, Badge, Button, Modal, Input, EmptyState, SkeletonCard } from "../../components/ui";
+import { Card, Badge, Button, Modal, Input, EmptyState, SkeletonCard, Reveal } from "../../components/ui";
 import { bundlesApi, adminApi } from "../../api";
 import { formatCurrency } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -228,13 +228,13 @@ export default function AdminBundlesPage() {
         );
       case "AT":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT iSHARE
           </span>
         );
       case "AIRTELTIGO":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT Big Time
           </span>
         );
@@ -250,7 +250,7 @@ export default function AdminBundlesPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Data Bundles</h1>
           <p className="text-slate-600 mt-1">
@@ -270,7 +270,7 @@ export default function AdminBundlesPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="p-4 animate-fade-in-up animation-delay-150">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
@@ -279,7 +279,7 @@ export default function AdminBundlesPage() {
           <select
             value={networkFilter}
             onChange={(e) => setNetworkFilter(e.target.value)}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Networks</option>
             {NETWORKS.map((network) => (
@@ -323,14 +323,14 @@ export default function AdminBundlesPage() {
             };
 
             return (
-              <div key={networkKey} className="space-y-4">
+              <Reveal key={networkKey} as="div" className="space-y-4">
                 <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
                   <span className={`w-3.5 h-3.5 rounded-full ${
                     networkKey === "MTN"
                       ? "bg-yellow-400"
                       : networkKey === "TELECEL"
                       ? "bg-red-500"
-                      : "bg-blue-600"
+                      : "bg-indigo-600"
                   }`} />
                   <h2 className="text-lg font-bold text-slate-800">
                     {networkConfig.label} Bundles
@@ -343,7 +343,7 @@ export default function AdminBundlesPage() {
                   {networkBundles.map((bundle) => (
                     <Card
                       key={bundle.id}
-                      className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
+                      className={`p-0 overflow-hidden flex flex-col h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${!bundle.isActive ? "opacity-60" : ""}`}
                     >
                       <div
                         className={`h-2 w-full ${
@@ -352,7 +352,7 @@ export default function AdminBundlesPage() {
                             : bundle.network === "TELECEL"
                             ? "bg-red-500"
                             : bundle.network === "AT" || bundle.network === "AIRTELTIGO"
-                            ? "bg-blue-600"
+                            ? "bg-indigo-600"
                             : "bg-slate-300"
                         }`}
                       />
@@ -363,7 +363,7 @@ export default function AdminBundlesPage() {
                             {bundle.isActive ? (
                               <Badge variant="success">Active</Badge>
                             ) : (
-                              <Badge variant="secondary">Inactive</Badge>
+                              <Badge variant="danger">Inactive</Badge>
                             )}
                           </div>
                         </div>
@@ -384,13 +384,13 @@ export default function AdminBundlesPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Admin Price:</span>
-                            <span className="font-medium text-green-600">
+                            <span className="font-medium text-action-600">
                               {formatCurrency(bundle.adminPrice)}
                             </span>
                           </div>
                           <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
                             <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
-                            <span className="font-bold text-indigo-600 text-lg">
+                            <span className="font-bold text-action-600 text-lg">
                               {formatCurrency(
                                 parseFloat(bundle.adminPrice || 0) -
                                   parseFloat(bundle.hubnetCost || 0),
@@ -449,13 +449,13 @@ export default function AdminBundlesPage() {
                     </Card>
                   ))}
                 </div>
-              </div>
+              </Reveal>
             );
           })}
 
           {/* Fallback for other networks */}
           {sortedBundles.filter((b) => !["MTN", "TELECEL", "AT", "AIRTELTIGO"].includes(b.network)).length > 0 && (
-            <div className="space-y-4">
+            <Reveal as="div" className="space-y-4">
               <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
                 <span className="w-3.5 h-3.5 rounded-full bg-slate-400" />
                 <h2 className="text-lg font-bold text-slate-800">Other Networks</h2>
@@ -464,7 +464,7 @@ export default function AdminBundlesPage() {
                 {sortedBundles.filter((b) => !["MTN", "TELECEL", "AT", "AIRTELTIGO"].includes(b.network)).map((bundle) => (
                   <Card
                     key={bundle.id}
-                    className={`p-0 overflow-hidden flex flex-col h-full ${!bundle.isActive ? "opacity-60" : ""}`}
+                    className={`p-0 overflow-hidden flex flex-col h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${!bundle.isActive ? "opacity-60" : ""}`}
                   >
                     <div className="h-2 w-full bg-slate-300" />
                     <div className="p-5 flex flex-col grow">
@@ -474,7 +474,7 @@ export default function AdminBundlesPage() {
                           {bundle.isActive ? (
                             <Badge variant="success">Active</Badge>
                           ) : (
-                            <Badge variant="secondary">Inactive</Badge>
+                            <Badge variant="danger">Inactive</Badge>
                           )}
                         </div>
                       </div>
@@ -489,11 +489,11 @@ export default function AdminBundlesPage() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-500">Admin Price:</span>
-                          <span className="font-medium text-green-600">{formatCurrency(bundle.adminPrice)}</span>
+                          <span className="font-medium text-action-600">{formatCurrency(bundle.adminPrice)}</span>
                         </div>
                         <div className="flex justify-between border-t border-slate-100 pt-3 mt-3">
                           <span className="text-slate-700 font-medium tracking-tight">Profit Margin:</span>
-                          <span className="font-bold text-indigo-600 text-lg">
+                          <span className="font-bold text-action-600 text-lg">
                             {formatCurrency(parseFloat(bundle.adminPrice || 0) - parseFloat(bundle.hubnetCost || 0))}
                           </span>
                         </div>
@@ -526,7 +526,7 @@ export default function AdminBundlesPage() {
                   </Card>
                 ))}
               </div>
-            </div>
+            </Reveal>
           )}
         </div>
       )}
@@ -547,7 +547,7 @@ export default function AdminBundlesPage() {
             </label>
             <select
               {...register("network")}
-              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+              className="w-full h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">Select Network</option>
               {NETWORKS.map((network) => (
@@ -620,7 +620,7 @@ export default function AdminBundlesPage() {
             </Button>
             <Button
               type="submit"
-              className="flex-1"
+              className="shimmer-sweep flex-1"
               disabled={createMutation.isPending}
             >
               {createMutation.isPending ? "Creating..." : "Create Bundle"}
@@ -641,7 +641,7 @@ export default function AdminBundlesPage() {
       >
         {selectedBundle && (
           <form onSubmit={handleEditSubmit(onSubmitEdit)} className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-lg mb-4">
+            <div className="p-4 bg-slate-50 rounded-xl mb-4">
               <div className="flex items-center gap-2 mb-2">
                 {getNetworkBadge(selectedBundle.network)}
                 <span className="font-semibold text-lg">
@@ -715,14 +715,14 @@ export default function AdminBundlesPage() {
       >
         {selectedBundle && (
           <div className="space-y-4">
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-800">
                 Are you sure you want to delete this bundle? This action cannot
                 be undone.
               </p>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <div className="flex items-center gap-2">
                 {getNetworkBadge(selectedBundle.network)}
                 <span className="font-semibold">{selectedBundle.volume}</span>

@@ -53,6 +53,10 @@ export {
 // Agent hooks
 export { useUpdateShopName } from "./useAgent";
 
+// Animation hooks
+export { useReveal } from "./useReveal";
+export { useCountUp } from "./useCountUp";
+
 // Admin hooks
 export {
   useAdminDashboard,

@@ -51,6 +51,7 @@ import {
   AdminPushPage,
   AdminAnalyticsPage,
   AdminProfitPage,
+  AdminEventsPage,
 } from "./pages/admin";
 
 function App() {
@@ -118,6 +119,7 @@ function App() {
             <Route path="/admin/profit" element={<AdminProfitPage />} />
             <Route path="/admin/sms" element={<AdminSmsPage />} />
             <Route path="/admin/push" element={<AdminPushPage />} />
+            <Route path="/admin/events" element={<AdminEventsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>

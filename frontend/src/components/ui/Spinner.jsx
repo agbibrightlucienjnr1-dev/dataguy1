@@ -11,7 +11,7 @@ const sizes = {
 export default function Spinner({ size = "md", className, ...props }) {
   return (
     <Loader2
-      className={cn("animate-spin text-blue-600", sizes[size], className)}
+      className={cn("animate-spin text-brand-600", sizes[size], className)}
       {...props}
     />
   );
@@ -21,7 +21,7 @@ export function LoadingScreen({ message = "Loading..." }) {
   return (
     <div className="flex min-h-100 flex-col items-center justify-center">
       <Spinner size="xl" />
-      <p className="mt-4 text-gray-500">{message}</p>
+      <p className="mt-4 text-slate-500">{message}</p>
     </div>
   );
 }
@@ -31,7 +31,7 @@ export function LoadingOverlay({ message = "Loading..." }) {
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
       <div className="text-center">
         <Spinner size="lg" />
-        <p className="mt-2 text-sm text-gray-500">{message}</p>
+        <p className="mt-2 text-sm text-slate-500">{message}</p>
       </div>
     </div>
   );

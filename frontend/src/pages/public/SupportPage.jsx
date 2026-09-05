@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Clock, HelpCircle, Wifi, ShieldAlert } from "lucide-react";
-import { Card, Button } from "../../components/ui";
+import { Card, Button, Reveal } from "../../components/ui";
 
 export default function SupportPage() {
   const navigate = useNavigate();
@@ -27,18 +27,18 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Subtle Background Blobs */}
-      <div className="absolute top-0 -left-64 w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-35 pointer-events-none"></div>
-      <div className="absolute top-1/3 -right-64 w-96 h-96 bg-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35 pointer-events-none"></div>
+      <div className="absolute top-0 -left-64 w-96 h-96 bg-brand-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none"></div>
+      <div className="absolute top-1/3 -right-64 w-96 h-96 bg-action-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none"></div>
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-sky-500 rounded-lg flex items-center justify-center shadow-md shadow-brand-600/20 transform group-hover:scale-105 transition-all">
                 <Wifi className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-700">
+              <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-linear-to-r from-brand-700 to-sky-600">
                 DataGuy
               </span>
             </Link>
@@ -50,7 +50,7 @@ export default function SupportPage() {
                   navigate("/");
                 }
               }}
-              className="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-slate-100 hover:bg-slate-200 transition-colors px-3 py-1.5 rounded-full border border-slate-200"
+              className="text-sm font-semibold text-slate-600 hover:text-brand-700 flex items-center gap-1 bg-slate-100 hover:bg-brand-50 transition-colors px-3 py-1.5 rounded-full border border-slate-200"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -61,11 +61,11 @@ export default function SupportPage() {
 
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 py-12 relative z-10">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-slate-900/10">
+        <div className="animate-fade-in-up text-center mb-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/20">
             <HelpCircle className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-display font-extrabold text-slate-900 tracking-tight">
             Support Center
           </h1>
           <p className="text-slate-600 mt-2">
@@ -75,31 +75,31 @@ export default function SupportPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Email Support Card */}
-          <Card className="p-6 md:col-span-2 flex flex-col justify-between border border-slate-200 shadow-sm bg-white/95">
+          <Reveal as={Card} className="p-6 md:col-span-2 rounded-2xl flex flex-col justify-between border border-slate-200 shadow-sm bg-white/95 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
             <div>
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
-                <Mail className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
+                <Mail className="w-5 h-5 text-brand-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Email Support</h3>
+              <h3 className="text-lg font-display font-bold text-slate-900 mb-2">Email Support</h3>
               <p className="text-slate-600 text-sm mb-4 leading-relaxed">
                 Reach out to us directly via email for order inquiries, payment issues, or agent portal troubleshooting. We respond to all inquiries within 24 hours.
               </p>
             </div>
             <a
               href="mailto:admin@dataguy.shop"
-              className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm shadow-sm shadow-brand-600/30 hover:bg-brand-700 transition-colors"
             >
               admin@dataguy.shop
             </a>
-          </Card>
+          </Reveal>
 
           {/* Working Hours Card */}
-          <Card className="p-6 border border-slate-200 shadow-sm bg-white/95 flex flex-col justify-between">
+          <Reveal as={Card} delay={100} className="p-6 rounded-2xl border border-slate-200 shadow-sm bg-white/95 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
             <div>
-              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
-                <Clock className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 bg-action-50 rounded-xl flex items-center justify-center mb-4">
+                <Clock className="w-5 h-5 text-action-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Support Hours</h3>
+              <h3 className="text-lg font-display font-bold text-slate-900 mb-2">Support Hours</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 Our support team is active and monitoring transaction processes daily.
               </p>
@@ -121,21 +121,21 @@ export default function SupportPage() {
                 </Button>
               </Link>
             </div>
-          </Card>
+          </Reveal>
         </div>
 
         {/* FAQs */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-slate-700" />
+          <h2 className="text-2xl font-display font-bold text-slate-900 flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-brand-600" />
             Frequently Asked Questions
           </h2>
           <div className="grid grid-cols-1 gap-4">
             {faqs.map((faq, i) => (
-              <Card key={i} className="p-6 border border-slate-200 shadow-[0_2px_8px_rgb(0,0,0,0.02)] bg-white/90">
-                <h3 className="font-bold text-slate-900 mb-2">{faq.q}</h3>
+              <Reveal as={Card} key={i} delay={i * 80} className="p-6 rounded-2xl border border-slate-200 shadow-[0_2px_8px_rgb(0,0,0,0.02)] bg-white/90 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                <h3 className="font-display font-bold text-slate-900 mb-2">{faq.q}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{faq.a}</p>
-              </Card>
+              </Reveal>
             ))}
           </div>
         </div>

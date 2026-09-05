@@ -16,16 +16,17 @@ import {
   Phone,
   AlertTriangle,
 } from "lucide-react";
-import { Card, Button, Input, Badge, Modal, EmptyState } from "../../components/ui";
+import { Card, Button, Input, Badge, Modal, EmptyState, Reveal } from "../../components/ui";
 import { withdrawalsApi, walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { MOBILE_MONEY_NETWORKS } from "../../utils/constants";
 import { getErrorMessage } from "../../utils/helpers";
+import { useCountUp } from "../../hooks";
 import toast from "react-hot-toast";
 
 const WITHDRAWAL_STATUSES = {
   pending: { label: "Pending", color: "warning", icon: Clock },
-  processing: { label: "Processing", color: "info", icon: Loader2 },
+  processing: { label: "Processing", color: "primary", icon: Loader2 },
   completed: { label: "Completed", color: "success", icon: CheckCircle },
   rejected: { label: "Rejected", color: "danger", icon: XCircle },
   failed: { label: "Failed", color: "danger", icon: XCircle },
@@ -103,6 +104,8 @@ export default function AgentWithdrawalsPage() {
       mobileNetwork: "MTN",
     },
   });
+
+  const animatedBalance = useCountUp(balance, { start: true, duration: 1200 });
 
   const amountVal = watch("amount");
   const inputAmt = parseFloat(amountVal || "0");
@@ -200,7 +203,7 @@ export default function AgentWithdrawalsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Withdrawals</h1>
           <p className="text-slate-600 mt-1">
@@ -218,7 +221,11 @@ export default function AgentWithdrawalsPage() {
             />
             Refresh
           </Button>
-          <Button onClick={() => setShowWithdrawModal(true)} disabled={disableWithdrawals}>
+          <Button
+            onClick={() => setShowWithdrawModal(true)}
+            disabled={disableWithdrawals}
+            className="shimmer-sweep hover:-translate-y-0.5 transition-all"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Withdraw
           </Button>
@@ -238,26 +245,27 @@ export default function AgentWithdrawalsPage() {
       )}
 
       {/* Balance Card */}
-      <Card className="p-6 bg-linear-to-br from-slate-900 to-slate-800 text-white">
-        <div className="flex items-center justify-between">
+      <Reveal variant="scale" as={Card} className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+        <ArrowDownToLine className="absolute right-3 bottom-3 w-24 h-24 text-white/10" />
+        <div className="flex items-center justify-between relative">
           <div>
-            <p className="text-slate-300 text-sm mb-1">Available Balance</p>
-            <p className="text-3xl font-bold">{formatCurrency(balance)}</p>
+            <p className="text-brand-100 text-sm mb-1">Available Balance</p>
+            <p className="font-display text-4xl font-bold tabular-nums">{formatCurrency(animatedBalance)}</p>
           </div>
           <Button
             variant="secondary"
             onClick={() => setShowWithdrawModal(true)}
-            className="bg-white text-slate-900 hover:bg-slate-100"
+            className="bg-white text-brand-700 hover:bg-brand-50"
             disabled={disableWithdrawals}
           >
             <ArrowDownToLine className="w-4 h-4 mr-2" />
             Withdraw Funds
           </Button>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Reveal as={Card} delay={100} className="p-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-600">Filter by status:</span>
           <select
@@ -266,7 +274,7 @@ export default function AgentWithdrawalsPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+            className="h-9 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Status</option>
             {Object.entries(WITHDRAWAL_STATUSES).map(([key, value]) => (
@@ -276,10 +284,10 @@ export default function AgentWithdrawalsPage() {
             ))}
           </select>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Withdrawals List */}
-      <Card>
+      <Reveal as={Card} delay={200}>
         <div className="divide-y divide-slate-100">
           {isLoading ? (
              <div className="space-y-0 divide-y divide-slate-100">
@@ -318,12 +326,12 @@ export default function AgentWithdrawalsPage() {
             withdrawals.map((withdrawal) => (
               <div
                 key={withdrawal.id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 cursor-pointer"
+                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-brand-50/50 transition-colors cursor-pointer"
                 onClick={() => setSelectedWithdrawal(withdrawal)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-yellow-100">
-                    <Phone className="w-5 h-5 text-yellow-600" />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-brand-100">
+                    <Phone className="w-5 h-5 text-brand-600" />
                   </div>
                   <div>
                     <p className="font-medium text-slate-900">
@@ -378,7 +386,7 @@ export default function AgentWithdrawalsPage() {
             </div>
           </div>
         )}
-      </Card>
+      </Reveal>
 
       {/* Withdraw Modal */}
       <Modal
@@ -406,7 +414,7 @@ export default function AgentWithdrawalsPage() {
                 setVerifiedName("");
                 setValue("accountName", "");
               }}
-              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="w-full h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               {MOBILE_MONEY_NETWORKS.map((network) => (
                 <option key={network} value={network}>
@@ -443,9 +451,12 @@ export default function AgentWithdrawalsPage() {
           </div>
 
           {verifiedName && (
-             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-               <p className="text-xs text-green-700 uppercase tracking-wide">Verified Name</p>
-               <p className="text-sm font-medium text-green-900 mt-1">{verifiedName}</p>
+             <div className="p-3 bg-action-50 border border-action-200 rounded-xl flex items-center gap-2">
+               <CheckCircle className="w-4 h-4 text-action-600 shrink-0" />
+               <div>
+                 <p className="text-xs text-action-700 uppercase tracking-wide">Verified Name</p>
+                 <p className="text-sm font-medium text-action-900 mt-1">{verifiedName}</p>
+               </div>
              </div>
           )}
 
@@ -473,7 +484,7 @@ export default function AgentWithdrawalsPage() {
                    </p>
                  )}
                {inputAmt > 0 && (
-                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-sm mt-3">
+                  <div className="p-3.5 bg-brand-50/60 border border-brand-100 rounded-xl space-y-2 text-sm mt-3">
                     <div className="flex justify-between">
                       <span className="text-slate-500">Gross Withdrawal:</span>
                       <span className="font-medium text-slate-950">{formatCurrency(inputAmt)}</span>
@@ -482,9 +493,9 @@ export default function AgentWithdrawalsPage() {
                       <span className="text-slate-500">Network Charges (Fee):</span>
                       <span className="font-medium text-amber-700">-{formatCurrency(calculatedFee)}</span>
                     </div>
-                    <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold">
+                    <div className="flex justify-between border-t border-brand-100 pt-2 font-semibold">
                       <span className="text-slate-800">You Will Receive (Net Payout):</span>
-                      <span className="text-emerald-600 font-bold text-base">{formatCurrency(netPayout)}</span>
+                      <span className="font-display text-action-600 font-bold text-base">{formatCurrency(netPayout)}</span>
                     </div>
                   </div>
                )}
@@ -545,7 +556,7 @@ export default function AgentWithdrawalsPage() {
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
                   Net Payout (Amount to Receive)
                 </p>
-                <p className="text-xl font-bold text-emerald-600 mt-1">
+                <p className="font-display text-xl font-bold text-action-600 mt-1">
                   {formatCurrency(parseFloat(selectedWithdrawal.amount) - parseFloat(selectedWithdrawal.fee || 0))}
                 </p>
               </div>

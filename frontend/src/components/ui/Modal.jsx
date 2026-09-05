@@ -54,23 +54,23 @@ export default function Modal({
       <div
         ref={modalRef}
         className={cn(
-          "relative z-10 w-[calc(100%-2rem)] mx-4 sm:mx-auto rounded-xl bg-white shadow-xl",
+          "relative z-10 w-[calc(100%-2rem)] mx-4 sm:mx-auto rounded-2xl bg-white shadow-xl shadow-brand-950/10",
           "max-h-[90vh] overflow-hidden",
           sizes[size],
           className,
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900">{title}</h2>
             {description && (
-              <p className="mt-1 text-sm text-gray-500">{description}</p>
+              <p className="mt-1 text-sm text-slate-500">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           >
             <X className="h-5 w-5" />
           </button>
@@ -83,7 +83,7 @@ export default function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t px-6 py-4">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
             {footer}
           </div>
         )}
@@ -121,7 +121,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <p className="text-gray-600">{message}</p>
+      <p className="text-slate-600">{message}</p>
     </Modal>
   );
 }

@@ -13,23 +13,24 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Card, Button, Badge, EmptyState } from "../../components/ui";
+import { Card, Button, Badge, EmptyState, Reveal } from "../../components/ui";
 import { useNavigate } from "react-router-dom";
 import { walletApi } from "../../api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import { useCountUp } from "../../hooks";
 
 const TRANSACTION_TYPES = {
   commission: {
     label: "Commission",
     icon: ArrowDownLeft,
-    color: "text-green-600",
+    color: "text-action-600",
   },
   withdrawal: {
     label: "Withdrawal",
     icon: ArrowUpRight,
     color: "text-red-600",
   },
-  refund: { label: "Refund", icon: ArrowDownLeft, color: "text-blue-600" },
+  refund: { label: "Refund", icon: ArrowDownLeft, color: "text-brand-600" },
   adjustment: {
     label: "Adjustment",
     icon: TrendingUp,
@@ -86,10 +87,14 @@ export default function AgentWalletPage() {
 
   const isLoading = walletLoading || transactionsLoading;
 
+  const animatedBalance = useCountUp(wallet.balance, { start: !walletLoading, duration: 1200 });
+  const animatedTotalEarned = useCountUp(summary.totalEarned, { start: true, duration: 1200 });
+  const animatedThisMonth = useCountUp(summary.thisMonth, { start: true, duration: 1200 });
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Wallet</h1>
           <p className="text-slate-600 mt-1">
@@ -111,48 +116,55 @@ export default function AgentWalletPage() {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Available Balance */}
-        <Card className="p-6 bg-linear-to-br from-slate-900 to-slate-800 text-white">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-slate-300 text-sm">Available Balance</span>
-            <Wallet className="w-5 h-5 text-slate-400" />
+        <Reveal variant="scale" as={Card} className="p-6 bg-linear-to-br from-brand-600 via-brand-700 to-sky-600 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+          <Wallet className="absolute right-3 bottom-3 w-24 h-24 text-white/10" />
+          <div className="flex items-center justify-between mb-4 relative">
+            <span className="text-brand-100 text-sm">Available Balance</span>
+            <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <Wallet className="w-4 h-4 text-white" />
+            </div>
           </div>
-          <p className="text-3xl font-bold">
-            {walletLoading ? "..." : formatCurrency(wallet.balance)}
+          <p className="font-display text-4xl font-bold relative tabular-nums">
+            {walletLoading ? "..." : formatCurrency(animatedBalance)}
           </p>
           {wallet.pendingBalance > 0 && (
-            <p className="text-sm text-slate-400 mt-2">
+            <p className="text-sm text-brand-100 mt-2 relative">
               + {formatCurrency(wallet.pendingBalance)} pending
             </p>
           )}
-        </Card>
+        </Reveal>
 
         {/* Total Earned */}
-        <Card className="p-6">
+        <Reveal variant="scale" delay={80} as={Card} className="p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-slate-600 text-sm">Total Earned</span>
-            <TrendingUp className="w-5 h-5 text-green-500" />
+            <div className="w-9 h-9 rounded-xl bg-action-50 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-action-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900">
-            {formatCurrency(summary.totalEarned)}
+          <p className="font-display text-3xl font-bold text-slate-900 tabular-nums">
+            {formatCurrency(animatedTotalEarned)}
           </p>
-          <p className="text-sm text-green-600 mt-2">All time earnings</p>
-        </Card>
+          <p className="text-sm text-action-600 mt-2">All time earnings</p>
+        </Reveal>
 
         {/* This Month */}
-        <Card className="p-6">
+        <Reveal variant="scale" delay={160} as={Card} className="p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-slate-600 text-sm">This Month</span>
-            <TrendingUp className="w-5 h-5 text-blue-500" />
+            <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-brand-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900">
-            {formatCurrency(summary.thisMonth)}
+          <p className="font-display text-3xl font-bold text-slate-900 tabular-nums">
+            {formatCurrency(animatedThisMonth)}
           </p>
           <p className="text-sm text-slate-500 mt-2">Earned this month</p>
-        </Card>
+        </Reveal>
       </div>
 
       {/* Transactions */}
-      <Card>
+      <Reveal as={Card}>
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-slate-900">
             Transaction History
@@ -165,7 +177,7 @@ export default function AgentWalletPage() {
                 setTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-9 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="h-9 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">All Types</option>
               {Object.entries(TRANSACTION_TYPES).map(([key, value]) => (
@@ -221,17 +233,17 @@ export default function AgentWalletPage() {
               return (
                 <div
                   key={transaction.id}
-                  className="p-4 flex items-center justify-between hover:bg-slate-50"
+                  className="p-4 flex items-center justify-between hover:bg-brand-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        isCredit ? "bg-green-100" : "bg-red-100"
+                        isCredit ? "bg-action-100" : "bg-red-100"
                       }`}
                     >
                       <Icon
                         className={`w-5 h-5 ${
-                          isCredit ? "text-green-600" : "text-red-600"
+                          isCredit ? "text-action-600" : "text-red-600"
                         }`}
                       />
                     </div>
@@ -247,8 +259,8 @@ export default function AgentWalletPage() {
                   </div>
                   <div className="text-right">
                     <p
-                      className={`font-semibold ${
-                        isCredit ? "text-green-600" : "text-red-600"
+                      className={`font-display font-semibold ${
+                        isCredit ? "text-action-600" : "text-red-600"
                       }`}
                     >
                       {isCredit ? "+" : "-"}
@@ -256,9 +268,9 @@ export default function AgentWalletPage() {
                     </p>
                     <div className="flex items-center gap-1 text-xs text-slate-500 justify-end">
                       {transaction.status === "completed" ? (
-                        <CheckCircle className="w-3 h-3 text-green-500" />
+                        <CheckCircle className="w-3 h-3 text-action-500" />
                       ) : (
-                        <Clock className="w-3 h-3 text-yellow-500" />
+                        <Clock className="w-3 h-3 text-amber-500" />
                       )}
                       <span>{transaction.status}</span>
                     </div>
@@ -297,24 +309,24 @@ export default function AgentWalletPage() {
             </div>
           </div>
         )}
-      </Card>
+      </Reveal>
 
       {/* Info */}
-      <Card className="p-4 bg-green-50 border-green-200">
+      <Reveal as={Card} delay={100} className="p-4 bg-action-50 border-action-200">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-            <Wallet className="w-4 h-4 text-green-600" />
+          <div className="w-8 h-8 bg-action-100 rounded-xl flex items-center justify-center shrink-0">
+            <Wallet className="w-4 h-4 text-action-600" />
           </div>
           <div>
-            <h4 className="font-medium text-green-900">Earnings</h4>
-            <p className="text-sm text-green-700 mt-1">
+            <h4 className="font-medium text-action-900">Earnings</h4>
+            <p className="text-sm text-action-700 mt-1">
               Your commission is automatically credited to your wallet when a
               customer completes a purchase through your payment link. You can
               withdraw your earnings at any time.
             </p>
           </div>
         </div>
-      </Card>
+      </Reveal>
     </div>
   );
 }

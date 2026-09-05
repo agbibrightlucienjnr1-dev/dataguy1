@@ -16,7 +16,7 @@ import {
   Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Card, Badge, Button, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Badge, Button, Modal, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { adminApi, paymentsApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
 import { NETWORKS } from "../../utils/constants";
@@ -161,15 +161,15 @@ export default function AdminOrdersPage() {
   const getStatusIcon = (status) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-action-500" />;
       case "failed":
         return <XCircle className="w-4 h-4 text-red-500" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       case "payment_confirmed":
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        return <CheckCircle className="w-4 h-4 text-action-500" />;
       case "processing":
-        return <AlertCircle className="w-4 h-4 text-blue-500" />;
+        return <AlertCircle className="w-4 h-4 text-brand-500" />;
       default:
         return <Clock className="w-4 h-4 text-slate-400" />;
     }
@@ -208,13 +208,13 @@ export default function AdminOrdersPage() {
         );
       case "AT":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT iSHARE
           </span>
         );
       case "AIRTELTIGO":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
             AT Big Time
           </span>
         );
@@ -230,7 +230,7 @@ export default function AdminOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">All Orders</h1>
           <p className="text-slate-600 mt-1">
@@ -244,7 +244,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="p-4 animate-fade-in-up animation-delay-150">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
@@ -256,7 +256,7 @@ export default function AdminOrdersPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -271,7 +271,7 @@ export default function AdminOrdersPage() {
               setNetworkFilter(e.target.value);
               setPage(1);
             }}
-            className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
+            className="h-10 px-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           >
             <option value="">All Networks</option>
             {NETWORKS.map((network) => (
@@ -284,6 +284,7 @@ export default function AdminOrdersPage() {
       </Card>
 
       {/* Orders Table */}
+      <Reveal>
       <Card className="overflow-hidden">
         {isLoading ? (
           <div className="p-6">
@@ -296,9 +297,10 @@ export default function AdminOrdersPage() {
             description="There are no orders matching your current filters."
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+              <thead className="bg-brand-50/40 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Order</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Bundle</th>
@@ -314,7 +316,7 @@ export default function AdminOrdersPage() {
                 {orders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-slate-50 hover:bg-slate-50"
+                    className="border-b border-slate-50 hover:bg-brand-50/50"
                   >
                     <td className="px-6 py-4">
                       <p className="font-mono text-sm text-slate-900">
@@ -408,6 +410,80 @@ export default function AdminOrdersPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile card list */}
+          <div className="lg:hidden divide-y divide-slate-100">
+            {orders.map((order) => (
+              <div key={order.id} className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs px-2 py-1 rounded-lg bg-slate-100 inline-block text-slate-700">
+                      #{order.id.slice(-8)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">{formatDateTime(order.createdAt)}</p>
+                  </div>
+                  {getStatusBadge(order.status)}
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  {getNetworkBadge(order.bundle?.network)}
+                  <span className="text-sm text-slate-900">{order.bundle?.volume}</span>
+                  <span className="ml-auto font-medium text-slate-900">{formatCurrency(order.pricePaid)}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div className="bg-slate-50 rounded-lg p-2">
+                    <p className="text-xs text-slate-500">Recipient</p>
+                    <p className="font-medium text-slate-900 truncate">{order.customerPhone}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-lg p-2">
+                    <p className="text-xs text-slate-500">Seller</p>
+                    <p className="font-medium text-slate-900 truncate">{order.seller?.name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(order.status === "payment_confirmed" || order.status === "failed") && (
+                    <Button
+                      variant={order.status === "failed" ? "danger" : "primary"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => fulfillMutation.mutate(order.id)}
+                      disabled={fulfillMutation.isPending}
+                    >
+                      {fulfillMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-1" />
+                          {order.status === "failed" ? "Retry" : "Fulfill"}
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {order.status !== "completed" && order.status !== "pending" && (
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => completeMutation.mutate(order.id)}
+                      disabled={completeMutation.isPending}
+                    >
+                      {completeMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 mr-1" />
+                          Complete
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => handleOpenOrderModal(order)}>
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         )}
 
         {/* Pagination */}
@@ -439,6 +515,7 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </Card>
+      </Reveal>
 
       {/* Order Details Modal */}
       <Modal
@@ -465,7 +542,7 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Bundle Info */}
-            <div className="p-4 bg-slate-50 rounded-lg">
+            <div className="p-4 bg-slate-50 rounded-xl">
               <p className="text-sm text-slate-500 mb-2">Bundle</p>
               <div className="flex items-center gap-2">
                 {getNetworkBadge(selectedOrder.bundle?.network)}
@@ -526,7 +603,7 @@ export default function AdminOrdersPage() {
             {/* Error Message */}
             {selectedOrder.status === "failed" &&
               selectedOrder.errorMessage && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
                   <p className="text-sm font-medium text-red-800">
                     Error Message
                   </p>
@@ -544,7 +621,7 @@ export default function AdminOrdersPage() {
                 </p>
                 <Button
                   variant="outline"
-                  className="w-full border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                  className="w-full border-brand-300 text-brand-700 hover:bg-brand-50"
                   onClick={() => forceVerifyMutation.mutate(selectedOrder.id)}
                   disabled={forceVerifyMutation.isPending}
                 >
@@ -568,7 +645,7 @@ export default function AdminOrdersPage() {
               <div className="pt-4 border-t border-slate-200">
                 <Button
                   variant="primary"
-                  className="w-full"
+                  className="shimmer-sweep w-full"
                   onClick={() => fulfillMutation.mutate(selectedOrder.id)}
                   disabled={fulfillMutation.isPending}
                 >
@@ -627,7 +704,7 @@ export default function AdminOrdersPage() {
                 <select
                   value={statusUpdateValue}
                   onChange={(e) => setStatusUpdateValue(e.target.value)}
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                  className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white"
                 >
                   <option value="pending">Pending</option>
                   <option value="payment_confirmed">Payment Confirmed</option>

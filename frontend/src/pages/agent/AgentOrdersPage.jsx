@@ -13,7 +13,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
-import { Card, Button, Input, Badge, Modal, EmptyState, SkeletonTable } from "../../components/ui";
+import { Card, Button, Input, Badge, Modal, EmptyState, SkeletonTable, Reveal } from "../../components/ui";
 import { useNavigate } from "react-router-dom";
 import { ordersApi } from "../../api";
 import { formatCurrency, formatDateTime } from "../../utils/formatters";
@@ -78,7 +78,7 @@ export default function AgentOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">My Orders</h1>
           <p className="text-slate-600 mt-1">
@@ -98,7 +98,7 @@ export default function AgentOrdersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
+      <Reveal as={Card} className="p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -111,15 +111,15 @@ export default function AgentOrdersPage() {
               />
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Filter className="w-4 h-4 text-slate-400" />
+          <div className="flex items-center gap-3 flex-wrap">
+            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">All Status</option>
               {Object.entries(ORDER_STATUSES).map(([key, value]) => (
@@ -134,7 +134,7 @@ export default function AgentOrdersPage() {
                 setNetworkFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="h-10 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             >
               <option value="">All Networks</option>
               {NETWORKS.map((network) => (
@@ -145,143 +145,178 @@ export default function AgentOrdersPage() {
             </select>
           </div>
         </div>
-      </Card>
+      </Reveal>
 
       {/* Orders Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Order
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Customer
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Bundle
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Amount
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Status
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Date
-                </th>
-                <th className="text-left p-4 text-sm font-medium text-slate-500">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="p-0">
-                    <SkeletonTable rows={5} columns={7} />
-                  </td>
-                </tr>
-              ) : filteredOrders.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-8">
-                    <EmptyState
-                      icon={ShoppingCart}
-                      title="No orders found"
-                      description="You haven't placed any orders matching your criteria."
-                      action={{
-                        label: "Go to Dashboard",
-                        onClick: () => navigate("/dashboard"),
-                      }}
-                    />
-                  </td>
-                </tr>
-              ) : (
-                filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="border-b border-slate-50 hover:bg-slate-50"
-                  >
-                    <td className="p-4">
-                      <p className="font-mono text-sm text-slate-900">
-                        {order.id.slice(0, 8)}...
-                      </p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-sm font-medium text-slate-900">
-                        {order.customerPhone}
-                      </p>
-                      {order.customerEmail && (
-                        <p className="text-xs text-slate-500">
-                          {order.customerEmail}
-                        </p>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${getNetworkStyle(
-                            order.bundle?.network,
-                          )}`}
-                        />
-                        <span className="text-sm text-slate-900">
-                          {order.bundle?.network === "AIRTELTIGO"
-                            ? "AT Big Time"
-                            : order.bundle?.network === "AT"
-                            ? "AT iSHARE"
-                            : order.bundle?.network === "TELECEL"
-                            ? "Telecel"
-                            : "MTN"} {order.bundle?.volume}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-sm font-medium text-slate-900">
-                        {formatCurrency(order.pricePaid)}
-                      </p>
-                      {order.commissionAmount > 0 && (
-                        <p className="text-xs text-green-600">
-                          +{formatCurrency(order.commissionAmount)} earned
-                        </p>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <Badge
-                        variant={
-                          order.status === "completed"
-                            ? "success"
-                            : order.status === "failed" ||
-                                order.status === "cancelled"
-                              ? "danger"
-                              : "warning"
-                        }
-                        className="inline-flex items-center gap-1"
-                      >
-                        {getStatusIcon(order.status)}
-                        {ORDER_STATUSES[order.status]?.label || order.status}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-sm text-slate-600">
-                        {formatDateTime(order.createdAt)}
-                      </p>
-                    </td>
-                    <td className="p-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </td>
+      <Reveal as={Card} delay={100} className="overflow-hidden">
+        {isLoading ? (
+          <SkeletonTable rows={5} columns={7} />
+        ) : filteredOrders.length === 0 ? (
+          <EmptyState
+            icon={ShoppingCart}
+            title="No orders found"
+            description="You haven't placed any orders matching your criteria."
+            action={{
+              label: "Go to Dashboard",
+              onClick: () => navigate("/dashboard"),
+            }}
+          />
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-brand-50/50 border-b border-slate-200">
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Order</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bundle</th>
+                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">View</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-brand-50/40 transition-colors"
+                    >
+                      <td className="px-5 py-4">
+                        <span className="inline-block font-mono text-xs px-2 py-1 rounded-lg bg-slate-100 text-slate-600">
+                          {order.id.slice(0, 8)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {order.customerPhone}
+                        </p>
+                        {order.customerEmail && (
+                          <p className="text-xs text-slate-500">
+                            {order.customerEmail}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${getNetworkStyle(
+                              order.bundle?.network,
+                            )}`}
+                          />
+                          <span className="text-sm text-slate-800">
+                            {order.bundle?.network === "AIRTELTIGO"
+                              ? "AT Big Time"
+                              : order.bundle?.network === "AT"
+                              ? "AT iSHARE"
+                              : order.bundle?.network === "TELECEL"
+                              ? "Telecel"
+                              : "MTN"} <span className="text-slate-500">{order.bundle?.volume}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <p className="text-sm font-bold text-slate-900">
+                          {formatCurrency(order.pricePaid)}
+                        </p>
+                        {order.commissionAmount > 0 && (
+                          <p className="text-xs font-medium text-action-600">
+                            +{formatCurrency(order.commissionAmount)}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
+                        <Badge
+                          variant={
+                            order.status === "completed"
+                              ? "success"
+                              : order.status === "failed" ||
+                                  order.status === "cancelled"
+                                ? "danger"
+                                : "warning"
+                          }
+                          className="inline-flex items-center gap-1"
+                        >
+                          {getStatusIcon(order.status)}
+                          {ORDER_STATUSES[order.status]?.label || order.status}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-sm text-slate-500 whitespace-nowrap">
+                          {formatDateTime(order.createdAt)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:bg-brand-100 hover:text-brand-700 transition-colors"
+                          title="View details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="lg:hidden divide-y divide-slate-100">
+              {filteredOrders.map((order) => (
+                <button
+                  key={order.id}
+                  onClick={() => setSelectedOrder(order)}
+                  className="w-full text-left p-4 hover:bg-brand-50/40 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 truncate">{order.customerPhone}</p>
+                      <span className="inline-block font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 mt-0.5">
+                        {order.id.slice(0, 8)}
+                      </span>
+                    </div>
+                    <Badge
+                      variant={
+                        order.status === "completed"
+                          ? "success"
+                          : order.status === "failed" || order.status === "cancelled"
+                            ? "danger"
+                            : "warning"
+                      }
+                      className="inline-flex items-center gap-1 shrink-0"
+                    >
+                      {getStatusIcon(order.status)}
+                      {ORDER_STATUSES[order.status]?.label || order.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${getNetworkStyle(order.bundle?.network)}`} />
+                      <span className="text-sm text-slate-600">
+                        {order.bundle?.network === "AIRTELTIGO"
+                          ? "AT Big Time"
+                          : order.bundle?.network === "AT"
+                          ? "AT iSHARE"
+                          : order.bundle?.network === "TELECEL"
+                          ? "Telecel"
+                          : "MTN"} {order.bundle?.volume}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-slate-900">{formatCurrency(order.pricePaid)}</p>
+                      {order.commissionAmount > 0 && (
+                        <p className="text-xs font-medium text-action-600">+{formatCurrency(order.commissionAmount)}</p>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">{formatDateTime(order.createdAt)}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Pagination */}
         {pagination.pages > 1 && (
@@ -311,7 +346,7 @@ export default function AgentOrdersPage() {
             </div>
           </div>
         )}
-      </Card>
+      </Reveal>
 
       {/* Order Details Modal */}
       <Modal
@@ -386,7 +421,7 @@ export default function AgentOrdersPage() {
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
                   Your Commission
                 </p>
-                <p className="text-sm font-medium text-green-600 mt-1">
+                <p className="text-sm font-medium text-action-600 mt-1">
                   {formatCurrency(selectedOrder.commissionAmount || 0)}
                 </p>
               </div>

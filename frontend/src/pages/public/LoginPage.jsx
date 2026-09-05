@@ -30,26 +30,26 @@ export default function LoginPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+      <div className="animate-fade-in-up mb-8">
+        <h1 className="text-2xl font-display font-bold text-slate-900">Welcome back</h1>
         <p className="text-slate-600 mt-2">
           Sign in to your account to continue selling
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div>
+        <div className="animate-fade-in-up animation-delay-150">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Phone Number
           </label>
           <div className="relative group">
-            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
               type="tel"
               placeholder="0241234567"
               className={`w-full h-12 pl-11 pr-4 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                hover:border-brand-200
                 ${errors.phone ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("phone")}
             />
@@ -59,25 +59,25 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div>
+        <div className="animate-fade-in-up animation-delay-300">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Password
           </label>
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
             <input
                type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               className={`w-full h-12 pl-11 pr-12 rounded-xl border bg-white/50 backdrop-blur-sm text-sm shadow-sm transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white
-                hover:border-slate-300
+                focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:bg-white
+                hover:border-brand-200
                 ${errors.password ? "border-red-500 focus:ring-red-500/10 focus:border-red-500" : "border-slate-200"}`}
               {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -91,17 +91,17 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="animate-fade-in-up animation-delay-450 flex items-center justify-between pt-2">
           <label className="flex items-center gap-2.5 cursor-pointer group">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 transition-colors cursor-pointer"
+              className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 transition-colors cursor-pointer"
             />
             <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">Remember me</span>
           </label>
           <Link
             to="/forgot-password"
-            className="text-sm font-semibold text-slate-900 hover:text-slate-700 transition-colors"
+            className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors"
           >
             Forgot password?
           </Link>
@@ -109,26 +109,25 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 text-[15px] font-bold shadow-slate-900/20 shadow-lg hover:-translate-y-0.5 transition-all bg-slate-900 hover:bg-slate-800 text-white border-0"
+          className="shimmer-sweep animate-fade-in-up w-full h-12 text-[15px] hover:-translate-y-0.5"
+          style={{ animationDelay: "600ms" }}
           isLoading={loginMutation.isPending}
         >
           Sign in to Dashboard
         </Button>
       </form>
 
-      <div className="mt-8 text-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+      <div className="animate-fade-in-up mt-8 text-center bg-brand-50/50 p-4 rounded-xl border border-brand-100" style={{ animationDelay: "750ms" }}>
         <p className="text-slate-600 text-sm">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="font-medium text-slate-900 hover:text-slate-700"
+            className="font-medium text-brand-600 hover:text-brand-700"
           >
             Create account
           </Link>
         </p>
       </div>
-
-     
     </div>
   );
 }
