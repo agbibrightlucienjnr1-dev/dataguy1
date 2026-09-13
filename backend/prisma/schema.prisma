@@ -115,6 +115,7 @@ model Order {
   commissionPaid     Boolean            @default(false) @map("commission_paid")
   transactionFee     Decimal            @default(0) @map("transaction_fee") @db.Decimal(10, 2)
   paymentProvider    String             @default("paystack") @map("payment_provider")
+  adminNotified      Boolean            @default(false) @map("admin_notified")
   bundle             DataBundle         @relation(fields: [bundleId], references: [id])
   seller             User               @relation("SellerOrders", fields: [sellerId], references: [id])
   walletTransaction  WalletTransaction?

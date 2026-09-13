@@ -74,7 +74,11 @@ export const sendSMS = async (recipients, message) => {
 };
 
 /**
- * Notify administrators when an order fails to process
+ * Notify administrators when an order fails to process.
+ * Suppresses duplicate SMS notifications for:
+ * 1. The same order if an SMS alert was already sent (e.g. during automatic retries).
+ * 2. New failed orders if an active, unresolved failed order alert already exists.
+ * 
  * @param {string} orderId - The order ID
  * @param {string} provider - The delivery provider (e.g. 'Hubnet' or 'Bossu')
  * @param {string} reason - The reason for failure
@@ -82,6 +86,57 @@ export const sendSMS = async (recipients, message) => {
 export const notifyAdminOfFailedOrder = async (orderId, provider, reason) => {
   try {
     const prisma = getPrisma();
+
+    if (!orderId) {
+      logger.warn("notifyAdminOfFailedOrder called without orderId, skipping notification");
+      return;
+    }
+
+    // Check target order notification state
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true, adminNotified: true },
+    });
+
+    if (!order) {
+      logger.warn(`notifyAdminOfFailedOrder: Order ${orderId} not found`);
+      return;
+    }
+
+    // 1. Check if this order itself was already notified
+    if (order.adminNotified) {
+      logger.info(`Admin SMS alert already sent for order ${orderId}, skipping duplicate notification.`);
+      return;
+    }
+
+    // 2. Check if another active unresolved failed order already triggered an SMS alert
+    const activeUnresolvedFailure = await prisma.order.findFirst({
+      where: {
+        status: "failed",
+        adminNotified: true,
+        id: { not: orderId },
+      },
+      select: { id: true },
+    });
+
+    if (activeUnresolvedFailure) {
+      // Mark current order as notified so it won't re-trigger later, but suppress SMS dispatch
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { adminNotified: true },
+      });
+      logger.info(
+        `Active unresolved failed order (${activeUnresolvedFailure.id}) already alerted admins. Suppressing SMS dispatch for order ${orderId}.`
+      );
+      return;
+    }
+
+    // Mark current order as notified BEFORE sending SMS to ensure atomicity
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { adminNotified: true },
+    });
+
     const admins = await prisma.user.findMany({ 
       where: { role: "admin" },
       select: { phone: true }
@@ -100,6 +155,6 @@ export const notifyAdminOfFailedOrder = async (orderId, provider, reason) => {
       });
     }
   } catch (error) {
-    logger.error("Failed to lookup admins for failed order notification", { error: error.message });
+    logger.error("Failed in notifyAdminOfFailedOrder", { error: error.message });
   }
 };
